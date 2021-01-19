@@ -1,0 +1,39 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    // Use JUnit Jupiter API for testing.
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
+    // Use JUnit Jupiter Engine for testing.
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+
+    // This dependency is used by the application.
+    implementation 'com.google.guava:guava:29.0-jre'
+}
+
+application {
+    mainClass = 'org.matrixer.App'
+}
+
+tasks.named('test') {
+    // Use junit platform for unit tests.
+    useJUnitPlatform()
+}
+
+test {
+    testLogging {
+        events 'passed', 'skipped', 'failed'  // Events to print out
+
+        showStackTraces false
+        showExceptions true
+        showCauses true
+        exceptionFormat 'full'
+
+        showStandardStreams true
+    }
+}
