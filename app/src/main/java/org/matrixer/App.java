@@ -1,21 +1,36 @@
 package org.matrixer;
 
-import io.reactivex.rxjava3.core.Observable;
-import org.jacoco.core.JaCoCo;
+import java.io.IOException;
+
+import org.jacoco.core.analysis.Analyzer;
+import org.jacoco.core.analysis.CoverageBuilder;
+import org.jacoco.core.data.ExecutionDataStore;
 
 public class App {
 
     public static void main(String[] args) {
-        Observable.just("App: ", "works!", "\n")
-                .subscribe(System.out::print);
-        testJaCoco();
+        var app = new App();
+        app.run();
     }
 
-    public static void testJaCoco() {
-        System.out.println("\n::JaCoCo::"
-                + "\n\tversion: " + JaCoCo.VERSION
-                + "\n\turl: " + JaCoCo.HOMEURL
-                + "\n\truntime: " + JaCoCo.RUNTIMEPACKAGE);
+    private void run() {
+        try {
+            analyze();
+        } catch (IOException e) {
+            System.out.println("Error: " + e);
+        }
+    }
+
+    private void analyze() throws IOException {
+        var execData = new ExecutionDataStore();
+        var builder = new CoverageBuilder();
+        var analyzer = new Analyzer(execData, builder);
+        var count = analyzer.analyzeAll("/home/pabo/tmp/matrixer-test/build/classes/", null);
+        System.out.println("Found " + count + " class files");
+
+        for (var source : builder.getSourceFiles()) {
+            System.out.println(source.getName());
+        }
     }
 
 }
