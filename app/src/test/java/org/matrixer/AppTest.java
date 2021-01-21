@@ -7,13 +7,17 @@ class AppTest {
 
     @Test
     void appHasAGreeting() {
-        var app = new App();
-        app.run();
-        assertTrue(true);
+        runTheTest();
     }
 
     @Test
     void anotherTest() {
+        assertTrue(true);
+    }
+
+    void runTheTest() {
+        var app = new App();
+        app.run();
         assertTrue(true);
     }
 }
