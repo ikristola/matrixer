@@ -12,8 +12,8 @@ import javassist.CtMethod;
 
 public class Transformer implements ClassFileTransformer {
 
-        String targetClassName;
-        ClassLoader targetClassLoader;
+    String targetClassName;
+    ClassLoader targetClassLoader;
 
     Transformer(String className, ClassLoader classLoader) {
         this.targetClassName = className;
@@ -21,16 +21,19 @@ public class Transformer implements ClassFileTransformer {
     }
 
     @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> cls, ProtectionDomain protectionDomain,
+    public byte[] transform(ClassLoader loader, String className, Class<?> cls,
+            ProtectionDomain protectionDomain,
             byte[] classfileBuffer) {
         byte[] byteCode = classfileBuffer;
-        String finalTargetClassName = this.targetClassName.replaceAll("\\.", "/");
+        String finalTargetClassName =
+                this.targetClassName.replaceAll("\\.", "/");
 
         if (!className.equals(finalTargetClassName)) {
             return byteCode;
         }
 
-        if (className.equals(finalTargetClassName) && loader.equals(targetClassLoader)) {
+        if (className.equals(finalTargetClassName)
+                && loader.equals(targetClassLoader)) {
             System.out.println("[Agent] Transforming class " + className);
         }
 
@@ -54,25 +57,28 @@ public class Transformer implements ClassFileTransformer {
         }
     }
 
-    private boolean instrument(CtMethod method) throws NotFoundException, CannotCompileException, IOException {
-            final var name = method.getLongName();
-            if (name.startsWith("java.lang.Object")) {
-                return false;
-            }
+    private boolean instrument(CtMethod method)
+            throws NotFoundException, CannotCompileException, IOException {
+        final var name = method.getLongName();
+        if (name.startsWith("java.lang.Object")) {
+            return false;
+        }
 
-            System.out.println("Found method: " + name);
-            StringBuilder endBlock = new StringBuilder();
-            endBlock.append("StackTraceElement[] elems = Thread.currentThread().getStackTrace();");
-            endBlock.append("for (int i = 1; i < elems.length; i++) {");
-            endBlock.append("   StackTraceElement elem = elems[i];");
-            endBlock.append("   if (elem.getClassLoaderName() == null) {");
-            endBlock.append("       elem = elems[i-1];");
-            endBlock.append("       String caller = elem.getClassName() + \":\" + elem.getMethodName();");
-            endBlock.append("       System.out.println(\"Looks like " + name + " was called by test \" + caller);");
-            endBlock.append("       break;");
-            endBlock.append("   }");
-            endBlock.append("};");
-            method.insertAfter(endBlock.toString());
-            return true;
+        System.out.println("Found method: " + name);
+        StringBuilder endBlock = new StringBuilder();
+        endBlock.append(
+                "StackTraceElement[] elems = Thread.currentThread().getStackTrace();"
+                        + "for (int i = 1; i < elems.length; i++) {"
+                        + "   StackTraceElement elem = elems[i];"
+                        + "   if (elem.getClassLoaderName() == null) {"
+                        + "       elem = elems[i-1];"
+                        + "       String caller = elem.getClassName() + \":\" + elem.getMethodName();"
+                        + "       System.out.println(\"Looks like " + name
+                        + " was called by test \" + caller);"
+                        + "       break;"
+                        + "   }"
+                        + "};");
+        method.insertAfter(endBlock.toString());
+        return true;
     }
 }
