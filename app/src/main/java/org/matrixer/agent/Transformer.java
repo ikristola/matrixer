@@ -60,18 +60,15 @@ public class Transformer implements ClassFileTransformer {
                 return false;
             }
 
-            String regex = "^java.*|^org.junit.*|^jdk.*|^org.gradle.*|^com.sun.*";
-            String callee = name;
-
             System.out.println("Found method: " + name);
             StringBuilder endBlock = new StringBuilder();
             endBlock.append("StackTraceElement[] elems = Thread.currentThread().getStackTrace();");
             endBlock.append("for (int i = 1; i < elems.length; i++) {");
             endBlock.append("   StackTraceElement elem = elems[i];");
-            endBlock.append("   if (elem.getClassName().matches(\"" + regex + "\")) {");
+            endBlock.append("   if (elem.getClassLoaderName() == null) {");
             endBlock.append("       elem = elems[i-1];");
             endBlock.append("       String caller = elem.getClassName() + \":\" + elem.getMethodName();");
-            endBlock.append("       System.out.println(\"Looks like " + callee + " was called by test \" + caller);");
+            endBlock.append("       System.out.println(\"Looks like " + name + " was called by test \" + caller);");
             endBlock.append("       break;");
             endBlock.append("   }");
             endBlock.append("};");
