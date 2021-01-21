@@ -35,26 +35,25 @@ public class Transformer implements ClassFileTransformer {
         if (className.equals(finalTargetClassName)
                 && loader.equals(targetClassLoader)) {
             System.out.println("[Agent] Transforming class " + className);
-        }
 
-        try {
-            ClassPool pool = ClassPool.getDefault();
-            CtClass cc = pool.get(targetClassName);
-            for (var m : cc.getMethods()) {
-                if (instrument(m)) {
-                    System.out.println("Instrumented " + m.getLongName());
+            try {
+                ClassPool pool = ClassPool.getDefault();
+                CtClass cc = pool.get(targetClassName);
+                for (var m : cc.getMethods()) {
+                    if (instrument(m)) {
+                        System.out.println("Instrumented " + m.getLongName());
+                    }
                 }
+                byteCode = cc.toBytecode();
+                cc.detach();
+                return byteCode;
+            } catch (CannotCompileException e) {
+                System.err.println("Err Transformer.transform(): " + e.getReason());
+            } catch (NotFoundException | IOException e) {
+                System.err.println("Err Transformer.transform(): " + e);
             }
-            byteCode = cc.toBytecode();
-            cc.detach();
-            return byteCode;
-        } catch (CannotCompileException e) {
-            System.err.println("Err Transformer.transform(): " + e.getReason());
-            return null;
-        } catch (NotFoundException | IOException e) {
-            System.err.println("Err Transformer.transform(): " + e);
-            return null;
         }
+        return null;
     }
 
     private boolean instrument(CtMethod method)
@@ -68,6 +67,7 @@ public class Transformer implements ClassFileTransformer {
         StringBuilder endBlock = new StringBuilder();
         endBlock.append(
                 "StackTraceElement[] elems = Thread.currentThread().getStackTrace();"
+                        // First StackTraceElement is getStackTrace()
                         + "for (int i = 1; i < elems.length; i++) {"
                         + "   StackTraceElement elem = elems[i];"
                         + "   if (elem.getClassLoaderName() == null) {"
