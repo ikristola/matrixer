@@ -20,4 +20,11 @@ class AppTest {
         app.run();
         assertTrue(true);
     }
+
+    @Test
+    void testUntested() {
+        var app = new App();
+        app.unTestedMethod();
+        assertTrue(true);
+    }
 }
