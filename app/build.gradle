@@ -40,6 +40,7 @@ tasks.named('test') {
 }
 
 test {
+    jvmArgs '-javaagent:build/libs/app.jar=arg1:HELLO'
     testLogging {
         events 'passed', 'skipped', 'failed'  // Events to print out
 
