@@ -32,38 +32,37 @@ public class Transformer implements ClassFileTransformer {
             return byteCode;
         }
 
-        if (className.equals(finalTargetClassName)
-                && loader.equals(targetClassLoader)) {
-            System.out.println("[Agent] Transforming class " + className);
-
+        if (loader.equals(targetClassLoader)) {
             try {
+                System.out.println("[Agent] Transforming class " + className);
                 ClassPool pool = ClassPool.getDefault();
                 CtClass cc = pool.get(targetClassName);
                 for (var m : cc.getMethods()) {
                     if (instrument(m)) {
-                        System.out.println("Instrumented " + m.getLongName());
+                        System.out.println("[Agent] Instrumented " + m.getLongName());
                     }
                 }
                 byteCode = cc.toBytecode();
                 cc.detach();
                 return byteCode;
             } catch (CannotCompileException e) {
-                System.err.println("Err Transformer.transform(): " + e.getReason());
+                System.err.println("[Agent] Err Transformer.transform(): " + e.getReason());
             } catch (NotFoundException | IOException e) {
-                System.err.println("Err Transformer.transform(): " + e);
+                System.err.println("[Agent] Err Transformer.transform(): " + e);
             }
         }
         return null;
     }
 
-    private boolean instrument(CtMethod method)
+    private boolean instrument(CtMethod method) 
             throws NotFoundException, CannotCompileException, IOException {
+
         final var name = method.getLongName();
         if (name.startsWith("java.lang.Object")) {
             return false;
         }
 
-        System.out.println("Found method: " + name);
+        System.out.println("[Agent] Found method: " + name);
         StringBuilder endBlock = new StringBuilder();
         endBlock.append(
                 "StackTraceElement[] elems = Thread.currentThread().getStackTrace();"
