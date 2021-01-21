@@ -70,12 +70,15 @@ public class Transformer implements ClassFileTransformer {
             endBlock.append("System.out.println(getClass().getName() + \": Oh good, I have been hijacked!!!\");");
             endBlock.append("System.out.println(\"[Instrumented - Filtered call stack]\");");
             endBlock.append("StackTraceElement[] elems = Thread.currentThread().getStackTrace();");
-            endBlock.append("for (int i = 0; i < elems.length; i++) {");
+            endBlock.append("for (int i = 1; i < elems.length; i++) {");
             endBlock.append("   StackTraceElement elem = elems[i];");
-            endBlock.append("   if (!elem.getClassName().matches(\"^java.*|^org.junit.*|^jdk.*|^org.gradle.*|^com.sun.*\")) {");
+            endBlock.append("   if (elem.getClassName().matches(\"^java.*|^org.junit.*|^jdk.*|^org.gradle.*|^com.sun.*\")) {");
+            endBlock.append("       elem = elems[i-1];");
             endBlock.append("       String method = elem.getMethodName();");
             endBlock.append("       String cls = elem.getClassName();");
-            endBlock.append("       System.out.println(i + \": \" + cls + \":\" + method + \"()\");");
+            endBlock.append("       String self = getClass().getName() + \":" + method.getName() + "\";");
+            endBlock.append("       System.out.println(\"Looks like \" + self + \" was called by test \" + cls + \":\" + method);");
+            endBlock.append("       break;");
             endBlock.append("   }");
             endBlock.append("};");
             method.insertAfter(endBlock.toString());
