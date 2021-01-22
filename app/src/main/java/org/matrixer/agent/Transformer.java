@@ -12,8 +12,8 @@ import javassist.CtMethod;
 
 public class Transformer implements ClassFileTransformer {
 
-        String targetClassName;
-        ClassLoader targetClassLoader;
+    String targetClassName;
+    ClassLoader targetClassLoader;
 
     Transformer(String className, ClassLoader classLoader) {
         this.targetClassName = className;
@@ -21,47 +21,63 @@ public class Transformer implements ClassFileTransformer {
     }
 
     @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> cls, ProtectionDomain protectionDomain,
+    public byte[] transform(ClassLoader loader, String className, Class<?> cls,
+            ProtectionDomain protectionDomain,
             byte[] classfileBuffer) {
         byte[] byteCode = classfileBuffer;
-        String finalTargetClassName = this.targetClassName.replaceAll("\\.", "/");
+        String finalTargetClassName =
+                this.targetClassName.replaceAll("\\.", "/");
 
         if (!className.equals(finalTargetClassName)) {
             return byteCode;
         }
 
-        if (className.equals(finalTargetClassName) && loader.equals(targetClassLoader)) {
-            System.out.println("[Agent] Transforming class " + className);
-        }
-
-        try {
-            ClassPool pool = ClassPool.getDefault();
-            CtClass cc = pool.get(targetClassName);
-            for (var m : cc.getMethods()) {
-                if (instrument(m)) {
-                    System.out.println("Instrumented " + m.getLongName());
+        if (loader.equals(targetClassLoader)) {
+            try {
+                System.out.println("[Agent] Transforming class " + className);
+                ClassPool pool = ClassPool.getDefault();
+                CtClass cc = pool.get(targetClassName);
+                for (var m : cc.getMethods()) {
+                    if (instrument(m)) {
+                        System.out.println("[Agent] Instrumented " + m.getLongName());
+                    }
                 }
+                byteCode = cc.toBytecode();
+                cc.detach();
+                return byteCode;
+            } catch (CannotCompileException e) {
+                System.err.println("[Agent] Err Transformer.transform(): " + e.getReason());
+            } catch (NotFoundException | IOException e) {
+                System.err.println("[Agent] Err Transformer.transform(): " + e);
             }
-            byteCode = cc.toBytecode();
-            cc.detach();
-            return byteCode;
-        } catch (NotFoundException | CannotCompileException | IOException e) {
-            return null;
         }
+        return null;
     }
 
-    private boolean instrument(CtMethod method) throws NotFoundException, CannotCompileException, IOException {
-            final var name = method.getLongName();
-            if (name.startsWith("java.lang.Object")) {
-                return false;
-            }
+    private boolean instrument(CtMethod method) 
+            throws NotFoundException, CannotCompileException, IOException {
 
-            System.out.println("Found method: " + name);
+        final var name = method.getLongName();
+        if (name.startsWith("java.lang.Object")) {
+            return false;
+        }
 
-
-            StringBuilder endBlock = new StringBuilder();
-            endBlock.append("System.out.println(getClass().getName() + \": Oh good, I have been hijacked!!!\");");
-            method.insertAfter(endBlock.toString());
-            return true;
+        System.out.println("[Agent] Found method: " + name);
+        StringBuilder endBlock = new StringBuilder();
+        endBlock.append(
+                "StackTraceElement[] elems = Thread.currentThread().getStackTrace();"
+                        // First StackTraceElement is getStackTrace()
+                        + "for (int i = 1; i < elems.length; i++) {"
+                        + "   StackTraceElement elem = elems[i];"
+                        + "   if (elem.getClassLoaderName() == null) {"
+                        + "       elem = elems[i-1];"
+                        + "       String caller = elem.getClassName() + \":\" + elem.getMethodName();"
+                        + "       System.out.println(\"Looks like " + name
+                        + " was called by test \" + caller);"
+                        + "       break;"
+                        + "   }"
+                        + "};");
+        method.insertAfter(endBlock.toString());
+        return true;
     }
 }

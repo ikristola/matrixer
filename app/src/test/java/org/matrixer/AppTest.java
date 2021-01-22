@@ -7,6 +7,15 @@ class AppTest {
 
     @Test
     void appHasAGreeting() {
+        runTheTest();
+    }
+
+    @Test
+    void anotherTest() {
+        assertTrue(true);
+    }
+
+    void runTheTest() {
         var app = new App();
         app.run();
         app.hej();
@@ -14,7 +23,9 @@ class AppTest {
     }
 
     @Test
-    void anotherTest() {
+    void testUntested() {
+        var app = new App();
+        app.unTestedMethod();
         assertTrue(true);
     }
 }

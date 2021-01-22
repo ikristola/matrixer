@@ -9,4 +9,7 @@ public class App {
     public void hej() {
         System.out.println("Running matrixer hej function");
     }
+
+    public void unTestedMethod() {
+    }
 }
