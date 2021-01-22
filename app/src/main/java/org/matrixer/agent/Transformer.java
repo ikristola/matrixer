@@ -24,45 +24,54 @@ public class Transformer implements ClassFileTransformer {
     public byte[] transform(ClassLoader loader, String className, Class<?> cls,
             ProtectionDomain protectionDomain,
             byte[] classfileBuffer) {
-        byte[] byteCode = classfileBuffer;
+
         String finalTargetClassName =
                 this.targetClassName.replaceAll("\\.", "/");
 
-        if (!className.equals(finalTargetClassName)) {
-            return byteCode;
+        if (!className.equals(finalTargetClassName) ||
+                !loader.equals(targetClassLoader)) {
+            return classfileBuffer;
         }
 
-        if (loader.equals(targetClassLoader)) {
-            try {
-                System.out.println("[Agent] Transforming class " + className);
-                ClassPool pool = ClassPool.getDefault();
-                CtClass cc = pool.get(targetClassName);
-                for (var m : cc.getMethods()) {
-                    if (instrument(m)) {
-                        System.out.println("[Agent] Instrumented " + m.getLongName());
-                    }
-                }
-                byteCode = cc.toBytecode();
-                cc.detach();
-                return byteCode;
-            } catch (CannotCompileException e) {
-                System.err.println("[Agent] Err Transformer.transform(): " + e.getReason());
-            } catch (NotFoundException | IOException e) {
-                System.err.println("[Agent] Err Transformer.transform(): " + e);
-            }
+        System.out.println("[Agent] Transforming class " + className);
+        return instrumentClass();
+    }
+
+    private byte[] instrumentClass() {
+        try {
+            ClassPool pool = ClassPool.getDefault();
+            CtClass cc = pool.get(targetClassName);
+            instrumentMethods(cc);
+            byte[] byteCode = cc.toBytecode();
+            cc.detach();
+            return byteCode;
+        } catch (CannotCompileException e) {
+            System.err.println("[Agent] Err Transformer.transform(): " + e.getReason());
+        } catch (NotFoundException | IOException e) {
+            System.err.println("[Agent] Err Transformer.transform(): " + e);
         }
         return null;
     }
 
-    private boolean instrument(CtMethod method) 
+    private void instrumentMethods(CtClass cls)
             throws NotFoundException, CannotCompileException, IOException {
+        for (var m : cls.getMethods()) {
+            final var methodName = m.getLongName();
+            // Skip methods inherited from Object
+            if (methodName.startsWith("java.lang.Object")) {
+                continue;
+            }
+            System.out.println("[Agent] Found method: " + methodName);
+            if (instrument(m)) {
+                System.out.println("[Agent] Instrumented " + methodName);
+            }
+        }
+    }
+
+    private boolean instrument(CtMethod method) 
+            throws CannotCompileException, IOException {
 
         final var name = method.getLongName();
-        if (name.startsWith("java.lang.Object")) {
-            return false;
-        }
-
-        System.out.println("[Agent] Found method: " + name);
         StringBuilder endBlock = new StringBuilder();
         endBlock.append(
                 "StackTraceElement[] elems = Thread.currentThread().getStackTrace();"
