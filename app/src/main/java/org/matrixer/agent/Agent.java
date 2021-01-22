@@ -1,6 +1,11 @@
 package org.matrixer.agent;
 
+import org.reflections.Reflections;
+
 import java.lang.instrument.Instrumentation;
+import java.util.List;
+
+import static org.matrixer.agent.AgentUtils.getClassesInPackage;
 
 public class Agent {
     /*
@@ -9,7 +14,12 @@ public class Agent {
      */
     public static void premain(String agentArgs, Instrumentation inst) {
 
-        // System.out.println("[Agent] started:" + "\n\tArgs: " + agentArgs + "\n\tInstrumentation: " + inst);
+        System.out.println("[Agent] started:" + "\n\tArgs: " + agentArgs + "\n\tInstrumentation: " + inst);
+
+        List<Class<?>> classes = getClassesInPackage("org.matrixer");
+        for (Class<?> cls : classes) {
+            System.out.println("[Agent] Found class: " + cls);
+        }
 
         var className = "org.matrixer.App";
         transformClass(className, inst);
