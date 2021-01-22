@@ -2,6 +2,8 @@ package org.matrixer.agent;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -53,5 +55,16 @@ public class AgentUtils {
         }
 
         return classes;
+    }
+
+    public static final boolean isTestClass(Class<?> cls) {
+        Method[] m = cls.getDeclaredMethods();
+        for (Method method : m) {
+            Annotation[] annotations = method.getDeclaredAnnotations();
+            for (Annotation annotation : annotations) {
+                return annotation.toString().startsWith("@org.junit");
+            }
+        }
+        return false;
     }
 }

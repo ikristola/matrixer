@@ -28,4 +28,10 @@ class AppTest {
         app.unTestedMethod();
         assertTrue(true);
     }
+
+    @Test
+    void testCalculator() {
+        var calc = new Calculator();
+        assertEquals(3, calc.add(1,2));
+    }
 }

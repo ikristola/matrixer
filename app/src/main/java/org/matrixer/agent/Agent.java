@@ -1,11 +1,12 @@
 package org.matrixer.agent;
 
-import org.reflections.Reflections;
-
+import java.lang.annotation.Annotation;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import static org.matrixer.agent.AgentUtils.getClassesInPackage;
+import static org.matrixer.agent.AgentUtils.isTestClass;
 
 public class Agent {
     /*
@@ -16,13 +17,18 @@ public class Agent {
 
         System.out.println("[Agent] started:" + "\n\tArgs: " + agentArgs + "\n\tInstrumentation: " + inst);
 
+        /* Return a list of all classes in the current package */
         List<Class<?>> classes = getClassesInPackage("org.matrixer");
         for (Class<?> cls : classes) {
-            System.out.println("[Agent] Found class: " + cls);
+            System.out.println("[Agent] class found: " + cls);
+            if (!isTestClass(cls)) {
+                System.out.println("[Agent] This is not a test class. Transforming it..");
+                transformClass(cls.getName(), inst);
+            }
+            else  {
+                System.out.println("[Agent] This is a test class. Skipping transform");
+            }
         }
-
-        var className = "org.matrixer.App";
-        transformClass(className, inst);
     }
 
     private static void transformClass(String className, Instrumentation inst) {
