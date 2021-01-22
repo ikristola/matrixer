@@ -8,36 +8,40 @@ public class Agent {
      * the agent
      */
     public static void premain(String agentArgs, Instrumentation inst) {
-
-        // System.out.println("[Agent] started:" + "\n\tArgs: " + agentArgs + "\n\tInstrumentation: " + inst);
-
         var className = "org.matrixer.App";
         transformClass(className, inst);
     }
 
     private static void transformClass(String className, Instrumentation inst) {
-        Class<?> targetCls = null;
-        ClassLoader targetClassLoader = null;
-
-        try {
-            targetCls = Class.forName(className);
-            targetClassLoader = targetCls.getClassLoader();
-            transform(targetCls, targetClassLoader, inst);
-            return;
-        } catch (Exception e) {
-            System.err.println("Class [" + className + "] not found with Class.forName");
+        Class<?> targetCls = findClassInCurrentLoader(className);
+        if (targetCls == null) {
+            targetCls = findClassInInstrumentation(className, inst);
         }
+        if (targetCls == null) {
+            throw new RuntimeException("Failed to find class [" + className + "]");
+        }
+        ClassLoader targetClassLoader = targetCls.getClassLoader();
+        transform(targetCls, targetClassLoader, inst);
+    }
+
+    private static Class<?> findClassInCurrentLoader(String className) {
+        try {
+            return Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            System.err.println("Class [" + className + "] not found with Class.forName");
+            return null;
+        }
+    }
+
+    private static Class<?> findClassInInstrumentation(String className, Instrumentation inst) {
         for(Class<?> clazz: inst.getAllLoadedClasses()) {
             if(clazz.getName().equals(className)) {
                 System.out.println("Found class " + clazz.getName());
-                targetCls = clazz;
-                targetClassLoader = targetCls.getClassLoader();
-                transform(targetCls, targetClassLoader, inst);
-                return;
+                return clazz;
             }
         }
-        throw new RuntimeException(
-        "Failed to find class [" + className + "]");
+        System.err.println("Class [" + className + "] not found with Instrumentation");
+        return null;
     }
 
     private static void transform(Class<?> targetCls, ClassLoader targetClassLoader, Instrumentation inst) {
