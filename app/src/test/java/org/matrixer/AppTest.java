@@ -9,6 +9,7 @@ class AppTest {
     void appHasAGreeting() {
         var app = new App();
         app.run();
+        app.hej();
         assertTrue(true);
     }
 
