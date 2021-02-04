@@ -7,16 +7,10 @@ repositories {
 }
 
 dependencies {
-
     implementation "io.reactivex.rxjava3:rxjava:3.0.7"
-    // https://mvnrepository.com/artifact/org.jacoco/org.jacoco.core
-    compile group: 'org.jacoco', name: 'org.jacoco.core', version: '0.8.6'
 
-    // Use JUnit Jupiter API for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
-    // Use JUnit Jupiter Engine for testing.
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-    // This dependency is used by the application.
     implementation 'com.google.guava:guava:29.0-jre'
 }
 
@@ -25,7 +19,6 @@ application {
 }
 
 tasks.named('test') {
-    // Use junit platform for unit tests.
     useJUnitPlatform()
 }
 
