@@ -8,6 +8,7 @@ repositories {
 
 dependencies {
     implementation "io.reactivex.rxjava3:rxjava:3.0.7"
+    compile group: 'org.javassist', name: 'javassist', version: '3.27.0-GA'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
@@ -20,6 +21,20 @@ application {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes("Manifest-Version": "1.0",
+                "Agent-Class": "org.matrixeragent.MatrixerAgent",
+                "Can-Redefine-Classes": true,
+                "Can-Retransform-Classes": true,
+                "Premain-Class": "org.matrixeragent.MatrixerAgent")
+    }
+    archivesBaseName = 'agentJar'
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it)}
+    }
 }
 
 test {
