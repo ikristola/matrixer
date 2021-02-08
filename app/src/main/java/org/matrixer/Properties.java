@@ -1,5 +1,6 @@
 package org.matrixer;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -12,7 +13,32 @@ import io.reactivex.rxjava3.core.Observable;
  * Properties parses and store the application properties
  */
 class Properties {
-    Path inputPath;
+
+    /**
+     * Used to provide the path to the target project directory. Required
+     * flag
+     */
+    final static String TARGET_FLAG = "--target";
+
+    /**
+     * Used to provide the path to a directory where the resulting data will
+     * be stored.
+     */
+    final static String OUTDIR_FLAG = "--output";
+
+    /**
+     * Used to provide the URL to a target git repository. The repository
+     * will be downloaded to the target directory
+     */
+    final static String VCS_FLAG = "--git";
+
+    /**
+     * The default output directory if none is provided is a subdirectory
+     * of the target directory with this name.
+     */
+    final static String DEFAULT_OUTDIR = "matrix-cov";
+
+    Path targetPath;
     Path outputPath;
     URI remoteURL = null;
     String failureReason = "Properties not parsed";
@@ -28,7 +54,29 @@ class Properties {
     void parse(String[] args) {
         Observable.fromArray(args)
                 .buffer(2, 2)
-                .subscribe(this::parseFlag, this::handleError);
+                .subscribe(this::parseFlag, this::handleError, () -> {
+                    validate();
+                    if (isValid()) {
+                        applyDefaults();
+                    }
+                });
+
+    }
+
+    private void validate() {
+        if (targetPath == null) {
+            setError("Target directory is required");
+        }
+    }
+
+    private void applyDefaults() {
+        if (outputPath == null) {
+            outputPath = defaultOutputPath();
+        }
+    }
+
+    Path defaultOutputPath() {
+        return Paths.get(targetPath + File.separator + DEFAULT_OUTDIR);
     }
 
     private void parseFlag(List<String> flagPair) {
@@ -39,13 +87,13 @@ class Properties {
         String flag = flagPair.get(0);
         String arg = flagPair.get(1);
         switch (flag) {
-            case "--input":
-                inputPath = Paths.get(arg);
+            case TARGET_FLAG:
+                targetPath = Paths.get(arg);
                 break;
-            case "--output":
+            case OUTDIR_FLAG:
                 outputPath = Paths.get(arg);
                 break;
-            case "--git":
+            case VCS_FLAG:
                 remoteURL = parseURL(arg);
                 break;
             default:
@@ -61,12 +109,17 @@ class Properties {
             }
             return new URI(url);
         } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Not a valid URL: " + url);
+            throw new IllegalArgumentException("Not a valid URL: '" + url
+                    + "'\n\t" + e.getMessage());
         }
     }
 
     private void handleError(Throwable e) {
-        failureReason = e.getMessage();
+        setError(e.getMessage());
+    }
+
+    private void setError(String err) {
+        failureReason = err;
     }
 
     /**
@@ -79,8 +132,8 @@ class Properties {
     }
 
     /**
-     * If the last parse failed this method returns a description of 
-     * why it failed.
+     * If the last parse failed this method returns a description of why it
+     * failed.
      *
      * @returns The reason for the last parse failure
      */
@@ -91,8 +144,8 @@ class Properties {
     /**
      * @returns the path to the target repository
      */
-    Path inputPath() {
-        return inputPath;
+    Path targetPath() {
+        return targetPath;
     }
 
     /**

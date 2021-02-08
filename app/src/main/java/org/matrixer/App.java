@@ -4,6 +4,15 @@ public class App {
 
     Properties properties;
 
+    public static void main(String[] args) {
+        if (args.length == 0 || containsHelpFlag(args)) {
+            printUsage();
+            return;
+        }
+        App app = new App(args);
+        app.run();
+    }
+
     App(String[] args) {
         properties = new Properties();
         properties.parse(args);
@@ -15,24 +24,23 @@ public class App {
             return;
         }
         System.out.println("Properties: "
-                + "\n\tInput path: " + properties.inputPath()
+                + "\n\tTarget path: " + properties.targetPath()
                 + "\n\tOutput path: " + properties.outputPath()
                 + "\n\tRemote: " + properties.remoteURL());
     }
 
-    public static void main(String[] args) {
-        if (args.length == 0) {
-            printUsage();
-            return;
+    static boolean containsHelpFlag(String[] args) {
+        for (String arg : args) {
+            if (arg.equals("--help") || arg.equals("-h")) {
+                return true;
+            }
         }
-        App app = new App(args);
-        app.run();
+        return false;
     }
 
     static void printUsage() {
         System.err.println("Usage: " +
-                "\n\tmatrixer --input <path> --output <path>" +
-                "\n\tmatrixer --git <path> --output <path>");
+                "\n\tmatrixer --target <path> [--output <path>] [--git <URL>]");
     }
 
 }
