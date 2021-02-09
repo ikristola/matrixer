@@ -38,6 +38,7 @@ jar {
 }
 
 test {
+    jvmArgs = ["-Djdk.attach.allowAttachSelf=true", "-javaagent:build/libs/agentJar.jar=arg1:org.matrixeragent.testclass"]
     testLogging {
         events 'passed', 'skipped', 'failed'  // Events to print out
 
