@@ -7,6 +7,9 @@ import static org.matrixeragent.MatrixerAgentUtils.getClassesInPackage;
 import static org.matrixeragent.MatrixerAgentUtils.isTestClass;
 
 public class MatrixerAgent {
+
+    private static volatile Instrumentation instrumentation;
+
     /*
      * agentArgs is passed as a single string. Additional parsing must be done by
      * the agent
@@ -28,6 +31,21 @@ public class MatrixerAgent {
                 System.out.println("[Agent] This is a test class. Skipping transform");
             }
         }
+    }
+
+    public static void agentmain(String agentArgs, Instrumentation inst) {
+        System.out.println("[Agent] agentmain started:" + "\n\tArgs: " + agentArgs + "\n\tInstrumentation: " + inst);
+        System.out.println("[Agent] I'm running dynamically");
+        instrumentation = inst;
+    }
+
+    public static Instrumentation getInstrumentation() {
+        Instrumentation instrumentation = MatrixerAgent.instrumentation;
+        if (instrumentation == null) {
+            throw new IllegalStateException(
+                    "The Agent is not loaded or this method is not called via the system class loader");
+        }
+        return instrumentation;
     }
 
     private static void transformClass(String className, Instrumentation inst) {
