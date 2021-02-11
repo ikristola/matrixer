@@ -31,13 +31,48 @@ jar {
                 "Can-Retransform-Classes": true,
                 "Premain-Class": "org.matrixeragent.MatrixerAgent")
     }
-    archivesBaseName = 'agentJar'
+    baseName 'agentJar'
     from {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it)}
+    }
+    doLast {
+        println "default jar task run"
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+    }
+    test {
+        java {
+            srcDir 'src/test/java'
+        }
+    }
+}
+
+// Generate jar of CustomTestAgent
+task testAgentJar(type: Jar) {
+    from (sourceSets.test.output) {
+        include "org/matrixeragent/util/**"
+    }
+    manifest {
+        attributes("Manifest-Version": "1.0",
+                "Agent-Class": "org.matrixeragent.util.CustomTestAgent",
+                "Can-Redefine-Classes": true,
+                "Can-Retransform-Classes": true,
+                "Premain-Class": "org.matrixeragent.util.CustomTestAgent")
+    }
+    baseName 'testAgentJar'
+    doLast {
+        println "testAgentJar run"
     }
 }
 
 test {
+    dependsOn testAgentJar
     jvmArgs = ["-Djdk.attach.allowAttachSelf=true", "-javaagent:build/libs/agentJar.jar=arg1:org.matrixeragent.testclass"]
     testLogging {
         events 'passed', 'skipped', 'failed'  // Events to print out
