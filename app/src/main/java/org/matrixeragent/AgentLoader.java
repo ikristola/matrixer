@@ -6,11 +6,11 @@ import java.lang.management.ManagementFactory;
 
 public class AgentLoader {
 
-    public static void loadAgent(String jarFilePath) throws Exception {
+    public static void loadAgent(String jarFilePath, String agentArgs) throws Exception {
         String nameOfRunningVM = ManagementFactory.getRuntimeMXBean().getName();
         String pid = nameOfRunningVM.substring(0, nameOfRunningVM.indexOf('@'));
         VirtualMachine vm = VirtualMachine.attach(pid);
-        vm.loadAgent(jarFilePath, "");
+        vm.loadAgent(jarFilePath, agentArgs);
         vm.detach();
     }
 }
