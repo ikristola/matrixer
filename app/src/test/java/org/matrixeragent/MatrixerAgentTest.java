@@ -1,20 +1,18 @@
 package org.matrixeragent;
 
-import com.sun.tools.attach.AgentLoadException;
 import org.junit.jupiter.api.*;
-import org.matrixeragent.testclass.AnotherTestClass;
-import org.matrixeragent.testclass.TestClass;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
+import org.matrixeragent.dynamictargets.AnotherTestClassDynamic;
+import org.matrixeragent.dynamictargets.TestClassDynamic;
+import org.matrixeragent.statictargets.AnotherTestClassStatic;
+import org.matrixeragent.statictargets.TestClassStatic;
+import org.matrixeragent.util.StreamHijacker;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MatrixerAgentTest {
 
     // For capturing output
-    private final PrintStream standardOut = System.out;
-    private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
+    StreamHijacker streamHijacker = new StreamHijacker();
 
     /**
      *  Tests of agent run statically
@@ -25,62 +23,50 @@ public class MatrixerAgentTest {
         @Test
         public void instrumentDoesNotBreakMethod() {
             String argument = "this is an argument";
-            TestClass testClass = new TestClass();
-            assertEquals(argument, testClass.returnInput(argument));
+            assertEquals(argument, TestClassStatic.returnInput(argument));
         }
 
         @Test
         public void instrumentDoesNotBreakMultipleClasses() {
-            TestClass testClass = new TestClass();
             String argument = "this is an argument";
-            assertEquals(argument, testClass.returnInput(argument));
-
-            AnotherTestClass anotherTestClass = new AnotherTestClass();
-            assertTrue(anotherTestClass.trueReturner());
-            assertEquals(1, anotherTestClass.oneReturner());
+            assertEquals(argument, TestClassStatic.returnInput(argument));
+            assertTrue(AnotherTestClassStatic.trueReturner());
+            assertEquals(1, AnotherTestClassStatic.oneReturner());
         }
 
         @Test
         public void instrumentedMethodPrintsCallerMethod() {
-            System.setOut(new PrintStream(outputStreamCaptor));
-
-            TestClass testClass = new TestClass();
-            String expected = "Looks like org.matrixeragent.testclass.TestClass.returnInput(java.lang.String) was" +
+            streamHijacker.outputCapture();
+            String expected = "Looks like org.matrixeragent.statictargets.TestClassStatic.returnInput(java.lang.String) was" +
                     " called by test org.matrixeragent.MatrixerAgentTest$StaticAgentTest:instrumentedMethodPrintsCallerMethod";
-            testClass.returnInput("Dummy string");
-            assertEquals(expected, outputStreamCaptor.toString().trim());
-            outputStreamCaptor.reset();
-
-            System.setOut(standardOut);
+            TestClassStatic.returnInput("Dummy string");
+            assertEquals(expected, streamHijacker.getHijackedOutput());
+            streamHijacker.stopOutputCapture();
         }
 
         @Test
         public void canInstrumentMultipleClasses() {
-            System.setOut(new PrintStream(outputStreamCaptor));
+            streamHijacker.outputCapture();
 
-            TestClass testClass = new TestClass();
-            String expected = "Looks like org.matrixeragent.testclass.TestClass.returnInput(java.lang.String) was" +
+            String expected = "Looks like org.matrixeragent.statictargets.TestClassStatic.returnInput(java.lang.String) was" +
                     " called by test org.matrixeragent.MatrixerAgentTest$StaticAgentTest:canInstrumentMultipleClasses";
-            testClass.returnInput("Dummy string");
-            assertEquals(expected, outputStreamCaptor.toString().trim());
-            outputStreamCaptor.reset();
+            TestClassStatic.returnInput("Dummy string");
+            assertEquals(expected, streamHijacker.getHijackedOutput());
+            streamHijacker.reset();
 
-            AnotherTestClass anotherTestClass = new AnotherTestClass();
-            String anotherExpected = "Looks like org.matrixeragent.testclass.AnotherTestClass.trueReturner() was" +
+            String anotherExpected = "Looks like org.matrixeragent.statictargets.AnotherTestClassStatic.trueReturner() was" +
                     " called by test org.matrixeragent.MatrixerAgentTest$StaticAgentTest:canInstrumentMultipleClasses";
-            anotherTestClass.trueReturner();
-            assertEquals(anotherExpected, outputStreamCaptor.toString().trim());
-            outputStreamCaptor.reset();
+            assertTrue(AnotherTestClassStatic.trueReturner());
+            assertEquals(anotherExpected, streamHijacker.getHijackedOutput());
+            streamHijacker.reset();
 
-            String anotherExpected1 = "Looks like org.matrixeragent.testclass.AnotherTestClass.oneReturner() was" +
+            String anotherExpected1 = "Looks like org.matrixeragent.statictargets.AnotherTestClassStatic.oneReturner() was" +
                     " called by test org.matrixeragent.MatrixerAgentTest$StaticAgentTest:canInstrumentMultipleClasses";
-            anotherTestClass.oneReturner();
-            assertEquals(anotherExpected1, outputStreamCaptor.toString().trim());
-            outputStreamCaptor.reset();
+            assertEquals(1, AnotherTestClassStatic.oneReturner());
+            assertEquals(anotherExpected1, streamHijacker.getHijackedOutput());
 
-            System.setOut(standardOut);
+            streamHijacker.stopOutputCapture();
         }
-
     }
 
     /**
@@ -91,34 +77,57 @@ public class MatrixerAgentTest {
     class DynamicAgentTest {
 
         @Test
-        @Order(1)   // This test must be run before the agent is loaded
-        public void expectException_GetInstrumentationIfAgentNotLoaded() {
-            String expected = "The Agent is not loaded or this method is not called via the system class loader";
-            Throwable throwable = assertThrows(IllegalStateException.class, MatrixerAgent::getInstrumentation);
-            assertEquals(expected, throwable.getMessage());
+        @Order(1)
+        public void dynamicLoadOfMatrixerAgent() {
+            assertDoesNotThrow(() -> AgentLoader.loadAgent(
+                    "build/libs/agentJar.jar", "arg1:org.matrixeragent.dynamictargets"));
         }
 
         @Test
-        public void dynamicLoadOfAgent() {
-            assertDoesNotThrow(() -> AgentLoader.loadAgent("build/libs/agentJar.jar"));
+        public void instrumentDoesNotBreakMethod() {
+            String argument = "this is an argument";
+            assertEquals(argument, TestClassDynamic.returnInput(argument));
         }
 
         @Test
-        public void expectException_DynamicLoadAgentWithBadPath() {
-            Throwable throwable = assertThrows(AgentLoadException.class,
-                    () -> AgentLoader.loadAgent("bad/path/agent.jar"));
-            assertEquals("Agent JAR not found or no Agent-Class attribute", throwable.getMessage());
+        public void instrumentDoesNotBreakMultipleClasses() {
+            String argument = "this is an argument";
+            assertEquals(argument, TestClassDynamic.returnInput(argument));
+            assertTrue(AnotherTestClassDynamic.trueReturner());
+            assertEquals(1, AnotherTestClassDynamic.oneReturner());
         }
 
         @Test
-        public void getAgentInstrumentation() {
-            try {
-                AgentLoader.loadAgent("build/libs/agentJar.jar");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            assertDoesNotThrow(MatrixerAgent::getInstrumentation);
+        public void instrumentedMethodPrintsCallerMethod() {
+            streamHijacker.outputCapture();
+            String expected = "Looks like org.matrixeragent.dynamictargets.TestClassDynamic.returnInput(java.lang.String) was" +
+                    " called by test org.matrixeragent.MatrixerAgentTest$DynamicAgentTest:instrumentedMethodPrintsCallerMethod";
+            TestClassDynamic.returnInput("Dummy string");
+            assertEquals(expected, streamHijacker.getHijackedOutput());
+            streamHijacker.stopOutputCapture();
+        }
+
+        @Test
+        public void canInstrumentMultipleClasses() {
+            streamHijacker.outputCapture();
+            String expected = "Looks like org.matrixeragent.dynamictargets.TestClassDynamic.returnInput(java.lang.String) was" +
+                    " called by test org.matrixeragent.MatrixerAgentTest$DynamicAgentTest:canInstrumentMultipleClasses";
+            TestClassDynamic.returnInput("Dummy string");
+            assertEquals(expected, streamHijacker.getHijackedOutput());
+            streamHijacker.reset();
+
+            String anotherExpected = "Looks like org.matrixeragent.dynamictargets.AnotherTestClassDynamic.trueReturner() was" +
+                    " called by test org.matrixeragent.MatrixerAgentTest$DynamicAgentTest:canInstrumentMultipleClasses";
+            assertTrue(AnotherTestClassDynamic.trueReturner());
+            assertEquals(anotherExpected, streamHijacker.getHijackedOutput());
+            streamHijacker.reset();
+
+            String anotherExpected1 = "Looks like org.matrixeragent.dynamictargets.AnotherTestClassDynamic.oneReturner() was" +
+                    " called by test org.matrixeragent.MatrixerAgentTest$DynamicAgentTest:canInstrumentMultipleClasses";
+            assertEquals(1, AnotherTestClassDynamic.oneReturner());
+            assertEquals(anotherExpected1, streamHijacker.getHijackedOutput());
+
+            streamHijacker.stopOutputCapture();
         }
     }
-
 }
