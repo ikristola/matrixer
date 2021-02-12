@@ -22,8 +22,9 @@ public class MatrixerAgentUtils {
         for (String classpathEntry : classPathEntries) {
             if (classpathEntry.endsWith(".jar")) {
                 File jar = new File(classpathEntry);
-                try {
-                    JarInputStream is = new JarInputStream(new FileInputStream(jar));
+                try (
+                    JarInputStream is = new JarInputStream(new FileInputStream(jar)))
+                    {
                     JarEntry entry;
                     while((entry = is.getNextJarEntry()) != null) {
                         name = entry.getName();
