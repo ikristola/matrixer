@@ -6,9 +6,19 @@ import java.util.List;
 import static org.matrixeragent.MatrixerAgentUtils.getClassesInPackage;
 import static org.matrixeragent.MatrixerAgentUtils.isTestClass;
 
+/**
+ * Agent for transforming classes in target package. The transformer used by the agent
+ * makes class methods in target package print out the caller class when they are called.
+ */
 public class MatrixerAgent {
 
-    private static volatile Instrumentation instrumentation;
+    final private Instrumentation inst;
+    final private String args;
+
+    private MatrixerAgent(String agentArgs, Instrumentation inst) {
+        this.args = agentArgs;
+        this.inst = inst;
+    }
 
     /*
      * agentArgs is passed as a single string. Additional parsing must be done by
@@ -16,10 +26,20 @@ public class MatrixerAgent {
      */
     public static void premain(String agentArgs, Instrumentation inst) {
 
-        System.out.println("[Agent] started:" + "\n\tArgs: " + agentArgs + "\n\tInstrumentation: " + inst);
+        System.out.println("[Agent] started statically:" + "\n\tArgs: " + agentArgs + "\n\tInstrumentation: " + inst);
+        var agent = new MatrixerAgent(agentArgs, inst);
+        agent.run();
+    }
 
-        /* Return a list of all classes in the current package */
-        String[] argumentsArray = agentArgs.split(":");     // Get target project package name
+    public static void agentmain(String agentArgs, Instrumentation inst) {
+        System.out.println("[Agent] started dynamically:" + "\n\tArgs: " + agentArgs + "\n\tInstrumentation: " + inst);
+        var agent = new MatrixerAgent(agentArgs, inst);
+        agent.run();
+    }
+
+    private void run() {
+        /* Return a list of all classes in the target package */
+        String[] argumentsArray = args.split(":");     // Get target project package name
         List<Class<?>> classes = getClassesInPackage(argumentsArray[1]);
         for (Class<?> cls : classes) {
             System.out.println("[Agent] class found: " + cls);
@@ -31,21 +51,7 @@ public class MatrixerAgent {
                 System.out.println("[Agent] This is a test class. Skipping transform");
             }
         }
-    }
 
-    public static void agentmain(String agentArgs, Instrumentation inst) {
-        System.out.println("[Agent] agentmain started:" + "\n\tArgs: " + agentArgs + "\n\tInstrumentation: " + inst);
-        System.out.println("[Agent] I'm running dynamically");
-        instrumentation = inst;
-    }
-
-    public static Instrumentation getInstrumentation() {
-        Instrumentation instrumentation = MatrixerAgent.instrumentation;
-        if (instrumentation == null) {
-            throw new IllegalStateException(
-                    "The Agent is not loaded or this method is not called via the system class loader");
-        }
-        return instrumentation;
     }
 
     private static void transformClass(String className, Instrumentation inst) {
@@ -75,7 +81,7 @@ public class MatrixerAgent {
 
     private static void transform(Class<?> targetCls, ClassLoader targetClassLoader, Instrumentation inst) {
         try {
-            var transformer = new Transformer(targetCls.getName(), targetClassLoader);
+            var transformer = new MethodMapTransformer(targetCls.getName(), targetClassLoader);
             inst.addTransformer(transformer, true);
             inst.retransformClasses(targetCls);
         } catch (Exception e) {
