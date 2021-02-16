@@ -40,7 +40,7 @@ jacocoTestReport {
 
 /*
  * This task verifies that the project adheres to the specified coverage
- * rules.
+ * rules. Will be run after the check task that is executed with build or test
  */
 jacocoTestCoverageVerification {
   violationRules {
@@ -52,7 +52,7 @@ jacocoTestCoverageVerification {
       limit {
         counter = 'LINE'
         value = 'COVEREDRATIO'
-        minimum = 0.95  // 95% test coverage required
+        minimum = 1.0  // 100% test coverage requiered globally
       }
     }
   }
@@ -70,4 +70,8 @@ test {
 
         showStandardStreams true
     }
+    // Update the jacoco report after tests, this might be removed can
+    // be removed if it takes too long to run. But it is handy to have
+    // it automatic at the moment
+    finalizedBy jacocoTestReport
 }
