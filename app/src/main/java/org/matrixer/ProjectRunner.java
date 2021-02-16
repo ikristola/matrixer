@@ -2,6 +2,9 @@ package org.matrixer;
 
 import java.io.IOException;
 
+/**
+ * Executes the test suite of target Gradle-based java project
+ */
 public class ProjectRunner {
 
     void run (String targetProjectPath) throws IOException {

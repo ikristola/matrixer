@@ -15,6 +15,14 @@ public class MethodMapTransformer extends Transformer {
         super(className, classLoader);
     }
 
+    /**
+     * Transform a method so that it prints out the caller method when called
+     * @param method    The method to be instrumented
+     * @return          True if successful
+     * @throws NotFoundException
+     * @throws CannotCompileException
+     * @throws IOException
+     */
     public boolean instrument(CtMethod method)
             throws NotFoundException, CannotCompileException, IOException {
 

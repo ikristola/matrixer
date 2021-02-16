@@ -9,8 +9,16 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
+/**
+ * Utility functions used by the agent
+ */
 public class MatrixerAgentUtils {
 
+    /**
+     * Get a list of all classes in package
+     * @param packageName   Target package
+     * @return              List of classes
+     */
     public static final List<Class<?>> getClassesInPackage(String packageName) {
         String path = packageName.replaceAll("\\.", File.separator);
         List<Class<?>> classes = new ArrayList<>();
@@ -58,6 +66,11 @@ public class MatrixerAgentUtils {
         return classes;
     }
 
+    /**
+     * Determine if a class contains Junit unit tests
+     * @param cls   The class to examine
+     * @return      True if class contains test
+     */
     public static final boolean isTestClass(Class<?> cls) {
         Method[] m = cls.getDeclaredMethods();
         for (Method method : m) {

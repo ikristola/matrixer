@@ -11,13 +11,21 @@ import java.io.IOException;
  */
 public class VariableTransformer extends Transformer {
 
-    private String insertString;
+    private final String insertString;
 
     VariableTransformer(String className, ClassLoader classLoader, String insertString) {
         super(className, classLoader);
         this.insertString = insertString;
     }
 
+    /**
+     * Inject the insertString in target method
+     * @param method    The method to be instrumented
+     * @return          True if successful
+     * @throws NotFoundException
+     * @throws CannotCompileException
+     * @throws IOException
+     */
     @Override
     boolean instrument(CtMethod method) throws NotFoundException, CannotCompileException, IOException {
 
@@ -27,9 +35,7 @@ public class VariableTransformer extends Transformer {
         }
 
         System.out.println("[VariableMapTransformer] Found method: " + name);
-        StringBuilder endBlock = new StringBuilder();
-        endBlock.append(insertString);
-        method.insertAfter(endBlock.toString());
+        method.insertAfter(insertString);
         return true;
     }
 }

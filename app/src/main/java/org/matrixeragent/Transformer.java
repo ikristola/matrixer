@@ -21,6 +21,11 @@ public abstract class Transformer implements ClassFileTransformer {
         this.targetClassLoader = classLoader;
     }
 
+    /**
+     * Transforms a class. This method is meant to be called
+     * by an java agent in production code.
+     * @return  A bytearray containing the instrumented class
+     */
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> cls,
                             ProtectionDomain protectionDomain,
@@ -55,6 +60,14 @@ public abstract class Transformer implements ClassFileTransformer {
         return null;
     }
 
+    /**
+     *  Instruments a method. Must be implemented by concrete subclasses.
+     * @param method    The method to be instrumented
+     * @return          True if successful
+     * @throws NotFoundException
+     * @throws CannotCompileException
+     * @throws IOException
+     */
     abstract boolean instrument(CtMethod method) throws NotFoundException, CannotCompileException, IOException;
 
 }

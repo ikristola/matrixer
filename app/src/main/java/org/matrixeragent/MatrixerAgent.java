@@ -20,9 +20,10 @@ public class MatrixerAgent {
         this.inst = inst;
     }
 
-    /*
-     * agentArgs is passed as a single string. Additional parsing must be done by
-     * the agent
+    /**
+     * Run when the agent is started statically
+     * @param agentArgs Agent arguments
+     * @param inst      Instrumentation instance
      */
     public static void premain(String agentArgs, Instrumentation inst) {
 
@@ -31,6 +32,11 @@ public class MatrixerAgent {
         agent.run();
     }
 
+    /**
+     * Run when the agent is started dynamically
+     * @param agentArgs Agent arguments
+     * @param inst      Instrumentation instance
+     */
     public static void agentmain(String agentArgs, Instrumentation inst) {
         System.out.println("[Agent] started dynamically:" + "\n\tArgs: " + agentArgs + "\n\tInstrumentation: " + inst);
         var agent = new MatrixerAgent(agentArgs, inst);
