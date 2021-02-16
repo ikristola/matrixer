@@ -39,8 +39,8 @@ public class App {
     }
 
     static void printUsage() {
-        System.err.println("Usage: " +
-                "\n\tmatrixer --target <path> [--output <path>] [--git <URL>]");
+        System.err.println("Usage: "
+                + "\n\tmatrixer --target <path> [--output <path>] [--git <URL>]");
     }
 
 }

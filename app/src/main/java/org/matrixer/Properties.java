@@ -108,8 +108,8 @@ class Properties {
             }
             return new URI(url);
         } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Not a valid URL: '" + url
-                    + "'\n\t" + e.getMessage());
+            throw new IllegalArgumentException(
+                    "Not a valid URL: '" + url + "'\n\t" + e.getMessage());
         }
     }
 

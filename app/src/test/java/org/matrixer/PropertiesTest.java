@@ -2,9 +2,11 @@ package org.matrixer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.*;
-import java.net.*;
-import java.nio.file.*;
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.junit.jupiter.api.Test;
 
@@ -41,8 +43,7 @@ class PropertiesTest {
 
     @Test
     void targetPathMustBeSpecified() {
-        String[] args =
-                {"--output", ANY_PATH, "--git", "github.com/a/repo.git"};
+        String[] args = {"--output", ANY_PATH, "--git", "github.com/a/repo.git"};
         Properties prop = new Properties();
 
         prop.parse(args);
@@ -52,8 +53,7 @@ class PropertiesTest {
 
     @Test
     void defaultOutputPathIfNotSpecified() {
-        String[] args =
-                {"--target", SOME_PATH, "--git", "github.com/a/repo.git"};
+        String[] args = {"--target", SOME_PATH, "--git", "github.com/a/repo.git"};
         Properties prop = new Properties();
 
         prop.parse(args);
