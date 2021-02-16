@@ -33,8 +33,8 @@ class Properties {
     final static String VCS_FLAG = "--git";
 
     /**
-     * The default output directory if none is provided is a subdirectory
-     * of the target directory with this name.
+     * The default output directory if none is provided is a subdirectory of
+     * the target directory with this name.
      */
     final static String DEFAULT_OUTDIR = "matrix-cov";
 
@@ -97,8 +97,7 @@ class Properties {
                 remoteURL = parseURL(arg);
                 break;
             default:
-                throw new IllegalArgumentException(
-                        "Unknown flag: '" + flag + "'");
+                throw new IllegalArgumentException("Unknown flag: '" + flag + "'");
         }
     }
 

@@ -1,14 +1,10 @@
 package org.matrixer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
+import java.net.*;
+import java.nio.file.*;
 
 import org.junit.jupiter.api.Test;
 
@@ -96,6 +92,24 @@ class PropertiesTest {
         prop.parse(args);
 
         assertValidRemote(prop, "ssh://" + link);
+    }
+
+    @Test
+    void isNotRemoteWithoutGitFlag() {
+        String[] args = {"--target", ANY_PATH};
+        Properties prop = new Properties();
+
+        prop.parse(args);
+        assertFalse(prop.isRemote());
+    }
+
+    @Test
+    void invalidGitURLThrowsException() {
+        String link = "\\/#@£${[]}\\``´!%&/()=?`^*_:;><";
+        String[] args = {"--target", ANY_PATH, "--git", link};
+        Properties prop = new Properties();
+        assertDoesNotThrow(() -> prop.parse(args));
+        assertNOTValid(prop);
     }
 
     @Test
