@@ -104,7 +104,7 @@ class PropertiesTest {
     }
 
     @Test
-    void invalidGitURLThrowsException() {
+    void catchesInvalidGitLink() {
         String link = "\\/#@£${[]}\\``´!%&/()=?`^*_:;><";
         String[] args = {"--target", ANY_PATH, "--git", link};
         Properties prop = new Properties();
