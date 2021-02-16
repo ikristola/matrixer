@@ -1,5 +1,6 @@
 plugins {
     id 'application'
+    id 'jacoco'
 }
 
 repositories {
@@ -21,6 +22,42 @@ application {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+/*
+ * When the build task is executed jacoco generates a binary report.
+ * This task generates a human readable report (currently HTML)
+ * Run with 'gradlew jacocoTestReport' it will automatically run the tests
+ * if they need to be run.
+ */
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination file("${buildDir}/jacocoHTML")
+    }
+}
+
+/*
+ * This task verifies that the project adheres to the specified coverage
+ * rules.
+ */
+jacocoTestCoverageVerification {
+  violationRules {
+    rule {
+      excludes = [
+        'org.matrixer.App'
+      ]
+      element = 'CLASS'
+      limit {
+        counter = 'LINE'
+        value = 'COVEREDRATIO'
+        minimum = 0.95  // 95% test coverage required
+      }
+    }
+  }
+}
+check.dependsOn jacocoTestCoverageVerification
 
 test {
     testLogging {
