@@ -19,21 +19,14 @@ public class AgentLoaderTest {
         assertEquals("Agent JAR not found or no Agent-Class attribute", throwable.getMessage());
     }
 
-    // TODO remove or make this test run first. other tests might load the agent before this test is run
-//    @Test
-//    @Order(1)
-//    public void agentIsNotRunningBeforeLoad() {
-//        assertFalse(CustomTestAgent.isRunning());
-//    }
-
     @Test
-    @Order(2)
+    @Order(1)
     public void loadAgent() {
         assertDoesNotThrow(() -> AgentLoader.loadAgent("build/libs/testAgentJar.jar", "argument"));
     }
 
     @Test
-    @Order(3)
+    @Order(2)
     public void agentIsRunningAfterLoad() {
         assertDoesNotThrow(CustomTestAgent::getInstance);
     }
