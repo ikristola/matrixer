@@ -25,11 +25,14 @@ public class MethodMapTransformerTest {
     @Test
     public void transformedMethodPrintsCallerMethod() {
         Class<?> targetClass = MethodMapTransformerTestClass.class;
-        MethodMapTransformer transformer = new MethodMapTransformer(targetClass.getName(), targetClass.getClassLoader());
+        MethodMapTransformer transformer = new MethodMapTransformer(
+                targetClass.getName(), targetClass.getClassLoader());
         customTestAgent.transformClass(targetClass, transformer);
 
-        String expected = "Looks like org.matrixeragent.MethodMapTransformerTest$MethodMapTransformerTestClass.trueReturner() " +
-                "was called by test org.matrixeragent.MethodMapTransformerTest:transformedMethodPrintsCallerMethod";
+        String expected =
+                "Looks like org.matrixeragent.MethodMapTransformerTest$MethodMapTransformer" +
+                        "TestClass.trueReturner() was called by test org.matrixeragent." +
+                        "MethodMapTransformerTest:transformedMethodPrintsCallerMethod";
         streamHijacker.outputCapture();
         assertTrue(MethodMapTransformerTestClass.trueReturner());
         assertEquals(expected, streamHijacker.getHijackedOutput());

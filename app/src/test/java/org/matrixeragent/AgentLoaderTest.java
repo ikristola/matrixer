@@ -16,13 +16,15 @@ public class AgentLoaderTest {
     public void expectException_loadWithBadPath() {
         Throwable throwable = assertThrows(AgentLoadException.class,
                 () -> AgentLoader.loadAgent("bad/path/agent.jar", "argument"));
-        assertEquals("Agent JAR not found or no Agent-Class attribute", throwable.getMessage());
+        assertEquals("Agent JAR not found or no Agent-Class attribute",
+                throwable.getMessage());
     }
 
     @Test
     @Order(1)
     public void loadAgent() {
-        assertDoesNotThrow(() -> AgentLoader.loadAgent("build/libs/testAgentJar.jar", "argument"));
+        assertDoesNotThrow(() -> AgentLoader
+                .loadAgent("build/libs/testAgentJar.jar", "argument"));
     }
 
     @Test

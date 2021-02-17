@@ -26,7 +26,8 @@ public class VariableTransformerTest {
         String insertString = "System.out.println(\"Im an injected string \");";
         Class<?> targetClass = VariableTransformerTestClass.class;
         VariableTransformer transformer = new VariableTransformer(
-                targetClass.getName(), targetClass.getClassLoader(), insertString);
+                targetClass.getName(), targetClass.getClassLoader(),
+                insertString);
         customTestAgent.transformClass(targetClass, transformer);
 
         String expected = "Im an injected string";
@@ -41,7 +42,8 @@ public class VariableTransformerTest {
         String insertString = "return false;";
         Class<?> targetClass = VariableTransformerTestClass.class;
         VariableTransformer transformer = new VariableTransformer(
-                targetClass.getName(), targetClass.getClassLoader(), insertString);
+                targetClass.getName(), targetClass.getClassLoader(),
+                insertString);
         customTestAgent.transformClass(targetClass, transformer);
 
         assertFalse(VariableTransformerTestClass.trueReturner());

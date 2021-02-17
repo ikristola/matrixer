@@ -16,29 +16,31 @@ public class MatrixerAgentUtils {
 
     /**
      * Get a list of all classes in package
-     * @param packageName   Target package
-     * @return              List of classes
+     * 
+     * @param packageName Target package
+     * @return List of classes
      */
     public static final List<Class<?>> getClassesInPackage(String packageName) {
         String path = packageName.replaceAll("\\.", File.separator);
         List<Class<?>> classes = new ArrayList<>();
         String[] classPathEntries = System.getProperty("java.class.path").split(
-                System.getProperty("path.separator")
-        );
+                System.getProperty("path.separator"));
 
         String name;
         for (String classpathEntry : classPathEntries) {
             if (classpathEntry.endsWith(".jar")) {
                 File jar = new File(classpathEntry);
                 try (
-                    JarInputStream is = new JarInputStream(new FileInputStream(jar)))
-                    {
+                        JarInputStream is =
+                                new JarInputStream(new FileInputStream(jar))) {
                     JarEntry entry;
-                    while((entry = is.getNextJarEntry()) != null) {
+                    while ((entry = is.getNextJarEntry()) != null) {
                         name = entry.getName();
                         if (name.endsWith(".class")) {
-                            if (name.contains(path) && name.endsWith(".class")) {
-                                String classPath = name.substring(0, entry.getName().length() - 6);
+                            if (name.contains(path)
+                                    && name.endsWith(".class")) {
+                                String classPath = name.substring(0,
+                                        entry.getName().length() - 6);
                                 classPath = classPath.replaceAll("[\\|/]", ".");
                                 classes.add(Class.forName(classPath));
                             }
@@ -49,12 +51,14 @@ public class MatrixerAgentUtils {
                 }
             } else {
                 try {
-                    File base = new File(classpathEntry + File.separatorChar + path);
+                    File base = new File(
+                            classpathEntry + File.separatorChar + path);
                     for (File file : base.listFiles()) {
                         name = file.getName();
                         if (name.endsWith(".class")) {
                             name = name.substring(0, name.length() - 6);
-                            classes.add(Class.forName(packageName + "." + name));
+                            classes.add(
+                                    Class.forName(packageName + "." + name));
                         }
                     }
                 } catch (Exception ex) {
@@ -68,8 +72,9 @@ public class MatrixerAgentUtils {
 
     /**
      * Determine if a class contains Junit unit tests
-     * @param cls   The class to examine
-     * @return      True if class contains test
+     * 
+     * @param cls The class to examine
+     * @return True if class contains test
      */
     public static final boolean isTestClass(Class<?> cls) {
         Method[] m = cls.getDeclaredMethods();

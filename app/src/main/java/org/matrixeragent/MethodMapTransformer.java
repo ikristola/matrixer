@@ -7,7 +7,8 @@ import javassist.NotFoundException;
 import javassist.CtMethod;
 
 /**
- * Transformer that inserts code for printing out caller method into target class methods
+ * Transformer that inserts code for printing out caller method into
+ * target class methods
  */
 public class MethodMapTransformer extends Transformer {
 
@@ -16,9 +17,11 @@ public class MethodMapTransformer extends Transformer {
     }
 
     /**
-     * Transform a method so that it prints out the caller method when called
-     * @param method    The method to be instrumented
-     * @return          True if successful
+     * Transform a method so that it prints out the caller method when
+     * called
+     * 
+     * @param method The method to be instrumented
+     * @return True if successful
      * @throws NotFoundException
      * @throws CannotCompileException
      * @throws IOException
@@ -40,7 +43,8 @@ public class MethodMapTransformer extends Transformer {
                         + "   StackTraceElement elem = elems[i];"
                         + "   if (elem.getClassLoaderName() == null) {"
                         + "       elem = elems[i-1];"
-                        + "       String caller = elem.getClassName() + \":\" + elem.getMethodName();"
+                        + "       String caller = elem.getClassName() + \":\" + "
+                        + "elem.getMethodName();"
                         + "       System.out.println(\"Looks like " + name
                         + " was called by test \" + caller);"
                         + "       break;"

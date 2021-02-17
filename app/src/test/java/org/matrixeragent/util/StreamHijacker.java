@@ -28,6 +28,7 @@ public class StreamHijacker {
         reset();
         System.setOut(standardOut);
     }
+
     public void reset() {
         outputStreamCaptor.reset();
     }

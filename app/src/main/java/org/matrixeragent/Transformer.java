@@ -7,9 +7,9 @@ import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 
 /**
- * Abstract base class for transforming classes using the Instrument API and Javassist.
- * Concrete subclasses must implement the instrument method which specifies
- * how the classes are transformed.
+ * Abstract base class for transforming classes using the Instrument API
+ * and Javassist. Concrete subclasses must implement the instrument
+ * method which specifies how the classes are transformed.
  */
 public abstract class Transformer implements ClassFileTransformer {
 
@@ -22,14 +22,15 @@ public abstract class Transformer implements ClassFileTransformer {
     }
 
     /**
-     * Transforms a class. This method is meant to be called
-     * by an java agent in production code.
-     * @return  A bytearray containing the instrumented class
+     * Transforms a class. This method is meant to be called by an java
+     * agent in production code.
+     * 
+     * @return A bytearray containing the instrumented class
      */
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> cls,
-                            ProtectionDomain protectionDomain,
-                            byte[] classfileBuffer) {
+            ProtectionDomain protectionDomain,
+            byte[] classfileBuffer) {
         byte[] byteCode = classfileBuffer;
         String finalTargetClassName =
                 this.targetClassName.replaceAll("\\.", "/");
@@ -40,34 +41,40 @@ public abstract class Transformer implements ClassFileTransformer {
 
         if (loader.equals(targetClassLoader)) {
             try {
-                System.out.println("[Transformer] Transforming class " + className);
+                System.out.println(
+                        "[Transformer] Transforming class " + className);
                 ClassPool pool = ClassPool.getDefault();
                 CtClass cc = pool.get(targetClassName);
                 for (var m : cc.getMethods()) {
                     if (instrument(m)) {
-                        System.out.println("[Transformer] Instrumented " + m.getLongName());
+                        System.out.println("[Transformer] Instrumented "
+                                + m.getLongName());
                     }
                 }
                 byteCode = cc.toBytecode();
                 cc.detach();
                 return byteCode;
             } catch (CannotCompileException e) {
-                System.err.println("[Transformer] Err Transformer.transform(): " + e.getReason());
+                System.err.println("[Transformer] Err Transformer.transform(): "
+                        + e.getReason());
             } catch (NotFoundException | IOException e) {
-                System.err.println("[Transformer] Err Transformer.transform(): " + e);
+                System.err.println(
+                        "[Transformer] Err Transformer.transform(): " + e);
             }
         }
         return null;
     }
 
     /**
-     *  Instruments a method. Must be implemented by concrete subclasses.
-     * @param method    The method to be instrumented
-     * @return          True if successful
+     * Instruments a method. Must be implemented by concrete subclasses.
+     * 
+     * @param method The method to be instrumented
+     * @return True if successful
      * @throws NotFoundException
      * @throws CannotCompileException
      * @throws IOException
      */
-    abstract boolean instrument(CtMethod method) throws NotFoundException, CannotCompileException, IOException;
+    abstract boolean instrument(CtMethod method)
+            throws NotFoundException, CannotCompileException, IOException;
 
 }

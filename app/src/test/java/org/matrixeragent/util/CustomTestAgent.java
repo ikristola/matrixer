@@ -7,8 +7,9 @@ import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 
 /**
- * This is a simple Java agent which facilitates testing of instrumentation functionality such as agent
- * launching and transformer methods.
+ * This is a simple Java agent which facilitates testing of
+ * instrumentation functionality such as agent launching and transformer
+ * methods.
  */
 public class CustomTestAgent {
 
@@ -17,7 +18,7 @@ public class CustomTestAgent {
     final private Instrumentation inst;
     final private String args;
 
-    private CustomTestAgent(String agentArgs,Instrumentation inst) {
+    private CustomTestAgent(String agentArgs, Instrumentation inst) {
         this.args = agentArgs;
         this.inst = inst;
     };
@@ -35,7 +36,9 @@ public class CustomTestAgent {
     }
 
     /**
-     * Get an instance of the agent. If its the first time its called it launches the agent
+     * Get an instance of the agent. If its the first time its called it
+     * launches the agent
+     * 
      * @return
      */
     public static CustomTestAgent getInstance() {
@@ -59,12 +62,14 @@ public class CustomTestAgent {
      * @param cls
      * @param clsTransformer
      */
-    public void transformClass(Class<?> cls, ClassFileTransformer clsTransformer) {
+    public void transformClass(Class<?> cls,
+            ClassFileTransformer clsTransformer) {
         try {
             inst.addTransformer(clsTransformer, true);
             inst.retransformClasses(cls);
         } catch (UnmodifiableClassException e) {
-            throw new RuntimeException("Transform failed for: [" + cls.getName() + "]", e);
+            throw new RuntimeException(
+                    "Transform failed for: [" + cls.getName() + "]", e);
         }
     }
 }
