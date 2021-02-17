@@ -28,12 +28,15 @@ public abstract class Transformer implements ClassFileTransformer {
      * @return A bytearray containing the instrumented class
      */
     @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> cls,
+    public byte[] transform(
+            ClassLoader loader,
+            String className,
+            Class<?> cls,
             ProtectionDomain protectionDomain,
             byte[] classfileBuffer) {
+
         byte[] byteCode = classfileBuffer;
-        String finalTargetClassName =
-                this.targetClassName.replaceAll("\\.", "/");
+        String finalTargetClassName = this.targetClassName.replaceAll("\\.", "/");
 
         if (!className.equals(finalTargetClassName)) {
             return byteCode;
@@ -41,25 +44,21 @@ public abstract class Transformer implements ClassFileTransformer {
 
         if (loader.equals(targetClassLoader)) {
             try {
-                System.out.println(
-                        "[Transformer] Transforming class " + className);
+                System.out.println("[Transformer] Transforming class " + className);
                 ClassPool pool = ClassPool.getDefault();
                 CtClass cc = pool.get(targetClassName);
                 for (var m : cc.getMethods()) {
                     if (instrument(m)) {
-                        System.out.println("[Transformer] Instrumented "
-                                + m.getLongName());
+                        System.out.println("[Transformer] Instrumented " + m.getLongName());
                     }
                 }
                 byteCode = cc.toBytecode();
                 cc.detach();
                 return byteCode;
             } catch (CannotCompileException e) {
-                System.err.println("[Transformer] Err Transformer.transform(): "
-                        + e.getReason());
+                System.err.println("[Transformer] Err Transformer.transform(): " + e.getReason());
             } catch (NotFoundException | IOException e) {
-                System.err.println(
-                        "[Transformer] Err Transformer.transform(): " + e);
+                System.err.println("[Transformer] Err Transformer.transform(): " + e);
             }
         }
         return null;
