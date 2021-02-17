@@ -29,40 +29,49 @@ public abstract class Transformer implements ClassFileTransformer {
      */
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> cls,
-            ProtectionDomain protectionDomain,
-            byte[] classfileBuffer) {
+            ProtectionDomain protectionDomain, byte[] classfileBuffer) {
+
         byte[] byteCode = classfileBuffer;
-        String finalTargetClassName =
-                this.targetClassName.replaceAll("\\.", "/");
+        String finalTargetClassName = this.targetClassName.replaceAll("\\.", "/");
 
         if (!className.equals(finalTargetClassName)) {
             return byteCode;
         }
-
         if (loader.equals(targetClassLoader)) {
-            try {
-                System.out.println(
-                        "[Transformer] Transforming class " + className);
-                ClassPool pool = ClassPool.getDefault();
-                CtClass cc = pool.get(targetClassName);
-                for (var m : cc.getMethods()) {
-                    if (instrument(m)) {
-                        System.out.println("[Transformer] Instrumented "
-                                + m.getLongName());
-                    }
-                }
-                byteCode = cc.toBytecode();
-                cc.detach();
-                return byteCode;
-            } catch (CannotCompileException e) {
-                System.err.println("[Transformer] Err Transformer.transform(): "
-                        + e.getReason());
-            } catch (NotFoundException | IOException e) {
-                System.err.println(
-                        "[Transformer] Err Transformer.transform(): " + e);
-            }
+            return tryTransform(className);
         }
         return null;
+    }
+
+    private byte[] tryTransform(String className) {
+        try {
+            System.out.println("[Transformer] Transforming class " + className);
+            return transform(className);
+        } catch (CannotCompileException e) {
+            System.err.println("[Transformer] Err Transformer.transform(): " + e.getReason());
+        } catch (NotFoundException | IOException e) {
+            System.err.println("[Transformer] Err Transformer.transform(): " + e);
+        }
+        return null;
+    }
+
+    private byte[] transform(String className)
+            throws IOException, NotFoundException, CannotCompileException {
+        ClassPool pool = ClassPool.getDefault();
+        CtClass cc = pool.get(targetClassName);
+        instrument(cc);
+        byte[] byteCode = cc.toBytecode();
+        cc.detach();
+        return byteCode;
+    }
+
+    private void instrument(CtClass cls)
+            throws IOException, NotFoundException, CannotCompileException {
+        for (var m : cls.getMethods()) {
+            if (instrument(m)) {
+                System.out.println("[Transformer] Instrumented " + m.getLongName());
+            }
+        }
     }
 
     /**
