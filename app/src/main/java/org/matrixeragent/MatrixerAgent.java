@@ -56,10 +56,12 @@ public class MatrixerAgent {
         for (Class<?> cls : classes) {
             System.out.println("[Agent] class found: " + cls);
             if (!isTestClass(cls)) {
-                System.out.println("[Agent] This is not a test class. Transforming it..");
+                System.out.println(
+                        "[Agent] This is not a test class. Transforming it..");
                 transformClass(cls.getName(), inst);
             } else {
-                System.out.println("[Agent] This is a test class. Skipping transform");
+                System.out.println(
+                        "[Agent] This is a test class. Skipping transform");
             }
         }
 
@@ -75,7 +77,8 @@ public class MatrixerAgent {
             transform(targetCls, targetClassLoader, inst);
             return;
         } catch (Exception e) {
-            System.err.println("Class [" + className + "] not found with Class.forName");
+            System.err.println(
+                    "Class [" + className + "] not found with Class.forName");
         }
         for (Class<?> clazz : inst.getAllLoadedClasses()) {
             if (clazz.getName().equals(className)) {
@@ -86,7 +89,8 @@ public class MatrixerAgent {
                 return;
             }
         }
-        throw new RuntimeException("Failed to find class [" + className + "]");
+        throw new RuntimeException(
+                "Failed to find class [" + className + "]");
     }
 
     private static void transform(Class<?> targetCls,
@@ -97,7 +101,8 @@ public class MatrixerAgent {
             inst.addTransformer(transformer, true);
             inst.retransformClasses(targetCls);
         } catch (Exception e) {
-            throw new RuntimeException("Transform failed for: [" + targetCls.getName() + "]", e);
+            throw new RuntimeException(
+                    "Transform failed for: [" + targetCls.getName() + "]", e);
         }
     }
 }
