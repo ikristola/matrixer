@@ -3,12 +3,22 @@ package org.matrixer;
 public class App {
 
     Properties properties;
+    GitRepository repo;
 
     public static void main(String[] args) {
+        try {
+            run(args);
+        } catch (Throwable e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+    }
+
+    private static void run(String[] args) throws Exception {
         if (args.length == 0 || containsHelpFlag(args)) {
             printUsage();
             return;
         }
+
         App app = new App(args);
         app.run();
     }
@@ -18,15 +28,22 @@ public class App {
         properties.parse(args);
     }
 
-    void run() {
+    void run() throws Exception {
         if (!properties.isValid()) {
             System.err.println("Error:\n\t" + properties.reasonForFailure());
             return;
         }
-        System.out.println("Properties: "
-                + "\n\tTarget path: " + properties.targetPath()
-                + "\n\tOutput path: " + properties.outputPath()
-                + "\n\tRemote: " + properties.remoteURL());
+        if (properties.isRemote()) {
+            cloneRemoteRepository();
+        }
+    }
+
+    private void cloneRemoteRepository() throws Exception {
+        final var remoteURL = properties.remoteURL().toString();
+        final var targetPath = properties.targetPath().toFile();
+        System.out.println("Cloning from " + remoteURL + " to " + targetPath);
+        repo = GitRepository.clone(remoteURL, targetPath);
+        System.out.println("Cloning successful!");
     }
 
     static boolean containsHelpFlag(String[] args) {
@@ -39,7 +56,8 @@ public class App {
     }
 
     static void printUsage() {
-        System.err.println("Usage: " + "\n\tmatrixer --target <path> [--output <path>] [--git <URL>]");
+        System.err.println(
+                "Usage: " + "\n\tmatrixer --target <path> [--output <path>] [--git <URL>]");
     }
 
 }
