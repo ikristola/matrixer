@@ -4,12 +4,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Comparator;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 // Should target be the parent directory?
 
@@ -19,8 +19,15 @@ class GitRepositoryTest {
     final static String TMP_DIR = System.getProperty("java.io.tmpdir");
     final static Path TARGET_DIR = Path.of(TMP_DIR, File.separator, "matrixer-test");
 
-    @BeforeEach
-    void cleanUp() {
+    @BeforeAll
+    static void cleanUp() {
+        System.out.println("Cleaning up");
+        removeDirectory(TARGET_DIR);
+    }
+
+    @AfterEach
+    void cleanUpAfter() {
+        System.out.println("Cleaning up");
         removeDirectory(TARGET_DIR);
     }
 
@@ -58,15 +65,15 @@ class GitRepositoryTest {
         assertThrows(GitAPIException.class, () -> GitRepository.clone(TMP_DIR, target));
     }
 
-    File projectDirectory() {
+    static File projectDirectory() {
         return new File(System.getProperty("user.dir")).getParentFile();
     }
 
-    File temporaryTargetFile() {
+    static File temporaryTargetFile() {
         return TARGET_DIR.toFile();
     }
 
-    private void createDirectory(Path dir) {
+    private static void createDirectory(Path dir) {
         try {
             Files.createDirectories(dir);
         } catch (IOException e) {
@@ -74,11 +81,11 @@ class GitRepositoryTest {
         }
     }
 
-    private boolean directoryContainsFile(File dir, String fname) {
+    private static boolean directoryContainsFile(File dir, String fname) {
         return new File(dir, fname).exists();
     }
 
-    private void removeDirectory(Path dir) {
+    private static void removeDirectory(Path dir) {
         try {
             if (dir.toFile().exists()) {
                 Files.walk(dir)
