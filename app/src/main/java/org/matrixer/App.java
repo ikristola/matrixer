@@ -9,7 +9,7 @@ public class App {
         try {
             run(args);
         } catch (Throwable e) {
-            System.err.println("Error: " + e.getMessage());
+            System.err.println("Error:\n\t" + e.getMessage());
         }
     }
 
@@ -30,11 +30,23 @@ public class App {
 
     void run() throws Exception {
         if (!properties.isValid()) {
-            System.err.println("Error:\n\t" + properties.reasonForFailure());
-            return;
+            throw new IllegalArgumentException(properties.reasonForFailure());
         }
+
         if (properties.isRemote()) {
             cloneRemoteRepository();
+        } else {
+            setupLocalRepository();
+        }
+        verifyOutputDirectoryExists();
+        System.out.println("Project setup Successful!");
+    }
+
+    private void verifyOutputDirectoryExists() {
+        if (!FileUtils.isExistingDirectory(properties.outputPath())) {
+            if (!FileUtils.createDirectory(properties.outputPath())) {
+                throw new IllegalArgumentException("Failed to create output directory");
+            }
         }
     }
 
@@ -44,6 +56,12 @@ public class App {
         System.out.println("Cloning from " + remoteURL + " to " + targetPath);
         repo = GitRepository.clone(remoteURL, targetPath);
         System.out.println("Cloning successful!");
+    }
+
+    private void setupLocalRepository() {
+        if (!FileUtils.isExistingDirectory(properties.targetPath())) {
+            throw new IllegalArgumentException("Target path does not exist: " + properties.targetPath());
+        }
     }
 
     static boolean containsHelpFlag(String[] args) {
