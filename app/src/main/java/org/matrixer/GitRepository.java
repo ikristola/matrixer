@@ -22,7 +22,7 @@ public class GitRepository {
         Git result = Git.cloneRepository()
                 .setURI(url)
                 .setDirectory(target)
-                //.setProgressMonitor(new SimpleProgressMonitor())
+                .setProgressMonitor(new SimpleProgressMonitor())
                 .call();
         return new GitRepository(result);
     }
