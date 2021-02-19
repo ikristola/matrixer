@@ -11,8 +11,6 @@ import java.util.Comparator;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.*;
 
-// Should target be the parent directory?
-
 class GitRepositoryTest {
 
     final static String TEST_REPO_URL = "https://github.com/ikristola/matrixer-test";
@@ -21,7 +19,7 @@ class GitRepositoryTest {
 
     @BeforeAll
     static void cleanUp() {
-        System.out.println("Cleaning up");
+        System.out.println("Cleaning up!");
         removeDirectory(TARGET_DIR);
     }
 
@@ -73,8 +71,17 @@ class GitRepositoryTest {
         return TARGET_DIR.toFile();
     }
 
-    private static void createDirectory(Path dir) {
+<<<<<<< HEAD
+    private void createDirectory(Path dir) {
         FileUtils.createDirectory(dir);
+=======
+    private static void createDirectory(Path dir) {
+        try {
+            Files.createDirectories(dir);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+>>>>>>> 54b19bf (Clean up beforeall and after each in GitRepositoryTest)
     }
 
     private static boolean directoryContainsFile(File dir, String fname) {

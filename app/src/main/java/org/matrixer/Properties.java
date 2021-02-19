@@ -82,7 +82,7 @@ class Properties {
     private void parseFlag(List<String> flagPair) {
         failureReason = null;
         if (flagPair.size() != 2) {
-            throw new IllegalArgumentException("Invalid argument: " + flagPair);
+            throw new IllegalArgumentException("Argument must be --flag <value>: " + flagPair);
         }
         String flag = flagPair.get(0);
         String arg = flagPair.get(1);
