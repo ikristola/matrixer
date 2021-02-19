@@ -60,7 +60,8 @@ public class App {
 
     private void setupLocalRepository() {
         if (!FileUtils.isExistingDirectory(properties.targetPath())) {
-            throw new IllegalArgumentException("Target path does not exist: " + properties.targetPath());
+            throw new IllegalArgumentException(
+                    "Target path does not exist: " + properties.targetPath());
         }
     }
 

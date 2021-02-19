@@ -71,17 +71,8 @@ class GitRepositoryTest {
         return TARGET_DIR.toFile();
     }
 
-<<<<<<< HEAD
     private void createDirectory(Path dir) {
         FileUtils.createDirectory(dir);
-=======
-    private static void createDirectory(Path dir) {
-        try {
-            Files.createDirectories(dir);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
->>>>>>> 54b19bf (Clean up beforeall and after each in GitRepositoryTest)
     }
 
     private static boolean directoryContainsFile(File dir, String fname) {
