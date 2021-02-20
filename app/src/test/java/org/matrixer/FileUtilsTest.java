@@ -1,4 +1,4 @@
-PAckage org.matrixer;
+package org.matrixer;
 
 import org.junit.jupiter.api.Test;
 
