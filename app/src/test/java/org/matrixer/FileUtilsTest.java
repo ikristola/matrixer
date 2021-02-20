@@ -1,4 +1,4 @@
-package org.matrixer;
+PAckage org.matrixer;
 
 import org.junit.jupiter.api.Test;
 
@@ -47,4 +47,3 @@ class FileUtilsTest {
         assertThrows(RuntimeException.class, () -> FileUtils.createTempFile(NON_EXISTENT_PATH));
     }
 }
-
