@@ -44,6 +44,6 @@ class FileUtilsTest {
 
     @Test
     void catchesCreateTemporaryFileWithNonExistentPath() {
-        assertThrows(RuntimeException.class , () -> FileUtils.createTempFile(NON_EXISTENT_PATH));
+        assertThrows(RuntimeException.class, () -> FileUtils.createTempFile(NON_EXISTENT_PATH));
     }
 }

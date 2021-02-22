@@ -18,6 +18,7 @@ class PropertiesTest {
     // Some specific path
     static final String SOME_PATH = SEP + "some" + SEP + "path";
     static final String INVALID_PATH = "\0";
+    static final String INVALID_URL = "\\/#@£${[]}\\``´!%&/()=?`^*_:;><";
 
     @Test
     void parseOutputPathFromArgs() {
@@ -105,7 +106,7 @@ class PropertiesTest {
 
     @Test
     void catchesInvalidGitLink() {
-        String link = "\\/#@£${[]}\\``´!%&/()=?`^*_:;><";
+        String link = INVALID_URL;
         String[] args = {"--target", ANY_PATH, "--git", link};
         Properties prop = new Properties();
         assertDoesNotThrow(() -> prop.parse(args));
