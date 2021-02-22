@@ -46,14 +46,14 @@ class GitRepositoryTest {
     @Test
     void throwsExceptionIfURLIsNotAGitRepository() {
         File target = temporaryTargetFile();
-        assertThrows(GitAPIException.class, () -> GitRepository.clone("localhost", target));
+        assertThrows(GitAPIException.class, () -> GitRepository.clone("http://localhost", target));
     }
 
     @Test
     void canCloneLocalGitRepository() {
         File target = temporaryTargetFile();
-        String projectDir = projectDirectory().toString();
-        assertDoesNotThrow(() -> GitRepository.clone(projectDir, target));
+        String localPath = projectDirectory().toString();
+        assertDoesNotThrow(() -> GitRepository.clone(localPath, target));
         assertTrue(directoryContainsFile(target, ".git"));
     }
 
