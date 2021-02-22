@@ -46,7 +46,8 @@ class GitRepositoryTest {
     @Test
     void throwsExceptionIfURLIsNotAGitRepository() {
         File target = temporaryTargetFile();
-        assertThrows(GitAPIException.class, () -> GitRepository.clone("http://localhost", target));
+        assertThrows(GitAPIException.class,
+                () -> GitRepository.clone(TEST_REPO_URL + "/does-not-exist", target));
     }
 
     @Test
