@@ -1,7 +1,6 @@
 package org.matrixer;
 
-import java.io.File;
-import java.lang.reflect.Field;
+import java.io.IOException;
 
 public class App {
 
@@ -42,7 +41,32 @@ public class App {
             setupLocalRepository();
         }
         verifyOutputDirectoryExists();
+        prepareProject();
         System.out.println("Project setup Successful!");
+        runProject();
+    }
+
+    private void prepareProject() {
+        System.out.println("Preparing target project");
+        ProjectPreparer projectPreparer = new ProjectPreparer();
+        projectPreparer.prepare(properties.targetPath());
+    }
+
+    private void runProject() {
+        System.out.println("Running target project");
+        try {
+            ProjectRunner projectRunner = new ProjectRunner.Builder()
+                    .projectPath(properties.targetPath().toString())
+                    .logFilePath(properties.targetPath().toString())
+                    .logFileName("matrixer-target-runlog.txt")
+                    .task("test")
+                    .buildSystem("gradle")
+                    .build();
+            projectRunner.run();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed run target project: " + e.getMessage());
+        }
+        System.out.println("Target project was run successfully!");
     }
 
     private void verifyOutputDirectoryExists() {
