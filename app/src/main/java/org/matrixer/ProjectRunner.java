@@ -2,6 +2,7 @@ package org.matrixer;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Executes the test suite of target Gradle-based java project
@@ -23,6 +24,10 @@ public class ProjectRunner {
 
         Builder() {}
 
+        Builder projectPath(Path projectPath) {
+            return projectPath(projectPath.toString());
+        }
+
         Builder projectPath(String projectPath) {
             this.projectPath = projectPath;
             return this;
@@ -31,6 +36,10 @@ public class ProjectRunner {
         Builder logFileName(String logFile) {
             this.logFileName = logFile;
             return this;
+        }
+
+        Builder logFilePath(Path logFilePath) {
+            return logFilePath(logFilePath.toString());
         }
 
         Builder logFilePath(String logFilePath) {

@@ -28,7 +28,15 @@ public class ProjectRunnerTest {
     }
 
     @Test
-    void builderSetProjectPath() {
+    void builderSetProjectPathFromPath() {
+        ProjectRunner projectRunner = new ProjectRunner.Builder()
+                .projectPath(TARGET_DIR)
+                .build();
+        assertEquals(projectRunner.getProjectPath(), TARGET_DIR.toString());
+    }
+
+    @Test
+    void builderSetProjectPathFromString() {
         ProjectRunner projectRunner = new ProjectRunner.Builder()
                 .projectPath(TARGET_DIR.toString())
                 .build();
@@ -36,10 +44,19 @@ public class ProjectRunnerTest {
     }
 
     @Test
-    void builderSetLogFilePath() {
+    void builderSetLogFilePathFromString() {
         ProjectRunner projectRunner = new ProjectRunner.Builder()
                 .projectPath(TARGET_DIR.toString())
                 .logFilePath(TARGET_DIR.toString())
+                .build();
+        assertEquals(projectRunner.getLogFilePath(), TARGET_DIR.toString());
+    }
+
+    @Test
+    void builderSetLogFilePathFromPath() {
+        ProjectRunner projectRunner = new ProjectRunner.Builder()
+                .projectPath(TARGET_DIR)
+                .logFilePath(TARGET_DIR)
                 .build();
         assertEquals(projectRunner.getLogFilePath(), TARGET_DIR.toString());
     }

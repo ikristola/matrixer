@@ -56,8 +56,8 @@ public class App {
         System.out.println("Running target project");
         try {
             ProjectRunner projectRunner = new ProjectRunner.Builder()
-                    .projectPath(properties.targetPath().toString())
-                    .logFilePath(properties.targetPath().toString())
+                    .projectPath(properties.targetPath())
+                    .logFilePath(properties.targetPath())
                     .logFileName("matrixer-target-runlog.txt")
                     .task("test")
                     .buildSystem("gradle")
@@ -94,18 +94,6 @@ public class App {
                 + "\n\tTarget path: " + properties.targetPath()
                 + "\n\tOutput path: " + properties.outputPath()
                 + "\n\tRemote: " + properties.remoteURL());
-
-
-        if (!FileUtils.isExistingDirectory(properties.targetPath())) {
-            System.err.println("Error:\n\t" + "Target path does not exist");
-            return;
-        }
-        if (!FileUtils.isExistingDirectory(properties.outputPath())) {
-            if (!FileUtils.createDirectory(properties.outputPath())) {
-                System.err.println("Error:\n\t" + "Failed to create output directory");
-                return;
-            }
-        }
     }
 
     static boolean containsHelpFlag(String[] args) {
