@@ -37,19 +37,29 @@ public class MethodMapTransformer extends Transformer {
         System.out.println("[MethodMapTransformer] Found method: " + name);
         StringBuilder endBlock = new StringBuilder();
         endBlock.append(
-                "StackTraceElement[] elems = Thread.currentThread().getStackTrace();"
+                "try {"
+                        + "java.io.File results = new java.io.File(\"/tmp/matrixer-test/matrix-cov/results.txt\");"
+                        + "java.io.FileOutputStream fos = new java.io.FileOutputStream(results);"
+                        + "java.io.BufferedOutputStream out = new java.io.BufferedOutputStream(fos);"
+                        + "StackTraceElement[] elems = Thread.currentThread().getStackTrace();"
                         // First StackTraceElement is getStackTrace()
                         + "for (int i = 1; i < elems.length; i++) {"
                         + "   StackTraceElement elem = elems[i];"
                         + "   if (elem.getClassLoaderName() == null) {"
                         + "       elem = elems[i-1];"
-                        + "       String caller = elem.getClassName() + \":\" + "
-                        + "elem.getMethodName();"
-                        + "       System.out.println(\"" + name + " <- \" + caller);"
+                        + "       String caller = elem.getClassName() + \":\" + elem.getMethodName();"
+                        + "       String towrite = \"" + name + " <- \" + caller;"
+                        + "       System.out.println(towrite);"
+                        + "       out.write(towrite.getBytes());"
                         + "       break;"
                         + "   }"
-                        + "};");
-        method.insertAfter(endBlock.toString());
+                        + "}"
+                        + "out.close();"
+                        + "fos.close();"
+                        + "} catch(java.io.IOException e) {"
+                        + "    System.err.println(\"Something went wrong! \" + e);"
+                        + "}");
+        method.insertBefore(endBlock.toString());
         return true;
     }
 }
