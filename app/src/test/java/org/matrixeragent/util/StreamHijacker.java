@@ -32,4 +32,15 @@ public class StreamHijacker {
     public void reset() {
         outputStreamCaptor.reset();
     }
+
+    public String getOutput(Runnable runnable) {
+        outputCapture();
+
+        runnable.run();
+
+        String output = getHijackedOutput();
+        stopOutputCapture();
+        return output;
+    }
+
 }

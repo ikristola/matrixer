@@ -84,7 +84,7 @@ test {
         showCauses true
         exceptionFormat 'full'
 
-        showStandardStreams false
+        showStandardStreams true
     }
     jacoco {
         excludes = [

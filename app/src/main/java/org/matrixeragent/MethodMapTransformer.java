@@ -45,8 +45,7 @@ public class MethodMapTransformer extends Transformer {
                         + "       elem = elems[i-1];"
                         + "       String caller = elem.getClassName() + \":\" + "
                         + "elem.getMethodName();"
-                        + "       System.out.println(\"Looks like " + name
-                        + " was called by test \" + caller);"
+                        + "       System.out.println(\"" + name + " <- \" + caller);"
                         + "       break;"
                         + "   }"
                         + "};");
