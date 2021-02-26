@@ -64,12 +64,12 @@ public class App {
                     .build();
             int status = projectRunner.run();
             if (status != 0) {
-                System.out.println("Target project was but exited with error: " + status);
+                System.out.println("Target project tests exited with error: " + status);
                 return;
             }
-            System.out.println("Target project was run successfully!");
+            System.out.println("Target project tests was run successfully!");
         } catch (IOException e) {
-            throw new RuntimeException("Failed run target project: " + e.getMessage());
+            throw new RuntimeException("Failed test target project: " + e.getMessage());
         }
     }
 

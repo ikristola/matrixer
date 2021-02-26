@@ -42,11 +42,10 @@ public class MethodMapTransformer extends Transformer {
 
         System.out.println("[MethodMapTransformer] Found method: " + name);
         String fname = outputPath + File.separator + className + ".txt";
-        StringBuilder endBlock = new StringBuilder();
-        endBlock.append(
+        String endBlock = String.format(
                 "try {"
-                        + "java.io.File results = new java.io.File(\"" + fname + "\");"
-                        + "java.io.FileOutputStream fos = new java.io.FileOutputStream(results);"
+                        + "java.io.File results = new java.io.File(\"%1$s\");"
+                        + "java.io.FileOutputStream fos = new java.io.FileOutputStream(results, true);"
                         + "java.io.BufferedOutputStream out = new java.io.BufferedOutputStream(fos);"
                         + "StackTraceElement[] elems = Thread.currentThread().getStackTrace();"
                         // First StackTraceElement is getStackTrace()
@@ -55,18 +54,17 @@ public class MethodMapTransformer extends Transformer {
                         + "   if (elem.getClassLoaderName() == null) {"
                         + "       elem = elems[i-1];"
                         + "       String caller = elem.getClassName() + \":\" + elem.getMethodName();"
-                        + "       String towrite = \"" + name + " <- \" + caller + \"\\n\";"
-                        + "       System.out.println(towrite);"
+                        + "       String towrite = \"%2$s <- \" + caller + \"\\n\";"
+                        + "       System.out.print(towrite);"
                         + "       out.write(towrite.getBytes());"
                         + "       break;"
                         + "   }"
                         + "}"
                         + "out.close();"
-                        + "fos.close();"
                         + "} catch(java.io.IOException e) {"
                         + "    System.err.println(\"Something went wrong! \" + e);"
-                        + "}");
-        method.insertBefore(endBlock.toString());
+                        + "}", fname, name);
+        method.insertBefore(endBlock);
         return true;
     }
 }

@@ -2,11 +2,12 @@ package org.matrixer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.ArrayList;
 import java.io.*;
 import java.nio.file.Path;
+import java.util.HashSet;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 class AppTest {
 
@@ -33,9 +34,12 @@ class AppTest {
 
             BufferedReader reader = new BufferedReader(new FileReader(outputFile.toFile()));
             String[] methods = {
-                "matrixertest.SimpleCalculations.multiplication(int,int)"
+                "matrixertest.SimpleCalculations.multiplication(int,int)",
+                "matrixertest.SimpleCalculations.addition(int,int)",
+                "matrixertest.SimpleCalculations.subtraction(int,int)",
+                "matrixertest.SimpleCalculations.saveSomeText()"
             };
-            ArrayList<String> foundMethods = new ArrayList<>();
+            HashSet<String> foundMethods = new HashSet<>();
             var lines = reader.lines().iterator();
             for (;lines.hasNext(); ) {
                 var line = lines.next();
