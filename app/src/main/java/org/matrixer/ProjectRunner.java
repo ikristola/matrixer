@@ -70,7 +70,7 @@ public class ProjectRunner {
 
     private ProjectRunner() {}
 
-    void run() throws IOException {
+    int run() throws IOException {
         ProcessBuilder processBuilder;
 
         if (buildSystem.equals("gradle")) {
@@ -87,7 +87,7 @@ public class ProjectRunner {
         Process process = processBuilder.start();
         System.out.println("Waiting for project to finish...");
         try {
-            process.waitFor();
+            return process.waitFor();
         } catch (InterruptedException e) {
             throw new RuntimeException(
                     "Could not wait for project to finish: " + e.getMessage());

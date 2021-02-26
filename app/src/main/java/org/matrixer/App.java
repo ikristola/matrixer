@@ -53,7 +53,7 @@ public class App {
     }
 
     private void runProject() {
-        System.out.println("Running target project");
+        System.out.println("Running target project tests");
         try {
             ProjectRunner projectRunner = new ProjectRunner.Builder()
                     .projectPath(properties.targetPath())
@@ -62,11 +62,15 @@ public class App {
                     .task("test")
                     .buildSystem("gradle")
                     .build();
-            projectRunner.run();
+            int status = projectRunner.run();
+            if (status != 0) {
+                System.out.println("Target project was but exited with error: " + status);
+                return;
+            }
+            System.out.println("Target project was run successfully!");
         } catch (IOException e) {
             throw new RuntimeException("Failed run target project: " + e.getMessage());
         }
-        System.out.println("Target project was run successfully!");
     }
 
     private void verifyOutputDirectoryExists() {
