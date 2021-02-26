@@ -75,6 +75,7 @@ task testAgentJar(type: Jar) {
 }
 
 test {
+    dependsOn assemble
     dependsOn testAgentJar
     jvmArgs = ["-Djdk.attach.allowAttachSelf=true",
     "-javaagent:build/libs/agentJar.jar=${buildDir}:org.matrixer.agent.statictargets"]
