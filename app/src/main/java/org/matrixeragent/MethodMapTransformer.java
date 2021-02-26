@@ -1,6 +1,7 @@
 package org.matrixeragent;
 
 import java.io.IOException;
+import java.io.File;
 
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
@@ -12,8 +13,11 @@ import javassist.CtMethod;
  */
 public class MethodMapTransformer extends Transformer {
 
-    MethodMapTransformer(String className, ClassLoader classLoader) {
+    String outputPath;
+
+    MethodMapTransformer(String className, ClassLoader classLoader, String outputPath) {
         super(className, classLoader);
+        this.outputPath = outputPath;
     }
 
     /**
@@ -35,10 +39,12 @@ public class MethodMapTransformer extends Transformer {
         }
 
         System.out.println("[MethodMapTransformer] Found method: " + name);
+        // String fname = "/tmp/matrixer-test/matrix-cov/results.txt";
+        String fname = outputPath + File.separator + "/results.txt";
         StringBuilder endBlock = new StringBuilder();
         endBlock.append(
                 "try {"
-                        + "java.io.File results = new java.io.File(\"/tmp/matrixer-test/matrix-cov/results.txt\");"
+                        + "java.io.File results = new java.io.File(\"" + fname + "\");"
                         + "java.io.FileOutputStream fos = new java.io.FileOutputStream(results);"
                         + "java.io.BufferedOutputStream out = new java.io.BufferedOutputStream(fos);"
                         + "StackTraceElement[] elems = Thread.currentThread().getStackTrace();"
@@ -48,7 +54,7 @@ public class MethodMapTransformer extends Transformer {
                         + "   if (elem.getClassLoaderName() == null) {"
                         + "       elem = elems[i-1];"
                         + "       String caller = elem.getClassName() + \":\" + elem.getMethodName();"
-                        + "       String towrite = \"" + name + " <- \" + caller;"
+                        + "       String towrite = \"" + name + " <- \" + caller + \"\\n\";"
                         + "       System.out.println(towrite);"
                         + "       out.write(towrite.getBytes());"
                         + "       break;"

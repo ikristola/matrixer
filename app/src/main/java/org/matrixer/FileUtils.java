@@ -67,15 +67,24 @@ public class FileUtils {
     }
 
     /**
+     * Returns the path to the system temporary directory
+     *
+     * On *Nix this is probably /tmp
+     */
+    public static Path getSystemTempDir() {
+        return Path.of(System.getProperty("java.io.tmpdir"));
+    }
+
+    /**
      * Create a temporary directory in a given directory. Filename:
      * "tmpfileHHmmss"
      * 
-     * @param path Path to the directory in which to create the directory
+     * @param parent Path to the directory in which to create the directory
      * @return The path to the temporary directory
      */
-    static Path createTempDirectory(Path path) {
+    public static Path createTempDirectory(Path parent) {
         try {
-            Path newDirPath = Files.createTempDirectory(path, "tmpdir");
+            Path newDirPath = Files.createTempDirectory(parent, "tmpdir");
             newDirPath.toFile().deleteOnExit();
             return newDirPath;
         } catch (IOException e) {
@@ -90,7 +99,7 @@ public class FileUtils {
      * @param fileName
      * @return
      */
-    static Path[] fileSearch(Path dir, String fileName) {
+    public static Path[] fileSearch(Path dir, String fileName) {
         try {
             Stream<Path> stream = Files.find(dir, 100, (path, basicFileAttributes) -> {
                 File file = path.toFile();

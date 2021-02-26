@@ -2,6 +2,10 @@ package org.matrixeragent;
 
 import static org.matrixeragent.util.Assertions.assertFoundTestCase;
 
+import java.nio.file.Path;
+
+import org.matrixer.FileUtils;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.matrixeragent.util.CustomTestAgent;
@@ -23,9 +27,12 @@ public class MethodMapTransformerTest {
 
     @Test
     public void transformedMethodPrintsCallerMethod() {
+        Path dummyOut = FileUtils.createTempDirectory(FileUtils.getSystemTempDir());
         Class<?> targetClass = MethodMapTransformerTestClass.class;
-        MethodMapTransformer transformer =
-                new MethodMapTransformer(targetClass.getName(), targetClass.getClassLoader());
+        MethodMapTransformer transformer = new MethodMapTransformer(
+                targetClass.getName(),
+                targetClass.getClassLoader(),
+                dummyOut.toString());
         customTestAgent.transformClass(targetClass, transformer);
         String caller = getClass().getName() + ":transformedMethodPrintsCallerMethod";
         String callee = targetClass.getName() + ".trueReturner";

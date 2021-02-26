@@ -7,8 +7,14 @@ public class ProjectPreparer {
     private Path gradleBuildFile;
     private Path mavenBuildFile;
 
-    void prepare(Path projectPath) {
-        if (!searchForBuildFiles(projectPath)) {
+    private Properties prop;
+
+    public ProjectPreparer(Properties p) {
+        this.prop = p;
+    }
+
+    void prepare() {
+        if (!searchForBuildFiles(prop.targetPath())) {
             throw new RuntimeException("Failed to prepare target project: No build file found");
         }
         if (gradleBuildFile != null) {
@@ -39,7 +45,8 @@ public class ProjectPreparer {
     }
 
     private String createInjectString() {
-        return "test {\n\tjvmArgs \"-javaagent:" + resolvePathToAgent() + "=arg1:matrixertest\"";
+        return "test {\n\tjvmArgs \"-javaagent:" + resolvePathToAgent() + "="
+            + prop.outputPath() + ":matrixertest\"";
     }
 
     private String resolvePathToAgent() {

@@ -51,7 +51,7 @@ class Properties {
      *
      * @param args the command line arguments
      */
-    void parse(String[] args) {
+    void parse(String ... args) {
         Observable.fromArray(args)
                 .buffer(2, 2)
                 .subscribe(this::parseFlag, this::handleError, () -> {
@@ -61,6 +61,12 @@ class Properties {
                     }
                 });
 
+    }
+
+    public static Properties fromArgs(String ... args) {
+        Properties p = new Properties();
+        p.parse(args);
+        return p;
     }
 
     private void validate() {

@@ -32,29 +32,33 @@ class ProjectPreparerTest {
 
     @Test
     void canPrepare() {
-        ProjectPreparer projectPreparer = new ProjectPreparer();
-        assertDoesNotThrow(() -> projectPreparer.prepare(TARGET_DIR));
+        Properties prop = Properties.fromArgs("--target", TARGET_DIR.toString());
+        ProjectPreparer projectPreparer = new ProjectPreparer(prop);
+        assertDoesNotThrow(() -> projectPreparer.prepare());
     }
 
     @Test
     void returnsFalseOnNonProject() {
-        ProjectPreparer projectPreparer = new ProjectPreparer();
         Path tmpdir = FileUtils.createTempDirectory(Path.of(TMP_DIR));
-        assertThrows(RuntimeException.class, () -> projectPreparer.prepare(tmpdir));
+        Properties prop = Properties.fromArgs("--target", tmpdir.toString());
+        ProjectPreparer projectPreparer = new ProjectPreparer(prop);
+        assertThrows(RuntimeException.class, () -> projectPreparer.prepare());
     }
 
     @Test
     void identifyGradleProject() {
-        ProjectPreparer projectPreparer = new ProjectPreparer();
-        projectPreparer.prepare(TARGET_DIR);
+        Properties prop = Properties.fromArgs("--target", TARGET_DIR.toString());
+        ProjectPreparer projectPreparer = new ProjectPreparer(prop);
+        projectPreparer.prepare();
         var gradleBuildFile = projectPreparer.getGradleBuildFile();
         assertTrue(gradleBuildFile.endsWith("build.gradle"));
     }
 
     @Test
     void gradleBuildFileIsCorrectlyModified() throws IOException {
-        ProjectPreparer projectPreparer = new ProjectPreparer();
-        projectPreparer.prepare(TARGET_DIR);
+        Properties prop = Properties.fromArgs("--target", TARGET_DIR.toString());
+        ProjectPreparer projectPreparer = new ProjectPreparer(prop);
+        projectPreparer.prepare();
         var results = FileUtils.searchInFile(injectedString,
                 projectPreparer.getGradleBuildFile());
         assertTrue(results.isPresent());

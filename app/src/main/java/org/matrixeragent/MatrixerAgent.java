@@ -25,7 +25,7 @@ public class MatrixerAgent {
      * Run when the agent is started statically
      * 
      * @param agentArgs Agent arguments
-     * @param inst Instrumentation instance
+     * @param inst      Instrumentation instance
      */
     public static void premain(String agentArgs, Instrumentation inst) {
 
@@ -37,9 +37,9 @@ public class MatrixerAgent {
 
     /**
      * Run when the agent is started dynamically
-     * 
+     *
      * @param agentArgs Agent arguments
-     * @param inst Instrumentation instance
+     * @param inst      Instrumentation instance
      */
     public static void agentmain(String agentArgs, Instrumentation inst) {
         System.out.println("[Agent] started dynamically:" + "\n\tArgs: "
@@ -53,11 +53,12 @@ public class MatrixerAgent {
         String[] argumentsArray = args.split(":"); // Get target project package
                                                    // name
         List<Class<?>> classes = getClassesInPackage(argumentsArray[1]);
+        String outputPath = argumentsArray[0];
         for (Class<?> cls : classes) {
             System.out.println("[Agent] class found: " + cls);
             if (!isTestClass(cls)) {
                 System.out.println("[Agent] This is not a test class. Transforming it..");
-                transformClass(cls.getName(), inst);
+                transformClass(cls.getName(), inst, outputPath);
             } else {
                 System.out.println("[Agent] This is a test class. Skipping transform");
             }
@@ -65,14 +66,14 @@ public class MatrixerAgent {
 
     }
 
-    private static void transformClass(String className, Instrumentation inst) {
+    private static void transformClass(String className, Instrumentation inst, String outputPath) {
         Class<?> targetCls = null;
         ClassLoader targetClassLoader = null;
 
         try {
             targetCls = Class.forName(className);
             targetClassLoader = targetCls.getClassLoader();
-            transform(targetCls, targetClassLoader, inst);
+            transform(targetCls, targetClassLoader, inst, outputPath);
             return;
         } catch (Exception e) {
             System.err.println("Class [" + className + "] not found with Class.forName");
@@ -82,7 +83,7 @@ public class MatrixerAgent {
                 System.out.println("Found class " + clazz.getName());
                 targetCls = clazz;
                 targetClassLoader = targetCls.getClassLoader();
-                transform(targetCls, targetClassLoader, inst);
+                transform(targetCls, targetClassLoader, inst, outputPath);
                 return;
             }
         }
@@ -90,10 +91,9 @@ public class MatrixerAgent {
     }
 
     private static void transform(Class<?> targetCls,
-            ClassLoader targetClassLoader, Instrumentation inst) {
+            ClassLoader targetClassLoader, Instrumentation inst, String outputPath) {
         try {
-            var transformer = new MethodMapTransformer(targetCls.getName(),
-                    targetClassLoader);
+            var transformer = new MethodMapTransformer(targetCls.getName(), targetClassLoader, outputPath);
             inst.addTransformer(transformer, true);
             inst.retransformClasses(targetCls);
         } catch (Exception e) {

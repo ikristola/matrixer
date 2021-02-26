@@ -48,8 +48,8 @@ public class App {
 
     private void prepareProject() {
         System.out.println("Preparing target project");
-        ProjectPreparer projectPreparer = new ProjectPreparer();
-        projectPreparer.prepare(properties.targetPath());
+        ProjectPreparer projectPreparer = new ProjectPreparer(properties);
+        projectPreparer.prepare();
     }
 
     private void runProject() {
