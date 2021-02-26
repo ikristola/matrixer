@@ -36,7 +36,7 @@ class Properties {
      * The default output directory if none is provided is a subdirectory of
      * the target directory with this name.
      */
-    final static String DEFAULT_OUTDIR = "matrix-cov";
+    final static Path DEFAULT_OUTDIR = Path.of("build", "matrix-cov");
 
     Path targetPath;
     Path outputPath;
@@ -82,7 +82,7 @@ class Properties {
     }
 
     Path defaultOutputPath() {
-        return Paths.get(targetPath + File.separator + DEFAULT_OUTDIR);
+        return Paths.get(targetPath.toString(), DEFAULT_OUTDIR.toString());
     }
 
     private void parseFlag(List<String> flagPair) {

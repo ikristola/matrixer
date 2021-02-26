@@ -57,7 +57,7 @@ public class App {
         try {
             ProjectRunner projectRunner = new ProjectRunner.Builder()
                     .projectPath(properties.targetPath())
-                    .logFilePath(properties.targetPath())
+                    .logFilePath(properties.outputPath())
                     .logFileName("matrixer-target-runlog.txt")
                     .task("test")
                     .buildSystem("gradle")
