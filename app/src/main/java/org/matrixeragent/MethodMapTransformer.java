@@ -14,9 +14,11 @@ import javassist.CtMethod;
 public class MethodMapTransformer extends Transformer {
 
     String outputPath;
+    String className;
 
     MethodMapTransformer(String className, ClassLoader classLoader, String outputPath) {
         super(className, classLoader);
+        this.className = className;
         this.outputPath = outputPath;
     }
 
@@ -39,8 +41,7 @@ public class MethodMapTransformer extends Transformer {
         }
 
         System.out.println("[MethodMapTransformer] Found method: " + name);
-        // String fname = "/tmp/matrixer-test/matrix-cov/results.txt";
-        String fname = outputPath + File.separator + "/results.txt";
+        String fname = outputPath + File.separator + className + ".txt";
         StringBuilder endBlock = new StringBuilder();
         endBlock.append(
                 "try {"

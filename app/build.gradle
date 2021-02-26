@@ -75,7 +75,8 @@ task testAgentJar(type: Jar) {
 
 test {
     dependsOn testAgentJar
-    jvmArgs = ["-Djdk.attach.allowAttachSelf=true", "-javaagent:build/libs/agentJar.jar=arg1:org.matrixeragent.statictargets"]
+    jvmArgs = ["-Djdk.attach.allowAttachSelf=true",
+    "-javaagent:build/libs/agentJar.jar=./build:org.matrixeragent.statictargets"]
     testLogging {
         events 'passed', 'skipped', 'failed'  // Events to print out
 

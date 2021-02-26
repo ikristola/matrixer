@@ -3,6 +3,10 @@ package org.matrixeragent;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.matrixeragent.util.Assertions.assertFoundTestCase;
 
+import java.nio.file.Path;
+
+import org.matrixer.FileUtils;
+
 import org.junit.jupiter.api.*;
 import org.matrixeragent.dynamictargets.AnotherTestClassDynamic;
 import org.matrixeragent.dynamictargets.TestClassDynamic;
@@ -82,9 +86,10 @@ public class MatrixerAgentTest {
         @Test
         @Order(1)
         public void dynamicLoadOfMatrixerAgent() {
+            Path outputFile = FileUtils.createTempDirectory(FileUtils.getSystemTempDir());
             assertDoesNotThrow(() -> AgentLoader.loadAgent(
                     "build/libs/agentJar.jar",
-                    "arg1:org.matrixeragent.dynamictargets"));
+                    outputFile.toString() + ":org.matrixeragent.dynamictargets"));
         }
 
         @Test

@@ -13,7 +13,6 @@ class AppTest {
     static String TMP_DIR = System.getProperty("java.io.tmpdir");
     static Path target = Path.of(TMP_DIR, File.separator, "matrixer-test");
     static Path outputDir = target.resolve(Properties.DEFAULT_OUTDIR);
-    static Path outputFile = outputDir.resolve("results.txt");
 
     @BeforeAll
     static void runCoverageOnRepo() {
@@ -24,12 +23,14 @@ class AppTest {
         };
         var app = new App(args);
         assertDoesNotThrow(() -> app.run());
-        assertTrue(outputFile.toFile().exists(), outputFile + " Does not exist");
     }
 
     @Test
     void testOutputFileContainsMethods() {
         try {
+            Path outputFile = outputDir.resolve("matrixertest.SimpleCalculations.txt");
+            assertTrue(outputFile.toFile().exists(), outputFile + " Does not exist");
+
             BufferedReader reader = new BufferedReader(new FileReader(outputFile.toFile()));
             String[] methods = {
                 "matrixertest.SimpleCalculations.multiplication(int,int)"
