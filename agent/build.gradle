@@ -1,29 +1,10 @@
 plugins {
     id 'java-library'
-}
-
-repositories {
-    jcenter()
-}
-
-configurations.all {
-    resolutionStrategy.dependencySubstitution {
-        substitute module("com.matrixer:core") with project(':core')
-    }
+    id 'matrixer'
 }
 
 dependencies {
-    implementation 'com.matrixer:core'
-    implementation "io.reactivex.rxjava3:rxjava:3.0.7"
-    compile group: 'org.javassist', name: 'javassist', version: '3.27.0-GA'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-    implementation 'com.google.guava:guava:29.0-jre'
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
+    implementation project(':core')
 }
 
 jar {
@@ -34,7 +15,7 @@ jar {
                 "Can-Retransform-Classes": true,
                 "Premain-Class": "org.matrixer.agent.MatrixerAgent")
     }
-    baseName 'agentJar'
+    archiveFileName = 'agentJar.jar'
     from {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it)}
     }
@@ -59,7 +40,7 @@ sourceSets {
 // Generate jar of CustomTestAgent
 task testAgentJar(type: Jar) {
     from (sourceSets.test.output) {
-        include "org/matrixeragent/util/**"
+        include "org/matrixer/agent/util/**"
     }
     manifest {
         attributes("Manifest-Version": "1.0",
@@ -68,7 +49,7 @@ task testAgentJar(type: Jar) {
                 "Can-Retransform-Classes": true,
                 "Premain-Class": "org.matrixer.agent.util.CustomTestAgent")
     }
-    baseName 'testAgentJar'
+    archiveFileName = 'testAgentJar.jar'
     doLast {
         println "testAgentJar run"
     }
@@ -79,16 +60,6 @@ test {
     dependsOn testAgentJar
     jvmArgs = ["-Djdk.attach.allowAttachSelf=true",
     "-javaagent:build/libs/agentJar.jar=${buildDir}:org.matrixer.agent.statictargets"]
-    testLogging {
-        events 'passed', 'skipped', 'failed'  // Events to print out
-
-        showStackTraces true
-        showExceptions true
-        showCauses true
-        exceptionFormat 'full'
-
-        showStandardStreams true
-    }
     // Update the jacoco report after tests, this might be removed can
     // be removed if it takes too long to run. But it is handy to have
     // it automatic at the moment

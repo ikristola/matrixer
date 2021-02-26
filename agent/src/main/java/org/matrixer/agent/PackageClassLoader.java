@@ -78,7 +78,7 @@ class PackageClassLoader {
             String canonical = file.getCanonicalPath().toString();
             String name = canonical.substring(classPathEntry.length() + 1);
             String className = stripClassExtension(name.replaceAll("[\\\\/]", "."));
-            System.out.println("Trying to load: " + name);
+            System.out.println("Trying to load: " + className);
             if (name.endsWith(".class")) {
                 try {
                     classes.add(Class.forName(className));
