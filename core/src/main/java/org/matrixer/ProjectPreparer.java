@@ -47,7 +47,7 @@ public class ProjectPreparer {
 
     private String createInjectString() {
         return "test {\n\tjvmArgs \"-javaagent:" + resolvePathToAgent() + "="
-            + prop.outputPath() + ":matrixertest\"";
+            + prop.outputPath() + ":org.matrixertest\"";
     }
 
     private String resolvePathToAgent() {

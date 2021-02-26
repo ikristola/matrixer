@@ -35,7 +35,7 @@ class PackageClassLoader {
             tryLoadClassesFromJar(jar);
         } else {
             File base = new File(classPathEntry + File.separatorChar + path);
-            tryLoadClassesFromPath(base);
+            tryLoadClassesFromPath(classPathEntry, base);
         }
     }
 
@@ -60,20 +60,31 @@ class PackageClassLoader {
         }
     }
 
-    private void tryLoadClassesFromPath(File base) {
+    private void tryLoadClassesFromPath(String classPathEntry, File base) {
         try {
-            loadClassesFromPath(base);
+            loadClassesFromPath(classPathEntry, base);
         } catch (Exception ex) {
             // What to do here?
+            System.out.println(ex.getMessage());
         }
     }
 
-    private void loadClassesFromPath(File base) throws ClassNotFoundException {
+    private void loadClassesFromPath(String classPathEntry, File base) throws Exception {
         for (File file : base.listFiles()) {
-            String name = file.getName();
+            if (file.isDirectory()) {
+                loadClassesFromPath(classPathEntry, file);
+                continue;
+            }
+            String canonical = file.getCanonicalPath().toString();
+            String name = canonical.substring(classPathEntry.length() + 1);
+            String className = stripClassExtension(name.replaceAll("[\\\\/]", "."));
+            System.out.println("Trying to load: " + name);
             if (name.endsWith(".class")) {
-                name = stripClassExtension(name);
-                classes.add(Class.forName(packageName + "." + name));
+                try {
+                    classes.add(Class.forName(className));
+                } catch (Exception e) {
+                    throw new RuntimeException("Could not find: " + className + "\n\t" + canonical);
+                }
             }
         }
     }

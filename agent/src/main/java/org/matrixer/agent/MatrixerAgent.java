@@ -52,8 +52,8 @@ public class MatrixerAgent {
         /* Return a list of all classes in the target package */
         String[] argumentsArray = args.split(":"); // Get target project package
                                                    // name
-        List<Class<?>> classes = getClassesInPackage(argumentsArray[1]);
         String outputPath = argumentsArray[0];
+        List<Class<?>> classes = getClassesInPackage(argumentsArray[1]);
         for (Class<?> cls : classes) {
             System.out.println("[Agent] class found: " + cls);
             if (!isTestClass(cls)) {

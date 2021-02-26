@@ -42,6 +42,7 @@ public class MethodMapTransformer extends Transformer {
 
         System.out.println("[MethodMapTransformer] Found method: " + name);
         String fname = outputPath + File.separator + className + ".txt";
+        System.out.println("[MethodMapTransformer] Writing to: " + fname);
         String endBlock = String.format(
                 "try {"
                         + "java.io.File results = new java.io.File(\"%1$s\");"
@@ -54,9 +55,10 @@ public class MethodMapTransformer extends Transformer {
                         + "   if (elem.getClassLoaderName() == null) {"
                         + "       elem = elems[i-1];"
                         + "       String caller = elem.getClassName() + \":\" + elem.getMethodName();"
-                        + "       String towrite = \"%2$s <- \" + caller + \"\\n\";"
+                        + "       String towrite = \"%2$s <= \" + caller + \"\\n\";"
                         + "       System.out.print(towrite);"
                         + "       out.write(towrite.getBytes());"
+                        + "       System.out.println(\"Wrote to %1$s \");"
                         + "       break;"
                         + "   }"
                         + "}"

@@ -29,15 +29,14 @@ class AppTest {
     @Test
     void testOutputFileContainsMethods() {
         try {
-            Path outputFile = outputDir.resolve("matrixertest.SimpleCalculations.txt");
+            Path outputFile = outputDir.resolve("org.matrixertest.calculator.Calculator.txt");
             assertTrue(outputFile.toFile().exists(), outputFile + " Does not exist");
 
             BufferedReader reader = new BufferedReader(new FileReader(outputFile.toFile()));
             String[] methods = {
-                "matrixertest.SimpleCalculations.multiplication(int,int)",
-                "matrixertest.SimpleCalculations.addition(int,int)",
-                "matrixertest.SimpleCalculations.subtraction(int,int)",
-                "matrixertest.SimpleCalculations.saveSomeText()"
+                "org.matrixertest.calculator.Calculator.multiplication(int,int)",
+                "org.matrixertest.calculator.Calculator.addition(int,int)",
+                "org.matrixertest.calculator.Calculator.subtraction(int,int)",
             };
             HashSet<String> foundMethods = new HashSet<>();
             var lines = reader.lines().iterator();
