@@ -1,6 +1,5 @@
 package org.matrixer.agent;
 
-import com.sun.tools.attach.AgentLoadException;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,7 @@ public class AgentLoaderTest {
 
     @Test
     public void expectException_loadWithBadPath() {
-        Throwable throwable = assertThrows(AgentLoadException.class,
+        Throwable throwable = assertThrows(Exception.class,
                 () -> AgentLoader.loadAgent("bad/path/agent.jar", "argument"));
         assertEquals("Agent JAR not found or no Agent-Class attribute",
                 throwable.getMessage());
