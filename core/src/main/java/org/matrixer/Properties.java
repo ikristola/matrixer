@@ -1,6 +1,5 @@
 package org.matrixer;
 
-import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -43,6 +42,12 @@ class Properties {
     URI remoteURL = null;
     String failureReason = "Properties not parsed";
 
+    public static Properties fromArgs(String... args) {
+        Properties p = new Properties();
+        p.parse(args);
+        return p;
+    }
+
     /**
      * Parses command line arguments, and stores the properties. Parsing
      * will stop at first failure in which case isValid() will return false
@@ -51,38 +56,10 @@ class Properties {
      *
      * @param args the command line arguments
      */
-    void parse(String ... args) {
+    void parse(String... args) {
         Observable.fromArray(args)
                 .buffer(2, 2)
-                .subscribe(this::parseFlag, this::handleError, () -> {
-                    validate();
-                    if (isValid()) {
-                        applyDefaults();
-                    }
-                });
-
-    }
-
-    public static Properties fromArgs(String ... args) {
-        Properties p = new Properties();
-        p.parse(args);
-        return p;
-    }
-
-    private void validate() {
-        if (targetPath == null) {
-            setError("Target directory is required");
-        }
-    }
-
-    private void applyDefaults() {
-        if (outputPath == null) {
-            outputPath = defaultOutputPath();
-        }
-    }
-
-    Path defaultOutputPath() {
-        return Paths.get(targetPath.toString(), DEFAULT_OUTDIR.toString());
+                .subscribe(this::parseFlag, this::handleError, this::onComplete);
     }
 
     private void parseFlag(List<String> flagPair) {
@@ -117,6 +94,29 @@ class Properties {
             throw new IllegalArgumentException(
                     "Not a valid URL: '" + url + "'\n\t" + e.getMessage());
         }
+    }
+
+    private void onComplete() {
+        validate();
+        if (isValid()) {
+            applyDefaults();
+        }
+    }
+
+    private void validate() {
+        if (targetPath == null) {
+            setError("Target directory is required");
+        }
+    }
+
+    private void applyDefaults() {
+        if (outputPath == null) {
+            outputPath = defaultOutputPath();
+        }
+    }
+
+    Path defaultOutputPath() {
+        return Paths.get(targetPath.toString(), DEFAULT_OUTDIR.toString());
     }
 
     private void handleError(Throwable e) {

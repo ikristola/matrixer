@@ -58,6 +58,7 @@ task testAgentJar(type: Jar) {
 test {
     dependsOn assemble // Makes sure the jars are assembled before tests
     dependsOn testAgentJar
+    // TODO use variables for arguments to make it easier to read/maintain
     jvmArgs = ["-Djdk.attach.allowAttachSelf=true",
-    "-javaagent:build/libs/agentJar.jar=${buildDir}:org.matrixer.agent.statictargets"]
+    "-javaagent:build/libs/agentJar.jar=${buildDir}:org.matrixer.agent.statictargets:org.matrixer.agent"]
 }

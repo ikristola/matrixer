@@ -95,9 +95,11 @@ public class FileUtils {
     /**
      * Search a directory and subdirectories for a file
      * 
-     * @param dir
-     * @param fileName
-     * @return
+     * @param dir The directory to search
+     * @param fileName The file to find
+     * @return A path to the file
+     *
+     * @Throws RuntimeException if the file is not found
      */
     public static Path[] fileSearch(Path dir, String fileName) {
         try {

@@ -48,7 +48,7 @@ class AppTest {
                     }
                 }
             }
-            assertEquals(methods.length, foundMethods.size());
+            assertEquals(methods.length, foundMethods.size(), "All methods not found");
         } catch (FileNotFoundException e) {
             throw new RuntimeException("File not found: " + e);
         }

@@ -15,9 +15,11 @@ class ProjectPreparerTest {
     final static String TMP_DIR = System.getProperty("java.io.tmpdir");
     final static Path TARGET_DIR = Path.of(TMP_DIR, File.separator, "matrixer-test");
 
-    final static String injectedString = "\tjvmArgs \"-javaagent:" +
-            System.getProperty("user.dir") +
-            "/build/libs/agentJar.jar=arg1:matrixertest\"";
+    final static String CWD = System.getProperty("user.dir");
+    final static String AGENT_JAR_PATH = CWD + "/build/libs/agentJar.jar";
+    final static String injectedString =
+            String.format("\tjvmArgs \"-javaagent:%s=%s:%s",
+                    AGENT_JAR_PATH, "arg1", "matrixertest");
 
     @BeforeEach
     void setUpEach() throws GitAPIException {

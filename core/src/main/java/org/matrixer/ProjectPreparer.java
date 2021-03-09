@@ -3,6 +3,9 @@ package org.matrixer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * Prepares a target project for further processing
+ */
 public class ProjectPreparer {
 
     private Path gradleBuildFile;
@@ -14,7 +17,12 @@ public class ProjectPreparer {
         this.prop = p;
     }
 
-    void prepare() {
+    /**
+     * Prepares the project.
+     *
+     * Injects the build script to run the tests with the matrixer agent.
+     */
+    public void prepare() {
         if (!searchForBuildFiles(prop.targetPath())) {
             throw new RuntimeException("Failed to prepare target project: No build file found");
         }
@@ -47,7 +55,7 @@ public class ProjectPreparer {
 
     private String createInjectString() {
         return "test {\n\tjvmArgs \"-javaagent:" + resolvePathToAgent() + "="
-            + prop.outputPath() + ":org.matrixertest\"";
+            + prop.outputPath() + ":org.matrixertest:org.matrixertest\"";
     }
 
     private String resolvePathToAgent() {
@@ -56,10 +64,16 @@ public class ProjectPreparer {
         return  root.resolve(relative).toString();
     }
 
+    /**
+     * @returns a Path to the gradle build script of the project
+     */
     public Path getGradleBuildFile() {
         return gradleBuildFile;
     }
 
+    /**
+     * @returns a Path to the maven build script of the project
+     */
     public Path getMavenBuildFile() {
         return mavenBuildFile;
     }

@@ -29,10 +29,10 @@ public class MethodMapTransformerTest {
     public void transformedMethodPrintsCallerMethod() {
         Path dummyOut = FileUtils.createTempDirectory(FileUtils.getSystemTempDir());
         Class<?> targetClass = MethodMapTransformerTestClass.class;
-        MethodMapTransformer transformer = new MethodMapTransformer(
-                targetClass.getName(),
-                targetClass.getClassLoader(),
-                dummyOut.toString());
+        String rootPkg = "org.matrixer";
+        String testPkg = "org.matrixer";
+        MethodMapTransformer transformer =
+                new MethodMapTransformer(targetClass, dummyOut.toString(), rootPkg, testPkg);
         customTestAgent.transformClass(targetClass, transformer);
         String caller = getClass().getName() + ":transformedMethodPrintsCallerMethod";
         String callee = targetClass.getName() + ".trueReturner";

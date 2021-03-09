@@ -13,12 +13,16 @@ import java.security.ProtectionDomain;
  */
 public abstract class Transformer implements ClassFileTransformer {
 
-    String targetClassName;
-    ClassLoader targetClassLoader;
+    private String targetClassName;
+    private ClassLoader targetClassLoader;
 
     Transformer(String className, ClassLoader classLoader) {
         this.targetClassName = className;
         this.targetClassLoader = classLoader;
+    }
+
+    String targetClassName() {
+        return targetClassName;
     }
 
     /**

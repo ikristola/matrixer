@@ -6,6 +6,9 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ProgressMonitor;
 
+/**
+ * Creates and manages git repositories
+ */
 public class GitRepository {
 
     Git repo;
@@ -14,6 +17,13 @@ public class GitRepository {
         this.repo = repo;
     }
 
+    /**
+     * Clones a git repository located at url to target
+     *
+     * @param url A remote url or local path to a repository
+     * @param target The directory in which the repository will be cloned to
+     * @returns a GitRepository instance of the repository
+     */
     public static GitRepository clone(String url, File target) throws GitAPIException {
         if (target.exists()) {
             throw new RuntimeException("Directory already exists:" + target);
@@ -28,6 +38,9 @@ public class GitRepository {
     }
 
 
+    /**
+     * Prints progress messages to standard out
+     */
     private static class SimpleProgressMonitor implements ProgressMonitor {
 
         @Override

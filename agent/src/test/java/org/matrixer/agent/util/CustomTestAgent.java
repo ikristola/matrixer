@@ -62,8 +62,7 @@ public class CustomTestAgent {
      * @param cls
      * @param clsTransformer
      */
-    public void transformClass(Class<?> cls,
-            ClassFileTransformer clsTransformer) {
+    public void transformClass(Class<?> cls, ClassFileTransformer clsTransformer) {
         try {
             inst.addTransformer(clsTransformer, true);
             inst.retransformClasses(cls);

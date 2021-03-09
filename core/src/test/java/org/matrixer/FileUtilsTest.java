@@ -75,20 +75,14 @@ class FileUtilsTest {
 
     @Test
     void catchesFileSearchInNonReadableDir() {
-        Path dir = Path.of(TMP_DIR + SEP + "nonreadable");
-        FileUtils.createDirectory(dir);
-        dir.toFile().deleteOnExit();
-        dir.toFile().setReadable(false);
-        var file = FileUtils.createTempFile(dir);
-        assertThrows(RuntimeException.class, () -> FileUtils.fileSearch(dir, file.toString()));
+        Path dir = new ThrowingPath();
+        String fname = "non-existant.txt";
+        assertThrows(RuntimeException.class, () -> FileUtils.fileSearch(dir, fname));
     }
 
     @Test
     void catchesRemoveDirWithNonReadableDir() {
-        Path dir = Path.of(TMP_DIR + SEP + "nonreadable");
-        FileUtils.createDirectory(dir);
-        dir.toFile().deleteOnExit();
-        dir.toFile().setReadable(false);
+        Path dir = new ThrowingPath();
         assertThrows(RuntimeException.class, () -> FileUtils.removeDirectory(dir));
     }
 
