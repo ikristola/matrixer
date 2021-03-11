@@ -1,7 +1,6 @@
 package org.matrixer;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
@@ -163,6 +162,33 @@ public class FileUtils {
             lines.close();
         } catch (IOException e) {
             throw new RuntimeException("Could not replace string: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Get the path to the platform-specific temporary folder
+     *
+     * @return Path to the temporary folder
+     */
+    static Path getTempDirPath() {
+        return Path.of(System.getProperty("java.io.tmpdir"));
+    }
+
+    /**
+     * Write a string to a file
+     *
+     * @param string The string to be written
+     * @param filePath String representation of the file path
+     */
+    static void writeToFile(String string, String filePath) {
+        File file = new File(filePath);
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(file));
+            writer.write(string);
+            writer.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Could not write to file: " + e.getMessage());
         }
     }
 
