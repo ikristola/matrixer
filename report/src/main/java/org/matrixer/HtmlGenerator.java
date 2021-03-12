@@ -6,23 +6,23 @@ import java.nio.file.Path;
 import java.util.*;
 
 /**
- * Builds a human-readable html report from a raw data matrix file
+ * Generates html from a raw data file
  */
-public class ReportBuilder {
+public class HtmlGenerator {
 
     private final String dataFilePath;
     private final String styleSheetPath;
     SortedSet<String> testMethods;  // set of all test methods in data file
     List<AppMethod> appMethods;     // all application methods in data file
 
-    ReportBuilder(String dataFilePath, String styleSheetPath) {
+    HtmlGenerator(String dataFilePath, String styleSheetPath) {
         this.dataFilePath = dataFilePath;
         this.styleSheetPath = styleSheetPath;
         appMethods = new ArrayList<>();
         testMethods = new TreeSet<>();
     }
 
-    ReportBuilder(String dataFilePath) {
+    HtmlGenerator(String dataFilePath) {
         this(dataFilePath, "");
     }
 

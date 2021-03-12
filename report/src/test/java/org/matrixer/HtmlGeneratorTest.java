@@ -7,7 +7,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ReportBuilderTest {
+class HtmlGeneratorTest {
 
     final static Path TMP_DIR = FileUtils.getTempDirPath();
 
@@ -104,8 +104,8 @@ class ReportBuilderTest {
         File file = FileUtils.createTempFile(TMP_DIR);
         FileUtils.writeToFile(dataString, file.toString());
 
-        ReportBuilder reportBuilder = new ReportBuilder(file.toString());
-        var reportHtml = reportBuilder.generateReport();
+        HtmlGenerator htmlGenerator = new HtmlGenerator(file.toString());
+        var reportHtml = htmlGenerator.generateReport();
 
         assertEquals(expected, reportHtml);
     }
@@ -119,8 +119,8 @@ class ReportBuilderTest {
         File dataFile = FileUtils.createTempFile(TMP_DIR);
         FileUtils.writeToFile(dataString, dataFile.toString());
 
-        ReportBuilder reportBuilder = new ReportBuilder(dataFile.toString(), styleFile.toString());
-        var reportHtml = reportBuilder.generateReport();
+        HtmlGenerator htmlGenerator = new HtmlGenerator(dataFile.toString(), styleFile.toString());
+        var reportHtml = htmlGenerator.generateReport();
 
         assertEquals(expected, reportHtml);
     }
