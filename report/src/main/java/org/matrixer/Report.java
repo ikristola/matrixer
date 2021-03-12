@@ -43,18 +43,16 @@ public class Report {
     private Report() {}
 
     boolean generate() {
-        String rawData = readDataFile();
-        String html = DataParser.htmlFromData(rawData);
+        String styleSheetPath = System.getProperty("user.dir") +
+                "/src/main/resources/report-style.css";
+        ReportBuilder reportBuilder = new ReportBuilder(dataFilePath, styleSheetPath);
+        String html = reportBuilder.generateReport();
         try {
             writeToFile(html);
         } catch (IOException e) {
             System.err.println("Failed to write html to file: " + e.getMessage());
         }
         return true;
-    }
-
-    private String readDataFile() {
-        return "";
     }
 
     private void writeToFile(String html) throws IOException {

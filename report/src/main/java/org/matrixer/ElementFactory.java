@@ -1,7 +1,5 @@
 package org.matrixer;
 
-import java.util.Arrays;
-
 public class ElementFactory {
 
     public static String doctype() {
@@ -30,6 +28,14 @@ public class ElementFactory {
 
     public static String main(String... inner) {
         return "<main>" + concatenateInnerElements(inner) + "</main>";
+    }
+
+    public static String style() {
+        return style("");
+    }
+
+    public static String style(String... inner) {
+        return "<style>" + concatenateInnerElements(inner) + "</style>";
     }
 
     public static String header() {
@@ -70,6 +76,11 @@ public class ElementFactory {
 
     public static String tableHeader(String... inner) {
         return "<th>" + concatenateInnerElements(inner) + "</th>";
+    }
+
+    public static String rotatedTableHeader(String... inner) {
+        return "<th class='rotate'><div><span>" + concatenateInnerElements(inner)
+                + "</span></div></th>";
     }
 
     public static String tableRow() {
