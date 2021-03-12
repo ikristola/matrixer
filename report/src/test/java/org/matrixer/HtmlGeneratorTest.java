@@ -1,11 +1,11 @@
 package org.matrixer;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.*;
+import java.io.File;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class HtmlGeneratorTest {
 
@@ -65,14 +65,14 @@ class HtmlGeneratorTest {
 
         String expected =
                 "<!DOCTYPE html><html><head></head><style></style>" +
-                "<body><table>" +
-                "<tr><th></th>" +
-                "<th class='rotate'><div><span>package.Testclass:testMethod</span></div></th>" +
-                "</tr>" +
-                "<tr><td>package.Class.method()</td><td>x</td></tr>" +
-                "<tr><td>package2.Class.method()</td><td>x</td></tr>" +
-                "</table></body>" +
-                "</html>";
+                        "<body><table>" +
+                        "<tr><th></th>" +
+                        "<th class='rotate'><div><span>package.Testclass:testMethod</span></div>" +
+                        "</th></tr>" +
+                        "<tr><td>package.Class.method()</td><td>x</td></tr>" +
+                        "<tr><td>package2.Class.method()</td><td>x</td></tr>" +
+                        "</table></body>" +
+                        "</html>";
 
         assertDataStringGeneratesExpectedReport(dataString, expected);
     }
@@ -87,15 +87,16 @@ class HtmlGeneratorTest {
 
         String expected =
                 "<!DOCTYPE html><html><head></head><style></style>" +
-                "<body><table>" +
-                "<tr><th></th>" +
-                "<th class='rotate'><div><span>package.Testclass:testMethod</span></div></th>" +
-                "<th class='rotate'><div><span>package2.Testclass:testMethod</span></div></th>" +
-                "</tr>" +
-                "<tr><td>package.Class.method()</td><td>x</td><td>x</td></tr>" +
-                "<tr><td>package.Class2.method()</td><td>x</td><td></td></tr>" +
-                "</table></body>" +
-                "</html>";
+                        "<body><table>" +
+                        "<tr><th></th>" +
+                        "<th class='rotate'><div><span>package.Testclass:testMethod</span></div>" +
+                        "</th>" +
+                        "<th class='rotate'><div><span>package2.Testclass:testMethod</span></div>" +
+                        "</th></tr>" +
+                        "<tr><td>package.Class.method()</td><td>x</td><td>x</td></tr>" +
+                        "<tr><td>package.Class2.method()</td><td>x</td><td></td></tr>" +
+                        "</table></body>" +
+                        "</html>";
 
         assertDataStringGeneratesExpectedReport(dataString, expected);
     }

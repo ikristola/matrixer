@@ -24,21 +24,15 @@ class ElementFactoryTest {
         String str = ElementFactory.doctype() +
                 ElementFactory.html(
                         ElementFactory.head(
-                                ElementFactory.title("Title")
-                        ),
+                                ElementFactory.title("Title")),
                         ElementFactory.body(
                                 ElementFactory.header("Header"),
                                 "Body",
                                 ElementFactory.table(
                                         ElementFactory.tableRow(
-                                                ElementFactory.tableHeader("TableHeader")
-                                        ),
+                                                ElementFactory.tableHeader("TableHeader")),
                                         ElementFactory.tableRow(
-                                                ElementFactory.tableCell("TableCell")
-                                        )
-                                )
-                        )
-                );
+                                                ElementFactory.tableCell("TableCell")))));
 
         writer.write(str);
         writer.close();

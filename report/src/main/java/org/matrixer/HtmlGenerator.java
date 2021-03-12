@@ -12,8 +12,8 @@ public class HtmlGenerator {
 
     private final String dataFilePath;
     private final String styleSheetPath;
-    SortedSet<String> testMethods;  // set of all test methods in data file
-    List<AppMethod> appMethods;     // all application methods in data file
+    SortedSet<String> testMethods; // set of all test methods in data file
+    List<AppMethod> appMethods; // all application methods in data file
 
     HtmlGenerator(String dataFilePath, String styleSheetPath) {
         this.dataFilePath = dataFilePath;
@@ -27,8 +27,8 @@ public class HtmlGenerator {
     }
 
     /**
-     * Generates a html report from the supplied raw data file.
-     * If a stylesheet has been provided it is applied to the report.
+     * Generates a html report from the supplied raw data file. If a
+     * stylesheet has been provided it is applied to the report.
      *
      * @return String containing the html report
      */
@@ -41,7 +41,7 @@ public class HtmlGenerator {
             if (!styleSheetPath.equals("")) {
                 style = readStyleSheet();
             }
-            table = generateHtmlTable();  // create html table from app and test method objects
+            table = generateHtmlTable(); // create html table from app and test method objects
         } catch (IOException e) {
             System.err.println("Failed to generate report: " + e.getMessage());
             e.printStackTrace();
@@ -52,8 +52,7 @@ public class HtmlGenerator {
                 ElementFactory.html(
                         ElementFactory.head(),
                         ElementFactory.style(style),
-                        ElementFactory.body(table)
-                );
+                        ElementFactory.body(table));
     }
 
     private String generateHtmlTable() {
@@ -78,8 +77,7 @@ public class HtmlGenerator {
             for (String testMethod : testMethods) {
                 if (testers.contains(testMethod)) {
                     row.append(ElementFactory.tableCell("x"));
-                }
-                else {
+                } else {
                     row.append(ElementFactory.tableCell());
                 }
             }
@@ -87,8 +85,7 @@ public class HtmlGenerator {
         }
 
         return ElementFactory.table(
-                rows.toString()
-        );
+                rows.toString());
     }
 
     private String readStyleSheet() throws IOException {
@@ -110,7 +107,8 @@ public class HtmlGenerator {
 
 
     private void parseLineSubstrings(String[] strings) {
-        // first string in array is the app method, the rest (if they exist) are test methods
+        // first string in array is the app method, the rest (if they exist) are
+        // test methods
         var appMethod = new AppMethod(strings[0]);
         for (int i = 1; i < strings.length; i++) {
             if (strings[i] != null) {
@@ -122,7 +120,8 @@ public class HtmlGenerator {
     }
 
     /**
-     * Represents an app method. Keeps a list of the test methods that has called it.
+     * Represents an app method. Keeps a list of the test methods that has
+     * called it.
      */
     private static class AppMethod {
         String name;
