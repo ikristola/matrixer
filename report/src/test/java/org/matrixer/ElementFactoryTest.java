@@ -19,7 +19,6 @@ class ElementFactoryTest {
                 "<tr><td>TableCell</td></tr></table></body></html>";
 
         File file = FileUtils.createTempFile(Path.of(TMP_DIR));
-        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
 
         String str = ElementFactory.doctype() +
                 ElementFactory.html(
@@ -34,8 +33,7 @@ class ElementFactoryTest {
                                         ElementFactory.tableRow(
                                                 ElementFactory.tableCell("TableCell")))));
 
-        writer.write(str);
-        writer.close();
+        FileUtils.writeToFile(str, file.getPath());
 
         String fileContents = Files.readString(file.toPath());
         assertEquals(expected, fileContents);
