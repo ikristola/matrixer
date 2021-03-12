@@ -102,7 +102,7 @@ class HtmlGeneratorTest {
     }
 
     void assertDataStringGeneratesExpectedReport(String dataString, String expected) {
-        File file = FileUtils.createTempFile(TMP_DIR);
+        Path file = FileUtils.createTempFile(TMP_DIR);
         FileUtils.writeToFile(dataString, file.toString());
 
         HtmlGenerator htmlGenerator = new HtmlGenerator(file.toString());
@@ -114,10 +114,10 @@ class HtmlGeneratorTest {
 
     void assertDataStringGeneratesExpectedReportWithStyleSheet(
             String dataString, String styleSheet, String expected) {
-        File styleFile = FileUtils.createTempFile(TMP_DIR);
+        Path styleFile = FileUtils.createTempFile(TMP_DIR);
         FileUtils.writeToFile(styleSheet, styleFile.toString());
 
-        File dataFile = FileUtils.createTempFile(TMP_DIR);
+        Path dataFile = FileUtils.createTempFile(TMP_DIR);
         FileUtils.writeToFile(dataString, dataFile.toString());
 
         HtmlGenerator htmlGenerator = new HtmlGenerator(dataFile.toString(), styleFile.toString());

@@ -62,7 +62,8 @@ public class MethodMapTransformer extends Transformer {
         if (!methodName.startsWith(targetPackageName)) {
             return false;
         }
-        String fname = outputPath + File.separator + className + ".txt";
+
+        String fname = outputPath + File.separator + "matrixer-results" + ".txt";
         String endBlock = getCodeString(fname, methodName);
         method.insertBefore(endBlock);
 

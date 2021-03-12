@@ -28,10 +28,10 @@ class ReportTest {
 
     @Test
     void canGenerateReport() {
-        File emptyDataFile = FileUtils.createTempFile(Path.of(TMP_DIR));
+        Path emptyDataFile = FileUtils.createTempFile(Path.of(TMP_DIR));
 
         Report report = new Report.Builder()
-                .dataFilePath(emptyDataFile.toPath())
+                .dataFilePath(emptyDataFile)
                 .outputPath(TMP_DIR)
                 .reportName("test-report.html")
                 .build();
@@ -42,10 +42,10 @@ class ReportTest {
 
     @Test
     void catchesInvalidOutputPath() {
-        File emptyDataFile = FileUtils.createTempFile(Path.of(TMP_DIR));
+        Path emptyDataFile = FileUtils.createTempFile(Path.of(TMP_DIR));
 
         Report report = new Report.Builder()
-                .dataFilePath(emptyDataFile.toPath())
+                .dataFilePath(emptyDataFile)
                 .outputPath(INVALID_PATH)
                 .build();
 
@@ -54,10 +54,10 @@ class ReportTest {
 
     @Test
     void catchesInvalidNamePath() {
-        File emptyDataFile = FileUtils.createTempFile(Path.of(TMP_DIR));
+        Path emptyDataFile = FileUtils.createTempFile(Path.of(TMP_DIR));
 
         Report report = new Report.Builder()
-                .dataFilePath(emptyDataFile.toPath())
+                .dataFilePath(emptyDataFile)
                 .reportName(INVALID_NAME)
                 .build();
 

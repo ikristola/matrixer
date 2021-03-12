@@ -28,7 +28,7 @@ tasks.named('test') {
 
 test {
     testLogging {
-        events 'passed', 'skipped', 'failed'  // Events to print out
+        events 'passed', /*'skipped',*/ 'failed'  // Events to print out
 
         showStackTraces true
         showExceptions true

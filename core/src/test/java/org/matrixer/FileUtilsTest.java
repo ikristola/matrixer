@@ -8,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
+import java.nio.file.Files;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -16,8 +18,7 @@ class FileUtilsTest {
     static final String SEP = File.separator;
     static final Path TMP_DIR = Path.of(System.getProperty("java.io.tmpdir"));
 
-    static final Path TARGET_DIR = Path.of(
-            TMP_DIR + SEP + "targetdir");
+    static final Path TARGET_DIR = Path.of(TMP_DIR + SEP + "targetdir");
 
     @BeforeAll
     static void setUp() {
@@ -26,7 +27,16 @@ class FileUtilsTest {
 
     @Test
     void returnCorrectTempPath() {
-        assertEquals(Path.of(System.getProperty("java.io.tmpdir")), FileUtils.getTempDirPath());
+        Path tmpDir = FileUtils.getSystemTempDir();
+        assertFalse(tmpDir.toString().isEmpty());
+        assertEquals(Path.of(System.getProperty("java.io.tmpdir")), tmpDir);
+    }
+
+    @Test
+    void returnsCorrectCurrentWorkingDirectory() {
+        Path cwd = FileUtils.getCurrentDir();
+        assertFalse(cwd.toString().isEmpty());
+        assertEquals(System.getProperty("user.dir"), cwd.toString());
     }
 
     @Test
@@ -41,20 +51,20 @@ class FileUtilsTest {
 
     @Test
     void catchesIsExistingDirectoryCheckWithExistingFile() {
-        File tmpfile = FileUtils.createTempFile(TMP_DIR);
-        assertFalse(FileUtils.isExistingDirectory(tmpfile.toPath()));
+        Path tmpfile = FileUtils.createTempFile(TMP_DIR);
+        assertFalse(FileUtils.isExistingDirectory(tmpfile));
     }
 
     @Test
     void isExistingFileCheck() {
-        File tmpfile = FileUtils.createTempFile(TMP_DIR);
-        assertTrue(FileUtils.isExistingFile(tmpfile.toPath()));
+        Path tmpfile = FileUtils.createTempFile(TMP_DIR);
+        assertTrue(FileUtils.isExistingFile(tmpfile));
     }
 
     @Test
     void createTemporaryFile() {
-        File tmpfile = FileUtils.createTempFile(TMP_DIR);
-        assertTrue(tmpfile.exists());
+        Path tmpfile = FileUtils.createTempFile(TMP_DIR);
+        assertTrue(Files.exists(tmpfile));
     }
 
     @Test
@@ -108,11 +118,11 @@ class FileUtilsTest {
     @Test
     void canWriteToFile() throws IOException {
         String expected = "Expected\nfile\ncontents\n";
-        File file = FileUtils.createTempFile(TMP_DIR);
+        Path file = FileUtils.createTempFile(TMP_DIR);
         FileUtils.writeToFile(expected, file.toString());
 
         StringBuilder stringBuilder = new StringBuilder();
-        Stream<String> lines = Files.lines(file.toPath());
+        Stream<String> lines = Files.lines(file);
         lines.forEach(l -> stringBuilder.append(l).append("\n"));
         assertEquals(expected, stringBuilder.toString());
     }

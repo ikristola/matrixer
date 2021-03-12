@@ -18,7 +18,7 @@ class ElementFactoryTest {
                 "<body><h1>Header</h1>Body<table><tr><th>TableHeader</th></tr>" +
                 "<tr><td>TableCell</td></tr></table></body></html>";
 
-        File file = FileUtils.createTempFile(Path.of(TMP_DIR));
+        Path file = FileUtils.createTempFile(Path.of(TMP_DIR));
 
         String str = ElementFactory.doctype() +
                 ElementFactory.html(
@@ -33,9 +33,9 @@ class ElementFactoryTest {
                                         ElementFactory.tableRow(
                                                 ElementFactory.tableCell("TableCell")))));
 
-        FileUtils.writeToFile(str, file.getPath());
+        FileUtils.writeToFile(str, file.toString());
 
-        String fileContents = Files.readString(file.toPath());
+        String fileContents = Files.readString(file);
         assertEquals(expected, fileContents);
     }
 }

@@ -4,4 +4,5 @@ plugins {
 }
 
 dependencies {
+    compile group: 'com.github.djeang', name: 'vincer-dom', version: '1.0.0'
 }

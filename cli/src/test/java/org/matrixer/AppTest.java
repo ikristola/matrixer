@@ -11,9 +11,10 @@ import org.junit.jupiter.api.Test;
 
 class AppTest {
 
-    static String TMP_DIR = System.getProperty("java.io.tmpdir");
-    static Path target = Path.of(TMP_DIR, File.separator, "matrixer-test");
-    static Path outputDir = target.resolve(Properties.DEFAULT_OUTDIR);
+    static Path TMP_DIR = FileUtils.getSystemTempDir();
+    static Path target = TMP_DIR.resolve("matrixer-test");
+    static String buildDirName = GradleProjectPreparer.BUILD_DIR_NAME;
+    static Path outputDir = target.resolve(Properties.defaultOutputPath(target, buildDirName));
 
     @BeforeAll
     static void runCoverageOnRepo() {
@@ -29,21 +30,23 @@ class AppTest {
     @Test
     void testOutputFileContainsMethods() {
         try {
-            Path outputFile = outputDir.resolve("org.matrixertest.calculator.Calculator.txt");
+            // Path outputFile =
+            // outputDir.resolve("org.matrixertest.calculator.Calculator.txt");
+            Path outputFile = outputDir.resolve("matrixer-results.txt");
             assertTrue(outputFile.toFile().exists(), outputFile + " Does not exist");
 
             BufferedReader reader = new BufferedReader(new FileReader(outputFile.toFile()));
             String[] methods = {
-                "org.matrixertest.calculator.Calculator.multiplication(int,int)",
-                "org.matrixertest.calculator.Calculator.addition(int,int)",
-                "org.matrixertest.calculator.Calculator.subtraction(int,int)",
+                    "org.matrixertest.calculator.Calculator.multiplication(int,int)",
+                    "org.matrixertest.calculator.Calculator.addition(int,int)",
+                    "org.matrixertest.calculator.Calculator.subtraction(int,int)",
             };
             HashSet<String> foundMethods = new HashSet<>();
             var lines = reader.lines().iterator();
-            for (;lines.hasNext(); ) {
+            for (; lines.hasNext();) {
                 var line = lines.next();
                 for (var m : methods) {
-                    if (line.contains(m)){
+                    if (line.contains(m)) {
                         foundMethods.add(m);
                     }
                 }
