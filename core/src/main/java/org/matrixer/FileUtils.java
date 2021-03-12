@@ -182,11 +182,8 @@ public class FileUtils {
      */
     static void writeToFile(String string, String filePath) {
         File file = new File(filePath);
-        BufferedWriter writer = null;
-        try {
-            writer = new BufferedWriter(new FileWriter(file));
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             writer.write(string);
-            writer.close();
         } catch (IOException e) {
             throw new RuntimeException("Could not write to file: " + e.getMessage());
         }
