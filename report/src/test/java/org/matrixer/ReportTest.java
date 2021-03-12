@@ -3,6 +3,7 @@ package org.matrixer;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -11,26 +12,55 @@ class ReportTest {
 
     static final String SEP = File.separator;
     final static String TMP_DIR = System.getProperty("java.io.tmpdir");
+    static final String INVALID_PATH = "\0";
+    static final String INVALID_NAME = "\0";
+
 
     @Test
-    void returnFalseIfDataFileDoesNotExist() {
+    void throwsExceptionIfDataFileDoesNotExist() {
         Path tmpDir = FileUtils.createTempDirectory(Path.of(TMP_DIR));
-        Report reportGenerator = new Report.Builder()
+        Report report = new Report.Builder()
                 .dataFilePath(tmpDir + SEP + "nonexisting.txt")
-                .outputPath(TMP_DIR)
                 .build();
-        assertFalse(reportGenerator.generate());
+        assertThrows(RuntimeException.class, report::generate);
     }
 
     @Test
     void canGenerateReport() {
-        // todo use with valid raw data file from matrixer-test
+        File emptyDataFile = FileUtils.createTempFile(Path.of(TMP_DIR));
 
-//        ReportGenerator reportGenerator = new ReportGenerator.Builder()
-//                .dataFilePath()
-//                .outputPath(TMP_DIR)
-//                .build();
+        Report report = new Report.Builder()
+                .dataFilePath(emptyDataFile.toPath())
+                .outputPath(TMP_DIR)
+                .reportName("test-report.html")
+                .build();
+        report.generate();
+
+        assertTrue(Files.exists(Path.of(TMP_DIR + SEP + "test-report.html")));
     }
 
+    @Test
+    void catchesInvalidOutputPath() {
+        File emptyDataFile = FileUtils.createTempFile(Path.of(TMP_DIR));
+
+        Report report = new Report.Builder()
+                .dataFilePath(emptyDataFile.toPath())
+                .outputPath(INVALID_PATH)
+                .build();
+
+        assertThrows(RuntimeException.class, report::generate);
+    }
+
+    @Test
+    void catchesInvalidNamePath() {
+        File emptyDataFile = FileUtils.createTempFile(Path.of(TMP_DIR));
+
+        Report report = new Report.Builder()
+                .dataFilePath(emptyDataFile.toPath())
+                .reportName(INVALID_NAME)
+                .build();
+
+        assertThrows(RuntimeException.class, report::generate);
+    }
 
 }
