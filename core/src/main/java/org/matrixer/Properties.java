@@ -35,10 +35,11 @@ class Properties {
      * The default output directory if none is provided is a subdirectory of
      * the target directory with this name.
      */
-    final static Path DEFAULT_OUTDIR = Path.of("build", "matrix-cov");
+    final static String DEFAULT_RESULTS_DIRNAME = "matrix-cov";
 
-    Path targetPath;
-    Path outputPath;
+    Path targetDir;
+    Path outputDir;
+    String buildDirName = "build";
     URI remoteURL = null;
     String failureReason = "Properties not parsed";
 
@@ -71,10 +72,10 @@ class Properties {
         String arg = flagPair.get(1);
         switch (flag) {
             case TARGET_FLAG:
-                targetPath = Paths.get(arg);
+                targetDir = Paths.get(arg);
                 break;
             case OUTDIR_FLAG:
-                outputPath = Paths.get(arg);
+                outputDir = Paths.get(arg);
                 break;
             case VCS_FLAG:
                 remoteURL = parseURL(arg);
@@ -104,19 +105,28 @@ class Properties {
     }
 
     private void validate() {
-        if (targetPath == null) {
+        if (targetDir == null) {
             setError("Target directory is required");
         }
     }
 
     private void applyDefaults() {
-        if (outputPath == null) {
-            outputPath = defaultOutputPath();
+        if (outputDir == null) {
+            outputDir = defaultOutputPath(targetDir, buildDirName);
         }
     }
 
-    Path defaultOutputPath() {
-        return Paths.get(targetPath.toString(), DEFAULT_OUTDIR.toString());
+    public void setBuildDirName(String buildDirName) {
+        this.buildDirName = buildDirName;
+    }
+
+    Path defaultOutputDir() {
+        return defaultOutputPath(targetDir, buildDirName);
+    }
+
+    static Path defaultOutputPath(Path targetDir, String buildDirName) {
+        Path resultsDir = Path.of(buildDirName, DEFAULT_RESULTS_DIRNAME);
+        return targetDir.resolve(resultsDir);
     }
 
     private void handleError(Throwable e) {
@@ -149,15 +159,15 @@ class Properties {
     /**
      * @returns the path to the target repository
      */
-    Path targetPath() {
-        return targetPath;
+    Path targetDir() {
+        return targetDir;
     }
 
     /**
      * @returns the path to the output directory.
      */
-    Path outputPath() {
-        return outputPath;
+    Path outputDir() {
+        return outputDir;
     }
 
     /**

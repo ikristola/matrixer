@@ -2,49 +2,46 @@ package org.matrixer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.junit.jupiter.api.Test;
 
 class PropertiesTest {
 
-    static final String SEP = File.separator;
     // Any non specific path
-    static final String ANY_PATH = SEP + "any" + SEP + "path";
+    static final Path ANY_PATH = Path.of("any", "path");
     // Some specific path
-    static final String SOME_PATH = SEP + "some" + SEP + "path";
+    static final Path SOME_PATH = Path.of("some", "path");
     static final String INVALID_PATH = "\0";
     static final String INVALID_URL = "\\/#@£${[]}\\``´!%&/()=?`^*_:;><";
 
     @Test
     void parseOutputPathFromArgs() {
-        Path expected = Paths.get(SOME_PATH);
-        String[] args = {"--target", ANY_PATH, "--output", expected.toString()};
+        Path expected = SOME_PATH;
+        String[] args = {"--target", ANY_PATH.toString(), "--output", expected.toString()};
         Properties prop = new Properties();
 
         prop.parse(args);
 
-        assertEquals(expected, prop.outputPath());
+        assertEquals(expected, prop.outputDir());
     }
 
     @Test
     void parseInputPathFromArgs() {
-        Path expected = Paths.get(SOME_PATH);
+        Path expected = SOME_PATH;
         String[] args = {"--target", expected.toString()};
         Properties prop = new Properties();
 
         prop.parse(args);
 
-        assertEquals(expected, prop.targetPath());
+        assertEquals(expected, prop.targetDir());
     }
 
     @Test
     void targetPathMustBeSpecified() {
-        String[] args = {"--output", ANY_PATH, "--git", "github.com/a/repo.git"};
+        String[] args = {"--output", ANY_PATH.toString(), "--git", "github.com/a/repo.git"};
         Properties prop = new Properties();
 
         prop.parse(args);
@@ -54,18 +51,18 @@ class PropertiesTest {
 
     @Test
     void defaultOutputPathIfNotSpecified() {
-        String[] args = {"--target", SOME_PATH, "--git", "github.com/a/repo.git"};
+        String[] args = {"--target", SOME_PATH.toString(), "--git", "github.com/a/repo.git"};
         Properties prop = new Properties();
 
         prop.parse(args);
 
-        assertEquals(prop.defaultOutputPath(), prop.outputPath());
+        assertEquals(prop.defaultOutputDir(), prop.outputDir());
     }
 
     @Test
     void parseGitHTTPSLink() {
         String link = "https://pabo1800@bitbucket.org/pabo1800/matrixer.git";
-        String[] args = {"--target", ANY_PATH, "--git", link};
+        String[] args = {"--target", ANY_PATH.toString(), "--git", link};
         Properties prop = new Properties();
 
         prop.parse(args);
@@ -76,7 +73,7 @@ class PropertiesTest {
     @Test
     void parseGitSSHLinkWithExplicitProtocol() {
         String link = "ssh://git@bitbucket.org:pabo1800/matrixer.git";
-        String[] args = {"--target", ANY_PATH, "--git", link};
+        String[] args = {"--target", ANY_PATH.toString(), "--git", link};
         Properties prop = new Properties();
 
         prop.parse(args);
@@ -87,7 +84,7 @@ class PropertiesTest {
     @Test
     void parseGitSSHLinkWithoutProtocol() {
         String link = "git@bitbucket.org:pabo1800/matrixer.git";
-        String[] args = {"--target", ANY_PATH, "--git", link};
+        String[] args = {"--target", ANY_PATH.toString(), "--git", link};
         Properties prop = new Properties();
 
         prop.parse(args);
@@ -97,7 +94,7 @@ class PropertiesTest {
 
     @Test
     void isNotRemoteWithoutGitFlag() {
-        String[] args = {"--target", ANY_PATH};
+        String[] args = {"--target", ANY_PATH.toString()};
         Properties prop = new Properties();
 
         prop.parse(args);
@@ -107,7 +104,7 @@ class PropertiesTest {
     @Test
     void catchesInvalidGitLink() {
         String link = INVALID_URL;
-        String[] args = {"--target", ANY_PATH, "--git", link};
+        String[] args = {"--target", ANY_PATH.toString(), "--git", link};
         Properties prop = new Properties();
         assertDoesNotThrow(() -> prop.parse(args));
         assertNOTValid(prop);
@@ -135,7 +132,7 @@ class PropertiesTest {
 
     @Test
     void catchesInvalidFlagFirst() {
-        String[] args = {"INVALID", "--target", ANY_PATH};
+        String[] args = {"INVALID", "--target", ANY_PATH.toString()};
         Properties prop = new Properties();
 
         prop.parse(args);
@@ -145,7 +142,7 @@ class PropertiesTest {
 
     @Test
     void catchesInvalidFlagAfter() {
-        String[] args = {"--target", ANY_PATH, "INVALID"};
+        String[] args = {"--target", ANY_PATH.toString(), "INVALID"};
         Properties prop = new Properties();
 
         prop.parse(args);
@@ -156,7 +153,7 @@ class PropertiesTest {
     @Test
     void catchesInvalidFlagInBetween() {
         String[] args =
-                {"--target", ANY_PATH, "INVALID", "--output", ANY_PATH};
+                {"--target", ANY_PATH.toString(), "INVALID", "--output", ANY_PATH.toString()};
         Properties prop = new Properties();
 
         prop.parse(args);

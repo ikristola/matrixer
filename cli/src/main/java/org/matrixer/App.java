@@ -1,7 +1,5 @@
 package org.matrixer;
 
-import java.io.IOException;
-
 public class App {
 
     Properties properties;
@@ -48,16 +46,15 @@ public class App {
 
     private void prepareProject() {
         System.out.println("Preparing target project");
-        ProjectPreparer projectPreparer = new ProjectPreparer(properties);
+        ProjectPreparer projectPreparer = ProjectPreparer.scan(properties);
         projectPreparer.prepare();
     }
 
     private void runProject() {
         System.out.println("Running target project tests");
-        try {
             ProjectRunner projectRunner = new ProjectRunner.Builder()
-                    .projectPath(properties.targetPath())
-                    .logFilePath(properties.outputPath())
+                    .projectPath(properties.targetDir())
+                    .logFileDir(properties.outputDir())
                     .logFileName("matrixer-target-runlog.txt")
                     .task("test")
                     .buildSystem("gradle")
@@ -68,14 +65,11 @@ public class App {
                 return;
             }
             System.out.println("Target project tests was run successfully!");
-        } catch (IOException e) {
-            throw new RuntimeException("Failed test target project: " + e.getMessage());
-        }
     }
 
     private void verifyOutputDirectoryExists() {
-        if (!FileUtils.isExistingDirectory(properties.outputPath())) {
-            if (!FileUtils.createDirectory(properties.outputPath())) {
+        if (!FileUtils.isExistingDirectory(properties.outputDir())) {
+            if (!FileUtils.createDirectory(properties.outputDir())) {
                 throw new IllegalArgumentException("Failed to create output directory");
             }
         }
@@ -83,20 +77,20 @@ public class App {
 
     private void cloneRemoteRepository() throws Exception {
         final var remoteURL = properties.remoteURL().toString();
-        final var targetPath = properties.targetPath().toFile();
+        final var targetPath = properties.targetDir().toFile();
         System.out.println("Cloning from " + remoteURL + " to " + targetPath);
         repo = GitRepository.clone(remoteURL, targetPath);
         System.out.println("Cloning successful!");
     }
 
     private void setupLocalRepository() {
-        if (!FileUtils.isExistingDirectory(properties.targetPath())) {
+        if (!FileUtils.isExistingDirectory(properties.targetDir())) {
             throw new IllegalArgumentException(
-                    "Target path does not exist: " + properties.targetPath());
+                    "Target path does not exist: " + properties.targetDir());
         }
         System.out.println("Properties: "
-                + "\n\tTarget path: " + properties.targetPath()
-                + "\n\tOutput path: " + properties.outputPath()
+                + "\n\tTarget path: " + properties.targetDir()
+                + "\n\tOutput path: " + properties.outputDir()
                 + "\n\tRemote: " + properties.remoteURL());
     }
 

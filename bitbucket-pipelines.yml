@@ -14,8 +14,10 @@ pipelines:
           name: Build and Test
           caches:
             - gradle
+            - maven
           script:
-            - gradle build
+            - apt-get update && apt-get install -y maven
+            - bash ./gradlew build
           after-script:
             - pipe: atlassian/checkstyle-report:0.2.0
       - step:
