@@ -3,7 +3,10 @@ package org.matrixer;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
 import java.nio.file.Files;
 
@@ -23,10 +26,10 @@ class FileUtilsTest {
     }
 
     @Test
-    void returnsCorrectTempDirectory() {
+    void returnCorrectTempPath() {
         Path tmpDir = FileUtils.getSystemTempDir();
         assertFalse(tmpDir.toString().isEmpty());
-        assertEquals(System.getProperty("java.io.tmpdir"), tmpDir.toString());
+        assertEquals(Path.of(System.getProperty("java.io.tmpdir")), tmpDir);
     }
 
     @Test
@@ -110,6 +113,18 @@ class FileUtilsTest {
     void catchesFileReplacementWithBadFile() {
         assertThrows(RuntimeException.class, () -> FileUtils
                 .replaceFirstOccurrenceInFile(TARGET_DIR, "ABC", "CBA"));
+    }
+
+    @Test
+    void canWriteToFile() throws IOException {
+        String expected = "Expected\nfile\ncontents\n";
+        Path file = FileUtils.createTempFile(TMP_DIR);
+        FileUtils.writeToFile(expected, file.toString());
+
+        StringBuilder stringBuilder = new StringBuilder();
+        Stream<String> lines = Files.lines(file);
+        lines.forEach(l -> stringBuilder.append(l).append("\n"));
+        assertEquals(expected, stringBuilder.toString());
     }
 
 }
