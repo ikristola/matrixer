@@ -4,6 +4,9 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * Builds a human-readable html report from a raw data matrix file
+ */
 public class Report {
 
     private String dataFilePath;
@@ -63,8 +66,8 @@ public class Report {
         String styleSheetPath = System.getProperty("user.dir") +
                 "/src/main/resources/report-style.css";
 
-        ReportBuilder reportBuilder = new ReportBuilder(dataFilePath, styleSheetPath);
-        String html = reportBuilder.generateReport();
+        HtmlGenerator htmlGenerator = new HtmlGenerator(dataFilePath, styleSheetPath);
+        String html = htmlGenerator.generateReport();
 
         try {
             writeToFile(html);
