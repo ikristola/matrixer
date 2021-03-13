@@ -86,7 +86,7 @@ public class MethodMapTransformer extends Transformer {
                         + "   StackTraceElement elem = elems[i];"
                         + "   if (elem.getClassName().matches(\"" + regex + "\")) {"
                         + "       String caller = elem.getClassName() + \":\" + elem.getMethodName();"
-                        + "       String towrite = \"%2$s <= \" + caller + \"\\n\";"
+                        + "       String towrite = \"%2$s<=\" + caller + \"\\n\";"
                         + "       System.out.print(towrite);"
                         + "       out.write(towrite.getBytes());"
                         + "       System.out.println(\"Wrote to %1$s \");"

@@ -184,7 +184,19 @@ public class FileUtils {
     }
 
     /**
-     * Write a string to a file
+     * Get a path that does not correspond to any file
+     *
+     * @return Path to the non existing file
+     */
+    static Path getNonExistingPath() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+        String date = simpleDateFormat.format(new Date());
+        return Path.of(System.getProperty("java.io.tmpdir"), date);
+    }
+
+    /**
+     * Write a string to a file. If the file does not exist it is created.
+     * If the file already exists it will be overwritten with the new string.
      *
      * @param string The string to be written
      * @param filePath String representation of the file path

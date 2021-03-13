@@ -76,6 +76,13 @@ class FileUtilsTest {
     }
 
     @Test
+    void createNonExistingPath() {
+        Path path = FileUtils.getNonExistingPath();
+        System.out.println("path: " + path);
+        assertFalse(path.toFile().exists());
+    }
+
+    @Test
     void catchesCreateTemporaryDirectoryWithBadPath() {
         Path dir = FileUtils.createTempDirectory(TMP_DIR);
         dir.toFile().setWritable(false);
