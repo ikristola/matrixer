@@ -156,11 +156,19 @@ class Properties {
         return failureReason;
     }
 
+    void setTargetDir(Path targetDir) {
+        this.targetDir = targetDir;
+    }
+
     /**
      * @returns the path to the target repository
      */
     Path targetDir() {
         return targetDir;
+    }
+
+    void setOutputDir(Path outputDir) {
+        this.outputDir = outputDir;
     }
 
     /**
@@ -175,6 +183,10 @@ class Properties {
      */
     boolean isRemote() {
         return remoteURL != null;
+    }
+
+    void setRemoteURL(URI remoteURL) {
+        this.remoteURL = remoteURL;
     }
 
     /**

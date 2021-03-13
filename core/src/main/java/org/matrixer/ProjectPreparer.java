@@ -1,31 +1,47 @@
 package org.matrixer;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+
+import org.eclipse.jgit.api.errors.GitAPIException;
 
 /**
  * Prepares a target project for further processing
  */
-public interface ProjectPreparer {
-    final static String GRADLE_BUILD_FILE_NAME = "build.gradle";
-    final static String MAVEN_BUILD_FILE_NAME = "pom.xml";
+public class ProjectPreparer {
 
-    public static ProjectPreparer scan(Properties prop) {
-        return scan(prop.targetDir());
+    Project project;
+
+    ProjectPreparer() {
     }
 
-    public static ProjectPreparer scan(Path targetPath) {
-        var paths = FileUtils.fileSearch(targetPath, GRADLE_BUILD_FILE_NAME);
-        if (paths.length > 0) {
-            return new GradleProjectPreparer(targetPath);
+    Project prepare(Properties properties) throws GitAPIException, IOException {
+        if (properties.isRemote()) {
+            GitRepository.clone(
+                    properties.remoteURL().toString(),
+                    properties.targetDir().toFile());
         }
-        paths = FileUtils.fileSearch(targetPath, MAVEN_BUILD_FILE_NAME);
-        if (paths.length > 0) {
-            return new MavenProjectPreparer(targetPath);
-        }
-        throw new IllegalArgumentException("Not a maven or gradle project");
+        this.project = ProjectFactory.from(properties);
+        String agentString = agentString(properties);
+        project.injectBuildScript(agentString);
+        Files.createDirectories(project.outputDirectory());
+        return project;
     }
 
-    public BuildType buildType();
-    public Path getBuildScript();
-    public void prepare();
+    String agentString(Properties properties) {
+        Path outputDir = project.outputDirectory();
+        // These should be specified in the Properties ???
+        Path agentJar = pathToAgent();
+        String targetRootPackage = "org.matrixertest";
+
+        return String.format("-javaagent:%s=%s:%s:%s",
+                agentJar.toString(), outputDir.toString(),
+                targetRootPackage, targetRootPackage);
+    }
+
+    Path pathToAgent() {
+        String cwd = System.getProperty("user.dir");
+        return Path.of(cwd, "../agent/build/libs/agentJar.jar").normalize();
+    }
 }

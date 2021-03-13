@@ -1,10 +1,17 @@
 package org.matrixer;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+
+import java.nio.file.Files;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.ProgressMonitor;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
 /**
  * Creates and manages git repositories
@@ -13,7 +20,7 @@ public class GitRepository {
 
     Git repo;
 
-    private GitRepository(Git repo) {
+    private GitRepository(Git repo, Path root) {
         this.repo = repo;
     }
 
@@ -34,9 +41,52 @@ public class GitRepository {
                 .setDirectory(target)
                 .setProgressMonitor(new SimpleProgressMonitor())
                 .call();
-        return new GitRepository(result);
+        return new GitRepository(result, target.toPath());
     }
 
+    public static GitRepository open(Path projectDir) throws IOException {
+        Path repoDir = projectDir.resolve(".git");
+        if (!Files.exists(repoDir)) {
+            throw new RuntimeException("Not a git repository");
+        }
+        FileRepositoryBuilder builder = new FileRepositoryBuilder();
+        Repository repository = builder.setGitDir(repoDir.toFile())
+                .readEnvironment() // scan environment GIT_* variables
+                .findGitDir() // scan up the file system tree
+                .build();
+        return new GitRepository(new Git(repository), projectDir);
+    }
+
+    public Path rootDirectory() {
+        return repo.getRepository().getWorkTree().toPath();
+    }
+
+    public boolean isClean() throws NoWorkTreeException, GitAPIException {
+        return repo.status().call().isClean();
+    }
+
+    public boolean hasUncommittedChanges() throws NoWorkTreeException, GitAPIException {
+        return repo.status().call().hasUncommittedChanges();
+    }
+
+    public void restoreUncommitted() throws NoWorkTreeException, GitAPIException {
+        repo.checkout().setAllPaths(true).call();
+    }
+
+    public void restore() throws NoWorkTreeException, GitAPIException {
+        restoreUncommitted();
+        clean();
+    }
+
+    public void clean() throws NoWorkTreeException, GitAPIException {
+        var cleaned = repo.clean().setCleanDirectories(true).call();
+        for (var file : cleaned) {
+            System.out.println("Cleaned: " + file);
+        }
+    }
+
+    // Clean: no untracked files
+    // Uncomitted changes: files modified
 
     /**
      * Prints progress messages to standard out

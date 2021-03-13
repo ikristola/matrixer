@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.util.Comparator;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.junit.jupiter.api.*;
 
 class GitRepositoryTest {
@@ -17,15 +18,9 @@ class GitRepositoryTest {
     final static String TMP_DIR = System.getProperty("java.io.tmpdir");
     final static Path TARGET_DIR = Path.of(TMP_DIR, File.separator, "matrixer-test");
 
-    @BeforeAll
-    static void cleanUp() {
+    @BeforeEach
+    void setup() {
         System.out.println("Cleaning up!");
-        removeDirectory(TARGET_DIR);
-    }
-
-    @AfterEach
-    void cleanUpAfter() {
-        System.out.println("Cleaning up");
         removeDirectory(TARGET_DIR);
     }
 
@@ -62,6 +57,76 @@ class GitRepositoryTest {
     void throwsExceptionIfLocalPathIsNotAGitDirectory() {
         File target = temporaryTargetFile();
         assertThrows(GitAPIException.class, () -> GitRepository.clone(TMP_DIR, target));
+    }
+
+    @Test
+    void canGetRootPath() throws GitAPIException {
+        var repo = GitRepository.clone(TEST_REPO_URL, temporaryTargetFile());
+        assertEquals(temporaryTargetFile().toPath(), repo.rootDirectory());
+    }
+
+    @Test
+    void canGetCleanStatus() throws NoWorkTreeException, GitAPIException {
+        GitRepository repo = GitRepository.clone(TEST_REPO_URL, temporaryTargetFile());
+        assertTrue(repo.isClean());
+    }
+
+    @Test
+    void isNotCleanAfterAddingFile() throws NoWorkTreeException, GitAPIException, IOException {
+        GitRepository repo = GitRepository.clone(TEST_REPO_URL, temporaryTargetFile());
+        Files.createFile(repo.rootDirectory().resolve("new-file.txt"));
+        assertFalse(repo.isClean());
+    }
+
+    @Test
+    void canCleanUntrackedFiles() throws NoWorkTreeException, GitAPIException, IOException {
+        GitRepository repo = GitRepository.clone(TEST_REPO_URL, temporaryTargetFile());
+        Files.createFile(repo.rootDirectory().resolve("new-file.txt"));
+        repo.clean();
+        assertTrue(repo.isClean());
+    }
+
+    @Test
+    void canRestoreUncommittedChanges() throws GitAPIException, IOException {
+        GitRepository repo = GitRepository.clone(TEST_REPO_URL, temporaryTargetFile());
+        Files.writeString(repo.rootDirectory().resolve("build.gradle"), "New content");
+
+        repo.restoreUncommitted();
+
+        assertFalse(repo.hasUncommittedChanges(), "Still uncommited changes");
+    }
+
+    @Test
+    void canGetUntrackedStatus() throws NoWorkTreeException, GitAPIException {
+        GitRepository repo = GitRepository.clone(TEST_REPO_URL, temporaryTargetFile());
+        assertFalse(repo.hasUncommittedChanges());
+    }
+
+    @Test
+    void hasUntrackedAfterModifyingFile() throws NoWorkTreeException, GitAPIException, IOException {
+        GitRepository repo = GitRepository.clone(TEST_REPO_URL, temporaryTargetFile());
+        Files.writeString(repo.rootDirectory().resolve("build.gradle"), "New content");
+        assertTrue(repo.hasUncommittedChanges());
+    }
+
+    @Test
+    void canRestoreRepository() throws IOException, NoWorkTreeException, GitAPIException {
+        GitRepository repo = GitRepository.clone(TEST_REPO_URL, temporaryTargetFile());
+        Files.writeString(repo.rootDirectory().resolve("build.gradle"), "New content");
+        Files.createFile(repo.rootDirectory().resolve("new-file.txt"));
+
+        repo.restore();
+
+        assertTrue(repo.isClean(), "Still untracked files");
+        // assertFalse(repo.hasUncommittedChanges(), "Still uncommitted changes");
+    }
+
+    GitRepository cloneOrOpen(Path projectDir) throws GitAPIException, IOException {
+        if (Files.exists(projectDir)) {
+            var repo = GitRepository.open(projectDir);
+            repo.restore();
+        }
+        return GitRepository.clone(TEST_REPO_URL, projectDir.toFile());
     }
 
     static File projectDirectory() {

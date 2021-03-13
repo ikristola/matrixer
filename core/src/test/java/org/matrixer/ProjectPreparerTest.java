@@ -3,6 +3,7 @@ package org.matrixer;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.*;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -11,102 +12,107 @@ import org.junit.jupiter.api.*;
 
 class ProjectPreparerTest {
 
-    final static String TEST_REPO_URL = "https://github.com/ikristola/matrixer-test";
-    final static String TMP_DIR = System.getProperty("java.io.tmpdir");
-    final static Path TARGET_DIR = Path.of(TMP_DIR, File.separator, "matrixer-test");
-    final static String targetRootPackage = "org.matrixertest";
-
-    final static String CWD = System.getProperty("user.dir");
-    final static Path AGENT_JAR_PATH =
-            Path.of(CWD, "../agent/build/libs/agentJar.jar").normalize();
-    final static Path GRADLE_OUTPUT_PATH =
-            Properties.defaultOutputPath(TARGET_DIR, GradleProjectPreparer.BUILD_DIR_NAME);
-    final static Path MAVEN_OUTPUT_PATH =
-            Properties.defaultOutputPath(TARGET_DIR, MavenProjectPreparer.BUILD_DIR_NAME);
+    Path targetDirectory = TestUtils.targetDirectory();
+    URI testRepoURL = TestUtils.testRepoURL();
 
     @BeforeEach
-    void setUpEach() throws GitAPIException {
-        FileUtils.removeDirectory(TARGET_DIR);
-        GitRepository.clone(TEST_REPO_URL, TARGET_DIR.toFile());
-    }
-
-    @AfterAll
-    static void cleanUpAfter() {
-        // FileUtils.removeDirectory(TARGET_DIR);
-    }
-
-    @Test
-    void canAquireGradlePreparer() {
-        var mvnFile = FileUtils.fileSearch(TARGET_DIR, "pom.xml")[0];
-        assertDoesNotThrow(() -> Files.deleteIfExists(mvnFile));
-        var handle = ProjectPreparer.scan(TARGET_DIR);
-        assertEquals(BuildType.Gradle, handle.buildType());
+    void setUp() throws GitAPIException, IOException {
+        if (Files.exists(targetDirectory)) {
+            var repo = GitRepository.open(targetDirectory);
+            repo.restore();
+            return;
+        }
+        GitRepository.clone(testRepoURL.toString(), targetDirectory.toFile());
     }
 
     @Test
-    void canAquireMavenPreparer() {
-        var gradleFile = FileUtils.fileSearch(TARGET_DIR, "build.gradle")[0];
-        assertDoesNotThrow(() -> Files.deleteIfExists(gradleFile));
-        var handle = ProjectPreparer.scan(TARGET_DIR);
-        assertEquals(BuildType.Maven, handle.buildType());
+    void testClonesRemoteRepositoryToTargetDirectory() throws GitAPIException, IOException {
+
+        Path target = TestUtils.targetDirectory();
+        FileUtils.removeDirectory(target);
+
+        URI testRepoURL = TestUtils.testRepoURL();
+        Properties properties = new Properties();
+        properties.setTargetDir(target);
+        properties.setRemoteURL(testRepoURL);
+
+        ProjectPreparer preparer = new ProjectPreparer();
+        Project project = preparer.prepare(properties);
+
+        assertTrue(Files.exists(target.resolve(".git")));
+        assertEquals(target, project.directory());
     }
 
     @Test
-    void canAquireBuildScript() {
-        var mvnFile = FileUtils.fileSearch(TARGET_DIR, "pom.xml")[0];
-        assertDoesNotThrow(() -> Files.deleteIfExists(mvnFile));
-        var handle = ProjectPreparer.scan(TARGET_DIR);
-        assertTrue(handle.getBuildScript().endsWith("build.gradle"));
-        assertTrue(handle.getBuildScript().toFile().exists());
+    void testCanUseLocalProject() throws IOException, GitAPIException {
+        Path target = TestUtils.targetDirectory();
+        Properties properties = new Properties();
+        properties.setTargetDir(target);
+
+        ProjectPreparer preparer = new ProjectPreparer();
+        Project project = preparer.prepare(properties);
+
+        assertEquals(target, project.directory());
     }
 
     @Test
-    void gradleBuildScriptContainsJvmAgentArgs() {
-        var mvnFile = FileUtils.fileSearch(TARGET_DIR, "pom.xml")[0];
-        assertDoesNotThrow(() -> Files.deleteIfExists(mvnFile));
+    void prepareCreatesOutputDirectory() throws GitAPIException, IOException {
+        Path target = TestUtils.targetDirectory();
+        Properties properties = new Properties();
+        properties.setTargetDir(target);
 
-        var handle = ProjectPreparer.scan(TARGET_DIR);
-        handle.prepare();
+        ProjectPreparer preparer = new ProjectPreparer();
+        Project project = preparer.prepare(properties);
 
-        String agentArg = "jvmArgs \"" + gradleInjectedString() + "\"";
-        assertFileContainsString(handle.getBuildScript(), agentArg);
-    }
-
-    @Test
-    void mavenBuildScriptContainsJvmArgs() throws FileNotFoundException {
-        removeGradleFiles();
-        var handle = ProjectPreparer.scan(TARGET_DIR);
-        handle.prepare();
-        var buildScript = handle.getBuildScript();
-
-        String agentArg = "<argLine>" + mavenInjectedString() + "</argLine>";
-        String manifest = "<useManifestOnlyJar>false</useManifestOnlyJar>";
-        assertFileContainsString(buildScript, agentArg);
-        assertFileContainsString(buildScript, manifest);
+        assertTrue(Files.exists(project.outputDirectory()));
     }
 
     @Test
     void throwsExceptionForUnsupportedProject() {
-        Path tmpdir = FileUtils.createTempDirectory(Path.of(TMP_DIR));
+        Path emptyTarget = FileUtils.createTempDirectory();
+        Properties properties = new Properties();
+        properties.setTargetDir(emptyTarget);
 
-        assertThrows(Exception.class, () -> ProjectPreparer.scan(tmpdir));
+        assertThrows(Exception.class, () -> new ProjectPreparer().prepare(properties));
     }
 
-    String gradleInjectedString() {
-        return injectedString(AGENT_JAR_PATH, GRADLE_OUTPUT_PATH, targetRootPackage,
-                targetRootPackage);
+    @Nested
+    class Gradle {
+        @Test
+        void prepareInjectsGradleBuildScript() throws GitAPIException, IOException {
+            Path target = TestUtils.targetDirectory();
+            Properties properties = new Properties();
+            properties.setTargetDir(target);
+            ProjectPreparer preparer = new ProjectPreparer();
+
+            Project project = preparer.prepare(properties);
+            String agentString = TestUtils.agentString(project.outputDirectory());
+            String expected = "jvmArgs \"" + agentString + "\"";
+            assertFileContainsString(project.buildScript(), expected);
+        }
     }
 
-    String mavenInjectedString() {
-        return injectedString(AGENT_JAR_PATH, MAVEN_OUTPUT_PATH, targetRootPackage,
-                targetRootPackage);
-    }
+    @Nested
+    class Maven {
+        @BeforeEach
+        void setupMaven() {
+            TestUtils.removeGradleFiles(targetDirectory);
+        }
 
-    static String injectedString(Path agentJarPath, Path outputPath, String targetPkg,
-            String testPkg) {
-        return String.format("-javaagent:%s=%s:%s:%s",
-                agentJarPath.toString(), outputPath.toString(),
-                targetRootPackage, targetRootPackage);
+        @Test
+        void prepareInjectsMavenBuildScript() throws GitAPIException, IOException {
+            Path target = TestUtils.targetDirectory();
+            Properties properties = new Properties();
+            properties.setTargetDir(target);
+            ProjectPreparer preparer = new ProjectPreparer();
+
+            Project project = preparer.prepare(properties);
+            String agentString = TestUtils.agentString(project.outputDirectory());
+            String agentArg = "<argLine>" + agentString + "</argLine>";
+            String manifest = "<useManifestOnlyJar>false</useManifestOnlyJar>";
+            assertFileContainsString(project.buildScript(), agentArg);
+            assertFileContainsString(project.buildScript(), manifest);
+        }
     }
 
     void assertFileContainsString(Path file, String string) {
@@ -119,31 +125,6 @@ class ProjectPreparerTest {
             assertTrue(index != -1, "Did not find\n'" + string + "'\nin\n" + file + "\n");
         } catch (IOException e) {
             throw new AssertionError("assertFileContainsString: " + e.getMessage());
-        }
-    }
-
-    void removeGradleFiles() {
-        var gradleFiles = new String[] {"gradle", "gradlew", "gradlew.bat", "build.gradle",
-                "gradle.settings"};
-        removeFiles(TARGET_DIR, gradleFiles);
-    }
-
-    void removeMavenFiles(Path projectDir) {
-        var gradleFiles = new String[] {"pom.xml"};
-        removeFiles(projectDir, gradleFiles);
-    }
-
-    void removeFiles(Path dir, String[] fnames) {
-        try {
-            for (var name : fnames) {
-                var file = dir.resolve(name).toFile();
-                if (file.isDirectory()) {
-                    FileUtils.removeDirectory(file.toPath());
-                }
-                Files.deleteIfExists(file.toPath());
-            }
-        } catch (IOException e) {
-            System.out.println("Could not remove file: " + e.getMessage());
         }
     }
 }

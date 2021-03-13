@@ -82,6 +82,13 @@ public class FileUtils {
     }
 
     /**
+     * Creates a new temporary directory in the system temp directory
+     */
+    public static Path createTempDirectory() {
+        return createTempDirectory(getSystemTempDir());
+    }
+
+    /**
      * Create a temporary directory in a given directory. Filename:
      * "tmpfileHHmmss"
      * 
@@ -134,6 +141,24 @@ public class FileUtils {
             } catch (IOException e) {
                 throw new RuntimeException("Failed to remove dir: " + e.getMessage());
             }
+        }
+    }
+
+    /**
+     * Removes a list of files from dir
+     */
+    public static void removeFiles(Path dir, String[] fnames) {
+        try {
+            for (var name : fnames) {
+                var file = dir.resolve(name).toFile();
+                if (file.isDirectory()) {
+                    removeDirectory(file.toPath());
+                } else {
+                    Files.deleteIfExists(file.toPath());
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Could not remove file: " + e.getMessage());
         }
     }
 

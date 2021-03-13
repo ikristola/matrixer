@@ -8,8 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-import java.nio.file.Files;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -129,8 +127,8 @@ class FileUtilsTest {
         FileUtils.writeToFile(expected, file.toString());
 
         StringBuilder stringBuilder = new StringBuilder();
-        Stream<String> lines = Files.lines(file);
-        lines.forEach(l -> stringBuilder.append(l).append("\n"));
+        Files.lines(file)
+                .forEach(l -> stringBuilder.append(l).append("\n"));
         assertEquals(expected, stringBuilder.toString());
     }
 
