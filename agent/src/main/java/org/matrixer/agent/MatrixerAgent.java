@@ -5,18 +5,20 @@ import static org.matrixer.agent.MatrixerAgentUtils.isTestClass;
 
 import java.io.*;
 import java.lang.instrument.Instrumentation;
+import java.nio.file.Path;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Agent for transforming classes in target package. The transformer used by the
- * agent makes class methods in target package print out the caller class when
- * they are called.
+ * Agent for transforming classes in target package. The transformer
+ * used by the agent makes class methods in target package print out the
+ * caller class when they are called.
  */
 public class MatrixerAgent {
 
     final static private boolean useLog = true;
-    private static PrintStream log;
+    private PrintStream log;
 
     final private Instrumentation inst;
 
@@ -31,12 +33,12 @@ public class MatrixerAgent {
     final private String targetPackage;
 
     /**
-     * The package that contains the tests Will be used to determine test cases
+     * The package that contains the tests Will be used to determine test
+     * cases
      */
     final private String testerPackage;
 
-    private MatrixerAgent(String agentArgs, Instrumentation inst) {
-        log("Creating agent");
+    private MatrixerAgent(String agentArgs, Instrumentation inst, String type) throws IOException {
         this.inst = inst;
         String[] args = agentArgs.split(":");
         if (args.length < 3) {
@@ -45,7 +47,10 @@ public class MatrixerAgent {
         outputPath = args[0];
         targetPackage = args[1];
         testerPackage = args[2];
-        log(String.format("OutputPath: %s\ntarget: %s\ntest: %s", outputPath, targetPackage, testerPackage));
+        setupLog();
+        log("started " + type + ":\n\tArgs: " + agentArgs);
+        log(String.format("OutputPath: %s\ntarget: %s\ntest: %s", outputPath, targetPackage,
+                testerPackage));
     }
 
     /**
@@ -53,11 +58,10 @@ public class MatrixerAgent {
      *
      * @param agentArgs Agent arguments
      * @param inst      Instrumentation instance
+     * @throws IOException
      */
-    public static void premain(String agentArgs, Instrumentation inst) {
-        setupLog();
-        log("started statically:\n\tArgs: " + agentArgs + "\n\tInstrumentation: " + inst);
-        var agent = new MatrixerAgent(agentArgs, inst);
+    public static void premain(String agentArgs, Instrumentation inst) throws IOException {
+        var agent = new MatrixerAgent(agentArgs, inst, "statically");
         agent.run();
     }
 
@@ -66,17 +70,16 @@ public class MatrixerAgent {
      *
      * @param agentArgs Agent arguments
      * @param inst      Instrumentation instance
+     * @throws IOException
      */
-    public static void agentmain(String agentArgs, Instrumentation inst) {
-        setupLog();
-        log("started dynamically");
-        var agent = new MatrixerAgent(agentArgs, inst);
+    public static void agentmain(String agentArgs, Instrumentation inst) throws IOException {
+        var agent = new MatrixerAgent(agentArgs, inst, "dynamically");
         agent.run();
     }
 
-    private static void setupLog() {
+    private void setupLog() throws IOException {
         try {
-            var out = new FileOutputStream(new File("matrixer-log.txt"));
+            var out = Files.newOutputStream(Path.of(outputPath).resolve(("matrixer-agent-log.txt")));
             log = new PrintStream(out);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -134,7 +137,8 @@ public class MatrixerAgent {
 
     private void transform(Class<?> targetCls, Instrumentation inst, String outputPath) {
         try {
-            var transformer = new MethodMapTransformer(targetCls, outputPath, targetPackage, testerPackage);
+            var transformer =
+                    new MethodMapTransformer(targetCls, outputPath, targetPackage, testerPackage);
             inst.addTransformer(transformer, true);
             inst.retransformClasses(targetCls);
         } catch (Exception e) {
@@ -142,7 +146,7 @@ public class MatrixerAgent {
         }
     }
 
-    private static void log(String msg) {
+    private void log(String msg) {
         if (useLog) {
             log.println("[Agent] " + msg);
         }

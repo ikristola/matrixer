@@ -5,7 +5,7 @@ import static org.matrixer.agent.util.Assertions.assertFoundTestCase;
 
 import java.nio.file.Path;
 
-import org.matrixer.FileUtils;
+import org.matrixer.core.FileUtils;
 
 import org.junit.jupiter.api.*;
 import org.matrixer.agent.dynamictargets.AnotherTestClassDynamic;
