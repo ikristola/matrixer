@@ -32,7 +32,7 @@ public class ProjectRunner {
 
     private void redirectStreams(ProcessBuilder builder, Path logFile) {
         builder.redirectErrorStream(true);
-        System.out.println("Redirecting to" + logFile);
+        System.out.println("Redirecting project streams to" + logFile);
         builder.redirectOutput(logFile.toFile());
     }
 
