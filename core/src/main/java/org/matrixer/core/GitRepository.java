@@ -44,6 +44,12 @@ public class GitRepository {
         return new GitRepository(result, targetDirectory);
     }
 
+    /**
+     * Opens an existing git repository
+     *
+     * @param projectDir The path to the respository
+     * @returns a GitRepository instance of the repository
+     */
     public static GitRepository open(Path projectDir) throws IOException {
         Path repoDir = projectDir.resolve(".git");
         if (!Files.exists(repoDir)) {
@@ -57,36 +63,55 @@ public class GitRepository {
         return new GitRepository(new Git(repository), projectDir);
     }
 
+    /**
+     * Returns the root directory of the repository
+     */
     public Path rootDirectory() {
         return repo.getRepository().getWorkTree().toPath();
     }
 
+    /**
+     * Tests if the repository has any untracked files
+     */
     public boolean isClean() throws NoWorkTreeException, GitAPIException {
         return repo.status().call().isClean();
     }
 
+    /**
+     * Tests if the repository has uncommitted changes
+     */
     public boolean hasUncommittedChanges() throws NoWorkTreeException, GitAPIException {
         return repo.status().call().hasUncommittedChanges();
     }
 
+    /**
+     * Restores any uncomitted changes
+     */
     public void restoreUncommitted() throws NoWorkTreeException, GitAPIException {
         repo.checkout().setAllPaths(true).call();
     }
 
+    /**
+     * Restores the working tree to the last commit on this branch.
+     *
+     * Removes any uncommitted changes an untracked files.
+     */
     public void restore() throws NoWorkTreeException, GitAPIException {
         restoreUncommitted();
         clean();
     }
 
+    /**
+     * Clean the repository.
+     *
+     * Removes any untracked files.
+     */
     public void clean() throws NoWorkTreeException, GitAPIException {
         var cleaned = repo.clean().setCleanDirectories(true).call();
         for (var file : cleaned) {
             System.out.println("Cleaned: " + file);
         }
     }
-
-    // Clean: no untracked files
-    // Uncomitted changes: files modified
 
     /**
      * Prints progress messages to standard out
