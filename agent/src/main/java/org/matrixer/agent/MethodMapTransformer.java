@@ -19,8 +19,8 @@ public class MethodMapTransformer extends Transformer {
     final private String outputPath;
 
     /**
-     * The package that contains the tests
-     * Will be used to determine test cases
+     * The package that contains the tests Will be used to determine test
+     * cases
      */
     final private String testerPackageName;
 
@@ -31,13 +31,15 @@ public class MethodMapTransformer extends Transformer {
 
     /**
      * Creates a new transformer
-     * 
-     * @param cls The class to transform
-     * @param outputPath The output path to store results
-     * @param targetPackage The root package name for the target of the instrumentation
+     *
+     * @param cls           The class to transform
+     * @param outputPath    The output path to store results
+     * @param targetPackage The root package name for the target of the
+     *                      instrumentation
      * @param testerPackage The root package name for the testing package
      */
-    MethodMapTransformer(Class<?> cls, String outputPath, String targetPackage, String testerPackage) {
+    MethodMapTransformer(Class<?> cls, String outputPath, String targetPackage,
+            String testerPackage) {
         super(cls.getName(), cls.getClassLoader());
         this.outputPath = outputPath;
         this.testerPackageName = testerPackage;
@@ -47,7 +49,7 @@ public class MethodMapTransformer extends Transformer {
     /**
      * Transform a method so that it prints out the caller method when
      * called
-     * 
+     *
      * @param method The method to be instrumented
      * @return True if successful
      * @throws NotFoundException
@@ -75,31 +77,37 @@ public class MethodMapTransformer extends Transformer {
     private String getCodeString(String fname, String calledMethodName) {
         String regex = classNameRegex();
         return String.format(
-                "java.io.BufferedOutputStream out = null;"
-                + "try {"
-                        + "java.io.File results = new java.io.File(\"%1$s\");"
-                        + "java.io.FileOutputStream fos = new java.io.FileOutputStream(results, true);"
-                        + "out = new java.io.BufferedOutputStream(fos);"
-                        + "StackTraceElement[] elems = Thread.currentThread().getStackTrace();"
-                        // First StackTraceElement is getStackTrace()
-                        + "for (int i = elems.length - 1; i > 1; i--) {"
-                        + "   StackTraceElement elem = elems[i];"
-                        + "   if (elem.getClassName().matches(\"" + regex + "\")) {"
-                        + "       String caller = elem.getClassName() + \":\" + elem.getMethodName();"
-                        + "       String towrite = \"%2$s<=\" + caller + \"\\n\";"
-                        + "       System.out.print(towrite);"
-                        + "       out.write(towrite.getBytes());"
-                        + "       System.out.println(\"Wrote to %1$s \");"
-                        + "       break;"
-                        + "   }"
-                        + "}"
+                ""
+                        + "java.net.Socket socket = null; "
+                        + "java.io.BufferedOutputStream out = null;"
+                        + "try {"
+                        + "    socket = new java.net.Socket(\"localhost\", 5555);"
+                        + "    out = new java.io.BufferedOutputStream(socket.getOutputStream());"
+                        + "    System.out.println(\"Created stream\" + socket.isConnected());"
+                        + "    StackTraceElement[] elems = Thread.currentThread().getStackTrace();"
+                        //     First StackTraceElement is getStackTrace()
+                        + "    for (int i = elems.length - 1; i > 1; i--) {"
+                        + "       StackTraceElement elem = elems[i];"
+                        + "       if (elem.getClassName().matches(\"%3$s\")) {"
+                        + "           String caller = elem.getClassName() + \":\" + elem.getMethodName();"
+                        + "           String towrite = \"%2$s<=\" + caller + \"\\n\";"
+                        + "           System.out.print(towrite);"
+                        + "           out.write(towrite.getBytes());"
+                        + "           System.out.println(\"Wrote to %1$s \");"
+                        + "           break;"
+                        + "       }"
+                        + "    }"
                         + "} catch(java.io.IOException e) {"
                         + "    System.err.println(\"Something went wrong! \" + e);"
                         + "} finally { "
                         + "    if (out != null) {"
                         + "        out.close();"
                         + "    }"
-                        + "}", fname, calledMethodName);
+                        + "    if (socket != null) {"
+                        + "        socket.close();"
+                        + "    }"
+                        + "}",
+                fname, calledMethodName, regex);
     }
 
     private String classNameRegex() {
