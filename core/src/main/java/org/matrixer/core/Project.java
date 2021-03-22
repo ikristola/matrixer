@@ -9,19 +9,28 @@ import java.util.List;
  *
  * The project naming and structure looks like this
  *
- * Defaults --------
+ * Defaults
+ * --------
  * 
- * directory -- buildScript (build.gradle / pom.xml) -- buildDirectory
- * (build / target) -- outputDirectory -- LOF_FILE_NAME --
- * RESULTS_FILE_NAME
+ * directory
+ * |-- buildScript (build.gradle / pom.xml)
+ * |-- buildDirectory (build / target)
+ *    |-- outputDirectory
+ *       |-- LOF_FILE_NAME
+ *       |-- RESULTS_FILE_NAME
  *
  *
- * With specified output directory -------------------------------
+ * With specified output directory
+ * -------------------------------
  *
- * directory -- buildScript (build.gradle / pom.xml) -- buildDirectory
- * (build / target) ....
+ * directory
+ * |-- buildScript (build.gradle / pom.xml)
+ * |-- buildDirectory (build / target)
+ * ....
  *
- * outputDirectory -- LOF_FILE_NAME -- RESULTS_FILE_NAME
+ * outputDirectory
+ * |-- LOF_FILE_NAME
+ * |-- RESULTS_FILE_NAME
  */
 public abstract class Project {
 
@@ -49,6 +58,14 @@ public abstract class Project {
 
     public URI remoteURL() {
         return properties.remoteURL();
+    }
+
+    public String targetPackage() {
+        return properties.targetPackage();
+    }
+
+    public String testPackage() {
+        return properties.testPackage();
     }
 
     abstract void injectBuildScript(String agentString);

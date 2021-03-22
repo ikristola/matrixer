@@ -171,11 +171,15 @@ public class FileUtils {
      * @throws IOException
      */
     public static Optional<Integer> searchInFile(String target, Path file) throws IOException {
-        return Files.lines(file)
-                .map(line -> line.indexOf(target))
-                .filter((idx) -> idx != -1)
-                .findFirst()
-                .or(() -> Optional.empty());
+        try (Stream<String> lines = Files.lines(file)) {
+            return lines.map(line -> line.indexOf(target))
+                    .filter((idx) -> idx != -1)
+                    .findFirst()
+                    .or(() -> Optional.empty());
+
+        } catch (IOException e) {
+            throw e;
+        }
     }
 
     /**
@@ -186,11 +190,11 @@ public class FileUtils {
      * @param replaceWith The replacing string
      */
     public static void replaceFirstOccurrenceInFile(Path file, String regex, String replaceWith) {
-        try {
+        try (Stream<String> lines = Files.lines(file)) {
             // Search for an instance of test task and replace it with the inject
             // string
-            List<String> replaced = Files.lines(file)
-                    .map(line -> line.replaceFirst(regex, replaceWith))
+
+            List<String> replaced = lines.map(line -> line.replaceFirst(regex, replaceWith))
                     .collect(Collectors.toList());
             Files.write(file, replaced);
         } catch (IOException e) {
@@ -234,15 +238,15 @@ public class FileUtils {
 
     /**
      * Write a string to a file. If the file does not exist it is created.
-     * If the file already exists it will be overwritten with the new string.
+     * If the file already exists it will be overwritten with the new
+     * string.
      *
-     * @param string The string to be written
+     * @param string   The string to be written
      * @param filePath String representation of the file path
      */
-    public static void writeToFile(String string, String filePath) {
-        File file = new File(filePath);
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            writer.write(string);
+    public static void writeToFile(String string, String filepath) {
+        try {
+            Files.writeString(Path.of(filepath), string, StandardOpenOption.CREATE);
         } catch (IOException e) {
             throw new RuntimeException("Could not write to file: " + e.getMessage());
         }

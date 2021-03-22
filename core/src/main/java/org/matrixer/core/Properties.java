@@ -31,6 +31,9 @@ public class Properties {
      */
     final static String VCS_FLAG = "--git";
 
+    final static String TARGET_PKG_FLAG = "--pkg";
+    final static String TEST_PKG_FLAG = "--testpkg";
+
     /**
      * The default output directory if none is provided is a subdirectory of
      * the target directory with this name.
@@ -39,8 +42,9 @@ public class Properties {
 
     private Path targetDir;
     private Path outputDir;
-    private String buildDirName = "build";
     private URI remoteURL = null;
+    private String targetPkg;
+    private String testPkg;
     private String failureReason = "Properties not parsed";
 
     public static Properties fromArgs(String... args) {
@@ -72,13 +76,19 @@ public class Properties {
         String arg = flagPair.get(1);
         switch (flag) {
             case TARGET_FLAG:
-                targetDir = Paths.get(arg);
+                setTargetDir(Paths.get(arg));
                 break;
             case OUTDIR_FLAG:
-                outputDir = Paths.get(arg);
+                setOutputDir(Paths.get(arg));
                 break;
             case VCS_FLAG:
-                remoteURL = parseURL(arg);
+                setRemoteURL(parseURL(arg));
+                break;
+            case TARGET_PKG_FLAG:
+                setTargetPackage(arg);
+                break;
+            case TEST_PKG_FLAG:
+                setTestPackage(arg);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown flag: '" + flag + "'");
@@ -104,6 +114,7 @@ public class Properties {
         }
     }
 
+
     private void validate() {
         if (targetDir == null) {
             setError("Target directory is required");
@@ -111,17 +122,9 @@ public class Properties {
     }
 
     private void applyDefaults() {
-        if (outputDir == null) {
-            outputDir = defaultOutputPath(targetDir, buildDirName);
+        if (testPkg == null || testPkg.isBlank()) {
+            testPkg = targetPkg;
         }
-    }
-
-    public void setBuildDirName(String buildDirName) {
-        this.buildDirName = buildDirName;
-    }
-
-    public Path defaultOutputDir() {
-        return defaultOutputPath(targetDir, buildDirName);
     }
 
     public static Path defaultOutputPath(Path targetDir, String buildDirName) {
@@ -195,4 +198,21 @@ public class Properties {
     public URI remoteURL() {
         return remoteURL;
     }
+
+    public String targetPackage() {
+        return targetPkg;
+    }
+
+    public void setTargetPackage(String  packageName) {
+        targetPkg = packageName;
+    }
+
+    public String testPackage() {
+        return testPkg;
+    }
+
+    public void setTestPackage(String packageName) {
+        testPkg = packageName;
+    }
+
 }

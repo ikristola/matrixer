@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Analyzes method mapping data
@@ -36,11 +37,17 @@ public class Analyzer {
      * @throws IOException
      */
     public void analyze() throws IOException {
-        Files.lines(sourceFile) // read source data
-                .map(l -> l.split("<=")) // split app method from test method
-                .forEach(this::addToSet);
+        if (!Files.exists(sourceFile)) {
+            throw new IOException("Analyzer: no such file: " + sourceFile);
+        }
+        try (Stream<String> lines = Files.lines(sourceFile)) { // read source data
+            lines.map(l -> l.split("<=")) // split app method from test method
+                    .forEach(this::addToSet);
+            writeResultsToFile();
+        } catch (IOException e) {
+            throw e;
+        }
 
-        writeResultsToFile();
     }
 
     private void addToSet(String[] strings) {

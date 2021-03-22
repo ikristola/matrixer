@@ -83,7 +83,14 @@ public class App {
 
     static void printUsage() {
         System.err.println(
-                "Usage: " + "\n\tmatrixer --target <path> [--output <path>] [--git <URL>]");
+                "Usage: " + "\n\tmatrixer --target <path> --pkg <target package name> "
+                + "[--testpkg <test package name>] [--output <path>] [--git <URL>]\n\n\t"
+                + "--target  - the location of an existing project or the path to clone the remote repo to\n\t"
+                + "--pkg     - root package name of the target project, will be used to identify target methods\n\t"
+                + "--testpkg - root package name of the tests, will be used to identify test cases (defaults to --pkg)\n\t"
+                + "--output  - the location where logs and results will be stored. Defaults to build/matrix-cov for gradle and target/matrix-cov for maven\n\t"
+                + "--git     - if the project is remote, provide a URL to the repository\n"
+        );
     }
 
 }

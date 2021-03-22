@@ -14,6 +14,19 @@ import java.util.Optional;
  * Agent for transforming classes in target package. The transformer
  * used by the agent makes class methods in target package print out the
  * caller class when they are called.
+ *
+ * The agent arguments are specified as
+ *
+ * outputDirectory:targetPackage:testPackage
+ *
+ * outputDirectory - the directory where all matrixer output files will
+ * be stored
+ *
+ * targetPackage - the root package that will be tested, sub-packages
+ * will be instrumented as well.
+ *
+ * testPackage - the package of the tests class, this will be used to
+ * identify test methods
  */
 public class MatrixerAgent {
 
@@ -79,7 +92,8 @@ public class MatrixerAgent {
 
     private void setupLog() throws IOException {
         try {
-            var out = Files.newOutputStream(Path.of(outputPath).resolve(("matrixer-agent-log.txt")));
+            var out =
+                    Files.newOutputStream(Path.of(outputPath).resolve(("matrixer-agent-log.txt")));
             log = new PrintStream(out);
         } catch (FileNotFoundException e) {
             e.printStackTrace();

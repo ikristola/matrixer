@@ -24,6 +24,7 @@ class AppTest {
         FileUtils.removeDirectory(targetDirectory);
         String[] args = {
                 "--target", targetDirectory.toString(),
+                "--pkg", "org.matrixertest",
                 "--git", testRepoURL
         };
         app = new App(args);

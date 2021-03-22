@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Generates html from a raw data file
@@ -104,22 +105,26 @@ public class HtmlGenerator {
         StringBuilder styleString = new StringBuilder();
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
         reader.lines()
-            .forEach(styleString::append);
+                .forEach(styleString::append);
 
         return styleString.toString();
     }
 
     private void parseDataFile() throws IOException {
         // read lines from file
-        Files.lines(dataFile)
-                .map(l -> l.split("\\|"))
-                .filter(s -> s.length > 0)
-                .forEach(this::parseLineSubstrings);
+        try (Stream<String> lines = Files.lines(dataFile)) {
+            lines.map(l -> l.split("\\|"))
+                    .filter(s -> s.length > 0)
+                    .forEach(this::parseLineSubstrings);
+        } catch (IOException e) {
+            throw new IOException("Parsing " + dataFile + "failed: " + e.getMessage());
+        }
     }
 
 
     private void parseLineSubstrings(String[] strings) {
-        // first string in array is the target method, the rest (if they exist) are
+        // first string in array is the target method, the rest (if they exist)
+        // are
         // test methods
         var targetMethod = new TargetMethod(strings[0]);
         for (int i = 1; i < strings.length; i++) {

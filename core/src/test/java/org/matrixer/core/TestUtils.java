@@ -55,7 +55,7 @@ class TestUtils {
             String targetPkg, String testPkg) {
         return String.format("-javaagent:%s=%s:%s:%s",
                 agentJarPath.toString(), outputPath.toString(),
-                targetRootPackage, targetRootPackage);
+                targetPkg, testPkg);
     }
 
 }

@@ -50,13 +50,13 @@ class PropertiesTest {
     }
 
     @Test
-    void defaultOutputPathIfNotSpecified() {
+    void outputPathIsNullIfNotSpecified() {
         String[] args = {"--target", SOME_PATH.toString(), "--git", "github.com/a/repo.git"};
         Properties prop = new Properties();
 
         prop.parse(args);
 
-        assertEquals(prop.defaultOutputDir(), prop.outputDir());
+        assertEquals(null, prop.outputDir());
     }
 
     @Test
@@ -159,6 +159,32 @@ class PropertiesTest {
         prop.parse(args);
 
         assertNOTValid(prop);
+    }
+
+    @Test
+    void canSetTargetPackage() {
+        String pkg = "org.matrixer";
+        String[] args = {
+            "--target", ANY_PATH.toString(),
+            "--pkg", pkg
+        };
+        Properties prop = new Properties();
+
+        prop.parse(args);
+        assertEquals(pkg, prop.targetPackage());
+    }
+
+    @Test
+    void canSetTestPackage() {
+        String testpkg = "org.matrixer.test";
+        String[] args = {
+            "--target", ANY_PATH.toString(),
+            "--testpkg", testpkg
+        };
+        Properties prop = new Properties();
+
+        prop.parse(args);
+        assertEquals(testpkg, prop.testPackage());
     }
 
     void assertValidRemote(Properties prop, String url) {

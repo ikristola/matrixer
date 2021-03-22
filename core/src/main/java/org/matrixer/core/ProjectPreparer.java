@@ -27,14 +27,13 @@ public class ProjectPreparer {
     }
 
     String agentString(Properties properties) {
-        Path outputDir = project.outputDirectory();
-        // These should be specified in the Properties ???
-        Path agentJar = pathToAgent();
-        String targetRootPackage = "org.matrixertest";
+        String outputDir = project.outputDirectory().toString();
+        String agentJarPath = pathToAgent().toString();
+        String targetPackage = project.targetPackage();
+        String testPackage = project.testPackage();
 
         return String.format("-javaagent:%s=%s:%s:%s",
-                agentJar.toString(), outputDir.toString(),
-                targetRootPackage, targetRootPackage);
+                agentJarPath, outputDir, targetPackage, testPackage);
     }
 
     Path pathToAgent() {

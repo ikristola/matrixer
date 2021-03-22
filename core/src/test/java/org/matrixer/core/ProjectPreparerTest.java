@@ -14,6 +14,7 @@ class ProjectPreparerTest {
 
     Path targetDirectory = TestUtils.targetDirectory();
     URI testRepoURL = TestUtils.testRepoURL();
+    String testPackage = TestUtils.targetRootPackage;
 
     @BeforeEach
     void setUp() throws GitAPIException, IOException {
@@ -34,6 +35,7 @@ class ProjectPreparerTest {
         URI testRepoURL = TestUtils.testRepoURL();
         Properties properties = new Properties();
         properties.setTargetDir(target);
+        properties.setTargetPackage(testPackage);
         properties.setRemoteURL(testRepoURL);
 
         ProjectPreparer preparer = new ProjectPreparer();
@@ -47,6 +49,7 @@ class ProjectPreparerTest {
     void testCanUseLocalProject() throws IOException, GitAPIException {
         Path target = TestUtils.targetDirectory();
         Properties properties = new Properties();
+        properties.setTargetPackage(testPackage);
         properties.setTargetDir(target);
 
         ProjectPreparer preparer = new ProjectPreparer();
@@ -59,6 +62,7 @@ class ProjectPreparerTest {
     void prepareCreatesOutputDirectory() throws GitAPIException, IOException {
         Path target = TestUtils.targetDirectory();
         Properties properties = new Properties();
+        properties.setTargetPackage(testPackage);
         properties.setTargetDir(target);
 
         ProjectPreparer preparer = new ProjectPreparer();
@@ -71,6 +75,7 @@ class ProjectPreparerTest {
     void throwsExceptionForUnsupportedProject() {
         Path emptyTarget = FileUtils.createTempDirectory();
         Properties properties = new Properties();
+        properties.setTargetPackage(testPackage);
         properties.setTargetDir(emptyTarget);
 
         assertThrows(Exception.class, () -> new ProjectPreparer().prepare(properties));
@@ -82,6 +87,7 @@ class ProjectPreparerTest {
         void prepareInjectsGradleBuildScript() throws GitAPIException, IOException {
             Path target = TestUtils.targetDirectory();
             Properties properties = new Properties();
+            properties.setTargetPackage(testPackage);
             properties.setTargetDir(target);
             ProjectPreparer preparer = new ProjectPreparer();
 
@@ -103,6 +109,7 @@ class ProjectPreparerTest {
         void prepareInjectsMavenBuildScript() throws GitAPIException, IOException {
             Path target = TestUtils.targetDirectory();
             Properties properties = new Properties();
+            properties.setTargetPackage(testPackage);
             properties.setTargetDir(target);
             ProjectPreparer preparer = new ProjectPreparer();
 

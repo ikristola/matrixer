@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
@@ -34,8 +35,11 @@ class AnalyzerTest {
         analyzer.analyze();
 
         StringBuilder stringBuilder = new StringBuilder();
-        Files.lines(targetFile)
-            .forEach(l -> stringBuilder.append(l).append("\n"));
+        try (Stream<String> lines = Files.lines(targetFile)) {
+            lines.forEach(l -> stringBuilder.append(l).append("\n"));
+        } catch (IOException e) {
+            throw e;
+        }
         assertEquals(expected, stringBuilder.toString());
     }
 

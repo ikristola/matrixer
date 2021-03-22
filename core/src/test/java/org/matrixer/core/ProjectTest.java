@@ -14,6 +14,7 @@ class ProjectTest {
 
     final static String TEST_REPO_URL = "https://github.com/ikristola/matrixer-test";
     static Path TARGET_DIR = FileUtils.getSystemTempDir().resolve("matrixer-test");
+    static String targetPackage = TestUtils.targetRootPackage;
 
     static GitRepository git;
 
@@ -47,6 +48,7 @@ class ProjectTest {
             Properties prop = new Properties();
             URI remoteURL = TestUtils.asURI(TEST_REPO_URL);
             prop.setTargetDir(TARGET_DIR);
+            prop.setTargetPackage(targetPackage);
             prop.setRemoteURL(remoteURL);
 
             Project project = ProjectFactory.from(prop);
@@ -65,6 +67,7 @@ class ProjectTest {
             Properties prop = new Properties();
             Path outputDir = Path.of("/tmp/matrixer-out");
             prop.setOutputDir(outputDir);
+            prop.setTargetPackage(targetPackage);
             prop.setTargetDir(TARGET_DIR);
 
             Project project = ProjectFactory.from(prop);
@@ -94,6 +97,7 @@ class ProjectTest {
             Properties prop = new Properties();
             Path outputDir = Path.of("/tmp/matrixer-out");
             prop.setOutputDir(outputDir);
+            prop.setTargetPackage(targetPackage);
             prop.setTargetDir(TARGET_DIR);
 
             Project project = ProjectFactory.from(prop);
@@ -108,6 +112,7 @@ class ProjectTest {
             Properties prop = new Properties();
             Path outputDir = Path.of("/tmp/matrixer-out");
             prop.setOutputDir(outputDir);
+            prop.setTargetPackage(targetPackage);
             prop.setTargetDir(TARGET_DIR);
 
             Project project = ProjectFactory.from(prop);
@@ -144,6 +149,7 @@ class ProjectTest {
             Properties prop = new Properties();
             URI remoteURL = TestUtils.asURI(TEST_REPO_URL);
             prop.setTargetDir(TARGET_DIR);
+            prop.setTargetPackage(targetPackage);
             prop.setRemoteURL(remoteURL);
 
             Project project = ProjectFactory.from(prop);
@@ -161,6 +167,7 @@ class ProjectTest {
         void testReturnsSpecifiedOutputPathIfGiven() {
             Properties prop = new Properties();
             Path outputDir = Path.of("/tmp/matrixer-out");
+            prop.setTargetPackage(targetPackage);
             prop.setOutputDir(outputDir);
             prop.setTargetDir(TARGET_DIR);
 
@@ -192,6 +199,7 @@ class ProjectTest {
         void logFileIsInOutputDirectoryIfGiven() {
             Properties prop = new Properties();
             Path outputDir = Path.of("/tmp/matrixer-out");
+            prop.setTargetPackage(targetPackage);
             prop.setOutputDir(outputDir);
             prop.setTargetDir(TARGET_DIR);
 
@@ -206,6 +214,7 @@ class ProjectTest {
         void resultsFileIsInOutputDirectoryIfGiven() {
             Properties prop = new Properties();
             Path outputDir = Path.of("/tmp/matrixer-out");
+            prop.setTargetPackage(targetPackage);
             prop.setOutputDir(outputDir);
             prop.setTargetDir(TARGET_DIR);
 

@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 
@@ -18,11 +19,11 @@ public class GrepSearch {
     /**
      * Search in file/directory for the specified pattern
      *
-     * @param file      The search target
-     * @param pattern   The pattern for matching
-     * @param maxDepth  Depth of search
-     * @param log       Granularity of log messages
-     * @return          List of results
+     * @param file     The search target
+     * @param pattern  The pattern for matching
+     * @param maxDepth Depth of search
+     * @param log      Granularity of log messages
+     * @return List of results
      * @throws IOException
      */
     static List<SearchResult> find(Path file, Pattern pattern, int maxDepth, LogLevel log)
@@ -48,12 +49,12 @@ public class GrepSearch {
     }
 
     /**
-     * Search in file/directory for the specified pattern.
-     * Searches recursively if target is a directory.
+     * Search in file/directory for the specified pattern. Searches
+     * recursively if target is a directory.
      *
-     * @param file      The search target
-     * @param pattern   The pattern for matching
-     * @param log       Granularity of log messages
+     * @param file    The search target
+     * @param pattern The pattern for matching
+     * @param log     Granularity of log messages
      * @return
      * @throws IOException
      */
@@ -62,13 +63,12 @@ public class GrepSearch {
     }
 
     /**
-     * Search in file/directory for the specified pattern.
-     * Searches recursively if target is a directory.
-     * Prints no log messages.
+     * Search in file/directory for the specified pattern. Searches
+     * recursively if target is a directory. Prints no log messages.
      *
-     * @param file      The search target
-     * @param pattern   The pattern for matching
-     * @return          List of results
+     * @param file    The search target
+     * @param pattern The pattern for matching
+     * @return List of results
      * @throws IOException
      */
     static List<SearchResult> find(Path file, Pattern pattern) throws IOException {
@@ -101,12 +101,12 @@ public class GrepSearch {
                 }
 
                 AtomicInteger lineCount = new AtomicInteger(1);
-                try {
-                    Files.lines(file).forEach(line -> {
-                        Matcher m = pattern.matcher(line);  // match line against pattern
-                        if (m.find()) {                     // on match
+                try (Stream<String> lines = Files.lines(file)) {
+                    lines.forEach(line -> {
+                        Matcher m = pattern.matcher(line); // match line against pattern
+                        if (m.find()) { // on match
                             var result = new SearchResult(file, m.group(), lineCount.get(),
-                                    m.start(), m.end());    // add to results
+                                    m.start(), m.end()); // add to results
                             results.add(result);
                             if (log == LogLevel.HIGH || log == LogLevel.LOW) {
                                 if (log == LogLevel.LOW) {
@@ -120,8 +120,7 @@ public class GrepSearch {
                     });
                     fileCount.incrementAndGet();
                 }
-
-                catch (Exception e) {   // if read fails
+                catch (Exception e) { // if read fails
                     exceptionCount.incrementAndGet();
                     if (log == LogLevel.HIGH) {
                         System.out.println("Could not read: " + file + ": " + e.getMessage());
@@ -132,13 +131,13 @@ public class GrepSearch {
         }
 
         @Override
-        public FileVisitResult postVisitDirectory(Path dir, IOException exc) {  // after every dir
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) { // after every dir
             directoryCount.incrementAndGet();
             return CONTINUE;
         }
 
         @Override
-        public FileVisitResult visitFileFailed(Path file, IOException e) {  // if visit failed
+        public FileVisitResult visitFileFailed(Path file, IOException e) { // if visit failed
             exceptionCount.incrementAndGet();
             if (log == LogLevel.HIGH) {
                 System.out.println("Could not visit file: " + file + ": " + e.getMessage());

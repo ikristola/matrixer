@@ -93,4 +93,20 @@ class MavenProject extends Project {
         String[] cmd = new String[] { "mvn", "test" };
         return Arrays.asList(cmd);
     }
+
+    @Override
+    public String targetPackage() {
+        if (properties.targetPackage() == null) {
+            throw new RuntimeException("Target package must be specified for maven projects");
+        }
+        return properties.targetPackage();
+    }
+
+    @Override
+    public String testPackage() {
+        if (properties.testPackage() == null) {
+            return targetPackage();
+        }
+        return properties.testPackage();
+    }
 }

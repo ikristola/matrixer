@@ -136,11 +136,15 @@ class FileUtilsTest {
     void canWriteToFile() throws IOException {
         String expected = "Expected\nfile\ncontents\n";
         Path file = FileUtils.createTempFile(TMP_DIR);
+
         FileUtils.writeToFile(expected, file.toString());
 
         StringBuilder stringBuilder = new StringBuilder();
-        Files.lines(file)
-                .forEach(l -> stringBuilder.append(l).append("\n"));
+        try (Stream<String> lines = Files.lines(file)) {
+            lines.forEach(l -> stringBuilder.append(l).append("\n"));
+        } catch (IOException e) {
+            throw e;
+        }
         assertEquals(expected, stringBuilder.toString());
     }
 

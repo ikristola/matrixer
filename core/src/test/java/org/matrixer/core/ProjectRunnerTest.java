@@ -14,6 +14,7 @@ public class ProjectRunnerTest {
 
     Path targetDirectory = TestUtils.targetDirectory();
     URI testRepoURL = TestUtils.testRepoURL();
+    String targetPackage = TestUtils.targetRootPackage;
 
     @BeforeEach
     void setUp() throws GitAPIException, IOException {
@@ -31,6 +32,7 @@ public class ProjectRunnerTest {
         void canRunProjectTests() throws GitAPIException, IOException {
             Path target = TestUtils.targetDirectory();
             Properties properties = new Properties();
+            properties.setTargetPackage(targetPackage);
             properties.setTargetDir(target);
             ProjectPreparer preparer = new ProjectPreparer();
 
@@ -45,6 +47,7 @@ public class ProjectRunnerTest {
         void redirectsProcessStreamsToLogFile() throws GitAPIException, IOException {
             Path target = TestUtils.targetDirectory();
             Properties properties = new Properties();
+            properties.setTargetPackage(targetPackage);
             properties.setTargetDir(target);
             ProjectPreparer preparer = new ProjectPreparer();
 
@@ -58,6 +61,7 @@ public class ProjectRunnerTest {
         void throwsExceptionIfOutputDirectoryDoesNotExist() throws GitAPIException, IOException {
             Path target = TestUtils.targetDirectory();
             Properties properties = new Properties();
+            properties.setTargetPackage(targetPackage);
             properties.setTargetDir(target);
             ProjectPreparer preparer = new ProjectPreparer();
             Project project = preparer.prepare(properties);
@@ -71,6 +75,7 @@ public class ProjectRunnerTest {
         void returnsNonZeroIfProcessExitsWithError() throws GitAPIException, IOException {
             Path target = TestUtils.targetDirectory();
             Properties properties = new Properties();
+            properties.setTargetPackage(targetPackage);
             properties.setTargetDir(target);
             ProjectPreparer preparer = new ProjectPreparer();
             Project project = preparer.prepare(properties);
@@ -94,6 +99,7 @@ public class ProjectRunnerTest {
         void canRunProjectTests() throws GitAPIException, IOException {
             Path target = TestUtils.targetDirectory();
             Properties properties = new Properties();
+            properties.setTargetPackage(targetPackage);
             properties.setTargetDir(target);
             ProjectPreparer preparer = new ProjectPreparer();
 
@@ -108,6 +114,7 @@ public class ProjectRunnerTest {
         void redirectsProcessStreamsToLogFile() throws GitAPIException, IOException {
             Path target = TestUtils.targetDirectory();
             Properties properties = new Properties();
+            properties.setTargetPackage(targetPackage);
             properties.setTargetDir(target);
             ProjectPreparer preparer = new ProjectPreparer();
 
@@ -121,6 +128,7 @@ public class ProjectRunnerTest {
         void throwsExceptionIfOutputDirectoryDoesNotExist() throws GitAPIException, IOException {
             Path target = TestUtils.targetDirectory();
             Properties properties = new Properties();
+            properties.setTargetPackage(targetPackage);
             properties.setTargetDir(target);
             ProjectPreparer preparer = new ProjectPreparer();
             Project project = preparer.prepare(properties);
@@ -134,6 +142,7 @@ public class ProjectRunnerTest {
         void returnsNonZeroIfProcessExitsWithError() throws GitAPIException, IOException {
             Path target = TestUtils.targetDirectory();
             Properties properties = new Properties();
+            properties.setTargetPackage(targetPackage);
             properties.setTargetDir(target);
             ProjectPreparer preparer = new ProjectPreparer();
             Project project = preparer.prepare(properties);
