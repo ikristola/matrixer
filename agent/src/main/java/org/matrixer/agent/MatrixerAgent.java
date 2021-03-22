@@ -11,16 +11,17 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Agent for transforming classes in target package. The transformer
- * used by the agent makes class methods in target package print out its
- * own name and the caller method name to file. The
+ * MatrixerAgent is a agent that transforms classes in target package.
+ *
+ * The agent instruments class methods in the target package to print
+ * out the qualified name of itself and the calling test case to file.
  *
  * The agent arguments are specified as
  *
  * outputDirectory:targetPackage:testPackage
  *
- * outputDirectory - the directory where all matrixer output files will
- * be stored
+ * outputDirectory - the directory where the agent should place its logfile and the results
+ * from the instrumented methods.
  *
  * targetPackage - the root package that will be tested, sub-packages
  * will be instrumented as well.
@@ -159,8 +160,10 @@ public class MatrixerAgent {
      * Retransforms the class using a new transformer.
      *
      * @param targetCls the class to transform
-     * @param inst the instrumentation instance to use for registering the transformer
-     * @param outputDir the directory where the results from the transformer should be stored
+     * @param inst      the instrumentation instance to use for registering
+     *                  the transformer
+     * @param outputDir the directory where the results from the transformer
+     *                  should be stored
      */
     private void transform(Class<?> targetCls, Instrumentation inst, String outputDir) {
         try {
