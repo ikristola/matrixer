@@ -8,7 +8,10 @@ import org.matrixer.core.*;
 
 public class App {
 
-    public static String DEFAULT_REPORT_FNAME = "matrixer-report.html";
+    /**
+     * The name of the file containing the coverage results in raw form
+     */
+    public static String ANALYZED_FILENAME = "matrixer-analyzed.txt";
 
     Properties properties;
     GitRepository repo;
@@ -56,7 +59,7 @@ public class App {
         System.out.println("Target project tests was run successfully!");
 
         System.out.println("Analyzing results");
-        Path results = project.outputDirectory().resolve("matrixer-analyzed.txt");
+        Path results = project.outputDirectory().resolve(ANALYZED_FILENAME);
         Analyzer analyzer = new Analyzer(project.resultsFile(), results);
         analyzer.analyze();
 

@@ -63,7 +63,7 @@ class AppTest {
     @Test
     void htmlReportIsGenerated() {
         Project project = app.getProject();
-        String reportFilename = App.DEFAULT_REPORT_FNAME;
+        String reportFilename = "matrixer-results.txt";
         Path HTMLreport = project.outputDirectory().resolve(reportFilename);
         assertTrue(Files.exists(HTMLreport), HTMLreport + " does not exist");
     }
