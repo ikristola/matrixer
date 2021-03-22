@@ -45,15 +45,18 @@ public class App {
         ProjectPreparer preparer = new ProjectPreparer();
         project = preparer.prepare(properties);
 
+        var start = System.currentTimeMillis();
         System.out.println("Running target project tests");
         ProjectRunner runner = new ProjectRunner();
         int status = runner.runTests(project);
+        var end = System.currentTimeMillis();
 
         if (status != 0) {
             System.out.println("Target project tests exited with error: " + status);
             return;
         }
-        System.out.println("Target project tests was run successfully!");
+        var duration = end - start;
+        System.out.println("Target project tests was run successfully in " + duration + "ms");
 
         System.out.println("Analyzing results");
         Path results = project.outputDirectory().resolve("matrixer-analyzed.txt");
