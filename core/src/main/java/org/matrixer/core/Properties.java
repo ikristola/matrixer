@@ -40,6 +40,7 @@ public class Properties {
      */
     final static String DEFAULT_RESULTS_DIRNAME = "matrix-cov";
 
+
     private Path targetDir;
     private Path outputDir;
     private URI remoteURL = null;
@@ -159,17 +160,23 @@ public class Properties {
         return failureReason;
     }
 
+    /**
+     * Sets the path to the target project directory
+     */
     public void setTargetDir(Path targetDir) {
         this.targetDir = targetDir;
     }
 
     /**
-     * @returns the path to the target repository
+     * @returns the path to the target project directory
      */
     public Path targetDir() {
         return targetDir;
     }
 
+    /**
+     * Sets the path to the output directory
+     */
     public void setOutputDir(Path outputDir) {
         this.outputDir = outputDir;
     }
@@ -188,6 +195,9 @@ public class Properties {
         return remoteURL != null;
     }
 
+    /**
+     * Sets the remote URL for the target project
+     */
     public void setRemoteURL(URI remoteURL) {
         this.remoteURL = remoteURL;
     }
@@ -199,18 +209,30 @@ public class Properties {
         return remoteURL;
     }
 
+    /**
+     * @returns the name of the target package that should be instrumented
+     */
     public String targetPackage() {
         return targetPkg;
     }
 
+    /**
+     * Sets the name of the package to instrument
+     */
     public void setTargetPackage(String  packageName) {
         targetPkg = packageName;
     }
 
+    /**
+     * @returns the name of the package containing the test cases
+     */
     public String testPackage() {
         return testPkg;
     }
 
+    /**
+     * Sets the package name for the test cases
+     */
     public void setTestPackage(String packageName) {
         testPkg = packageName;
     }
