@@ -12,8 +12,8 @@ import java.util.Optional;
 
 /**
  * Agent for transforming classes in target package. The transformer
- * used by the agent makes class methods in target package print out the
- * caller class when they are called.
+ * used by the agent makes class methods in target package print out its
+ * own name and the caller method name to file. The
  *
  * The agent arguments are specified as
  *
@@ -31,8 +31,15 @@ import java.util.Optional;
 public class MatrixerAgent {
 
     final static private boolean useLog = true;
+
+    /**
+     * The stream that will be used for logging
+     */
     private PrintStream log;
 
+    /**
+     * The instrumenation handle
+     */
     final private Instrumentation inst;
 
     /**
@@ -102,7 +109,6 @@ public class MatrixerAgent {
 
     private void run() {
         log("Starting agent transformation");
-        /* Return a list of all classes in the target package */
         List<Class<?>> classes = getClassesInPackage(targetPackage);
         log("# classes in package: " + classes.size());
 
@@ -149,10 +155,17 @@ public class MatrixerAgent {
         }
     }
 
-    private void transform(Class<?> targetCls, Instrumentation inst, String outputPath) {
+    /**
+     * Retransforms the class using a new transformer.
+     *
+     * @param targetCls the class to transform
+     * @param inst the instrumentation instance to use for registering the transformer
+     * @param outputDir the directory where the results from the transformer should be stored
+     */
+    private void transform(Class<?> targetCls, Instrumentation inst, String outputDir) {
         try {
             var transformer =
-                    new MethodMapTransformer(targetCls, outputPath, targetPackage, testerPackage);
+                    new MethodMapTransformer(targetCls, outputDir, targetPackage, testerPackage);
             inst.addTransformer(transformer, true);
             inst.retransformClasses(targetCls);
         } catch (Exception e) {

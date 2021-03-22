@@ -1,11 +1,9 @@
 package org.matrixer.agent;
 
 import java.io.IOException;
-import java.io.File;
+import java.nio.file.Path;
 
-import javassist.CannotCompileException;
-import javassist.NotFoundException;
-import javassist.CtMethod;
+import javassist.*;
 
 /**
  * Transformer that inserts code for printing out caller method into
@@ -19,8 +17,8 @@ public class MethodMapTransformer extends Transformer {
     final private String outputPath;
 
     /**
-     * The package that contains the tests
-     * Will be used to determine test cases
+     * The package that contains the tests Will be used to determine test
+     * cases
      */
     final private String testerPackageName;
 
@@ -31,15 +29,17 @@ public class MethodMapTransformer extends Transformer {
 
     /**
      * Creates a new transformer
-     * 
-     * @param cls The class to transform
-     * @param outputPath The output path to store results
-     * @param targetPackage The root package name for the target of the instrumentation
+     *
+     * @param cls           The class to transform
+     * @param outputDir     A path to the directory where results should be stored
+     * @param targetPackage The root package name for the target of the
+     *                      instrumentation
      * @param testerPackage The root package name for the testing package
      */
-    MethodMapTransformer(Class<?> cls, String outputPath, String targetPackage, String testerPackage) {
+    MethodMapTransformer(Class<?> cls, String outputDir, String targetPackage,
+            String testerPackage) {
         super(cls.getName(), cls.getClassLoader());
-        this.outputPath = outputPath;
+        this.outputPath = outputDir;
         this.testerPackageName = testerPackage;
         this.targetPackageName = targetPackage;
     }
@@ -47,7 +47,7 @@ public class MethodMapTransformer extends Transformer {
     /**
      * Transform a method so that it prints out the caller method when
      * called
-     * 
+     *
      * @param method The method to be instrumented
      * @return True if successful
      * @throws NotFoundException
@@ -58,12 +58,11 @@ public class MethodMapTransformer extends Transformer {
             throws NotFoundException, CannotCompileException, IOException {
 
         final var methodName = method.getLongName();
-        String className = super.targetClassName();
         if (!methodName.startsWith(targetPackageName)) {
             return false;
         }
 
-        String fname = outputPath + File.separator + "matrixer-results" + ".txt";
+        String fname = Path.of(outputPath, "matrixer-results.txt").toString();
         String endBlock = getCodeString(fname, methodName);
         method.insertBefore(endBlock);
 
@@ -72,11 +71,18 @@ public class MethodMapTransformer extends Transformer {
         return true;
     }
 
+    /**
+     * Returns the java source code to inject each method with.
+     *
+     * @param fname            the filename that the method should write to.
+     * @param calledMethodName the name of the method that will be
+     *                         instumented
+     */
     private String getCodeString(String fname, String calledMethodName) {
         String regex = classNameRegex();
         return String.format(
                 "java.io.BufferedOutputStream out = null;"
-                + "try {"
+                        + "try {"
                         + "java.io.File results = new java.io.File(\"%1$s\");"
                         + "java.io.FileOutputStream fos = new java.io.FileOutputStream(results, true);"
                         + "out = new java.io.BufferedOutputStream(fos);"
@@ -99,7 +105,8 @@ public class MethodMapTransformer extends Transformer {
                         + "    if (out != null) {"
                         + "        out.close();"
                         + "    }"
-                        + "}", fname, calledMethodName);
+                        + "}",
+                fname, calledMethodName);
     }
 
     private String classNameRegex() {
