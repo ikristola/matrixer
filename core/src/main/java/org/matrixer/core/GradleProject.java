@@ -41,12 +41,11 @@ class GradleProject extends Project {
     @Override
     void injectBuildScript(String agentString) {
         String injectString = createInjectString(agentString);
-        String regex = "test \\{";
-        FileUtils.replaceFirstOccurrenceInFile(buildScript(), regex, injectString);
+        FileUtils.appendToFile(buildScript(), injectString);
     }
 
     private String createInjectString(String agentString) {
-        return "test {\n\tjvmArgs \"" + agentString + "\"";
+        return "\ntasks.withType(Test) {\n\tjvmArgs \"" + agentString + "\"\n}\n";
     }
 
     @Override

@@ -1,8 +1,7 @@
 package org.matrixer.core;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -196,6 +195,20 @@ public class FileUtils {
             Files.write(file, replaced);
         } catch (IOException e) {
             throw new RuntimeException("Could not replace string: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Append a string to file
+     *
+     * @param file   Path to file
+     * @param append String to append
+     */
+    public static void appendToFile(Path file, String append) {
+        try {
+            Files.write(file, append.getBytes(), StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not append to file: " + e.getMessage());
         }
     }
 

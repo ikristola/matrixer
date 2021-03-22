@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -83,6 +84,21 @@ class FileUtilsTest {
         Path subDir = dir.resolve("subdir");
         assertThrows(RuntimeException.class,
                 () -> FileUtils.createTempDirectory(subDir));
+    }
+
+    @Test
+    void appendStringToFile() throws IOException {
+        String junk = "some junk\nstuff\n";
+        String expected = "appended string";
+        var file = FileUtils.createTempFile(FileUtils.getSystemTempDir());
+        Files.writeString(file, junk);
+
+        FileUtils.appendToFile(file, expected);
+
+        try (Stream<String> lines = Files.lines(file)) {
+            var lastLine = lines.reduce((first, second) -> second).orElse(null);
+            assertEquals(expected, lastLine);
+        }
     }
 
     @Test
