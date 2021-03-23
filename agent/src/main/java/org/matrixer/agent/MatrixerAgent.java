@@ -11,16 +11,17 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Agent for transforming classes in target package. The transformer
- * used by the agent makes class methods in target package print out the
- * caller class when they are called.
+ * MatrixerAgent is a agent that transforms classes in target package.
+ *
+ * The agent instruments class methods in the target package to print
+ * out the qualified name of itself and the calling test case to file.
  *
  * The agent arguments are specified as
  *
  * outputDirectory:targetPackage:testPackage
  *
- * outputDirectory - the directory where all matrixer output files will
- * be stored
+ * outputDirectory - the directory where the agent should place its logfile and the results
+ * from the instrumented methods.
  *
  * targetPackage - the root package that will be tested, sub-packages
  * will be instrumented as well.
@@ -31,8 +32,15 @@ import java.util.Optional;
 public class MatrixerAgent {
 
     final static private boolean useLog = true;
+
+    /**
+     * The stream that will be used for logging
+     */
     private PrintStream log;
 
+    /**
+     * The instrumenation handle
+     */
     final private Instrumentation inst;
 
     /**
@@ -102,7 +110,6 @@ public class MatrixerAgent {
 
     private void run() {
         log("Starting agent transformation");
-        /* Return a list of all classes in the target package */
         List<Class<?>> classes = getClassesInPackage(targetPackage);
         log("# classes in package: " + classes.size());
 
@@ -149,10 +156,19 @@ public class MatrixerAgent {
         }
     }
 
-    private void transform(Class<?> targetCls, Instrumentation inst, String outputPath) {
+    /**
+     * Retransforms the class using a new transformer.
+     *
+     * @param targetCls the class to transform
+     * @param inst      the instrumentation instance to use for registering
+     *                  the transformer
+     * @param outputDir the directory where the results from the transformer
+     *                  should be stored
+     */
+    private void transform(Class<?> targetCls, Instrumentation inst, String outputDir) {
         try {
             var transformer =
-                    new MethodMapTransformer(targetCls, outputPath, targetPackage, testerPackage);
+                    new MethodMapTransformer(targetCls, outputDir, targetPackage, testerPackage);
             inst.addTransformer(transformer, true);
             inst.retransformClasses(targetCls);
         } catch (Exception e) {

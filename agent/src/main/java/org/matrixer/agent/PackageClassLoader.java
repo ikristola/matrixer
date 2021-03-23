@@ -6,16 +6,29 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
+
+/**
+ * Locates all classes for a specified package in the class path and loads them.
+ */
 class PackageClassLoader {
     String packageName;
     String path;
     List<Class<?>> classes;
 
+    /**
+     * Creates a new loader
+     *
+     * @param packageName the package name for the classes to load
+     */
     PackageClassLoader(String packageName) {
         this.packageName = packageName;
         this.path = packageName.replaceAll("\\.", File.separator);
     }
 
+
+    /**
+     * Loads the classes in the package
+     */
     public void loadClasses() {
         classes = new ArrayList<>();
         for (String classPathEntry : getClassPathEntries()) {
@@ -93,6 +106,12 @@ class PackageClassLoader {
         return path.substring(0, path.length() - 6);
     }
 
+    /**
+     * Returns a list of the loaded classes.
+     *
+     * If no classes where found or if loadClasses has not been called an empty list is
+     * returned.
+     */
     public List<Class<?>> getClasses() {
         if (classes == null) {
             return new ArrayList<>();

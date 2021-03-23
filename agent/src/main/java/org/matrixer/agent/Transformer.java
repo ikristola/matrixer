@@ -7,27 +7,38 @@ import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 
 /**
- * Abstract base class for transforming classes using the Instrument API
- * and Javassist. Concrete subclasses must implement the instrument
- * method which specifies how the classes are transformed.
+ * Abstract base class for transforming classes using the
+ * Instrumentation API and Javassist. Concrete subclasses must implement
+ * the instrument method which specifies how the classes are
+ * transformed.
  */
 public abstract class Transformer implements ClassFileTransformer {
 
     private String targetClassName;
     private ClassLoader targetClassLoader;
 
+    /**
+     * Creates a new transformer Should be called by subclasses.
+     *
+     * @param className   the name of the class to transform
+     * @param classLoader the classs loader for the class
+     */
     Transformer(String className, ClassLoader classLoader) {
         this.targetClassName = className;
         this.targetClassLoader = classLoader;
     }
 
+    /**
+     * Returns the class name that will be transformed by this class
+     */
     String targetClassName() {
         return targetClassName;
     }
 
     /**
-     * Transforms a class. This method is meant to be called by an java
-     * agent in production code.
+     * Transforms a class if it matches the className passed to the
+     * constructor. This method is meant to be called by an java agent in
+     * production code.
      * 
      * @return A bytearray containing the instrumented class
      */
