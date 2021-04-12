@@ -10,19 +10,20 @@ import java.util.List;
  * The project naming and structure looks like this
  *
  * Defaults
- * --------
- * 
+ *
+ * <pre>
  * directory
  * |-- buildScript (build.gradle / pom.xml)
  * |-- buildDirectory (build / target)
  *    |-- outputDirectory
  *       |-- LOF_FILE_NAME
  *       |-- RESULTS_FILE_NAME
+ * </pre>
  *
  *
  * With specified output directory
- * -------------------------------
  *
+ * <pre>
  * directory
  * |-- buildScript (build.gradle / pom.xml)
  * |-- buildDirectory (build / target)
@@ -31,6 +32,7 @@ import java.util.List;
  * outputDirectory
  * |-- LOF_FILE_NAME
  * |-- RESULTS_FILE_NAME
+ * </pre>
  */
 public abstract class Project {
 

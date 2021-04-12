@@ -60,7 +60,8 @@ public class Properties {
      * and reasonForFailure() will return the a string describing why the
      * operation failed.
      *
-     * @param args the command line arguments
+     * @param args
+     *            the command line arguments
      */
     public void parse(String... args) {
         Observable.fromArray(args)
@@ -219,7 +220,7 @@ public class Properties {
     /**
      * Sets the name of the package to instrument
      */
-    public void setTargetPackage(String  packageName) {
+    public void setTargetPackage(String packageName) {
         targetPkg = packageName;
     }
 

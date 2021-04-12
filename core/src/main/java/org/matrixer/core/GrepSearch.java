@@ -19,10 +19,14 @@ public class GrepSearch {
     /**
      * Search in file/directory for the specified pattern
      *
-     * @param file     The search target
-     * @param pattern  The pattern for matching
-     * @param maxDepth Depth of search
-     * @param log      Granularity of log messages
+     * @param file
+     *            The search target
+     * @param pattern
+     *            The pattern for matching
+     * @param maxDepth
+     *            Depth of search
+     * @param log
+     *            Granularity of log messages
      * @return List of results
      * @throws IOException
      */
@@ -52,9 +56,12 @@ public class GrepSearch {
      * Search in file/directory for the specified pattern. Searches
      * recursively if target is a directory.
      *
-     * @param file    The search target
-     * @param pattern The pattern for matching
-     * @param log     Granularity of log messages
+     * @param file
+     *            The search target
+     * @param pattern
+     *            The pattern for matching
+     * @param log
+     *            Granularity of log messages
      * @return
      * @throws IOException
      */
@@ -66,8 +73,10 @@ public class GrepSearch {
      * Search in file/directory for the specified pattern. Searches
      * recursively if target is a directory. Prints no log messages.
      *
-     * @param file    The search target
-     * @param pattern The pattern for matching
+     * @param file
+     *            The search target
+     * @param pattern
+     *            The pattern for matching
      * @return List of results
      * @throws IOException
      */
@@ -119,8 +128,7 @@ public class GrepSearch {
                         lineCount.incrementAndGet();
                     });
                     fileCount.incrementAndGet();
-                }
-                catch (Exception e) { // if read fails
+                } catch (Exception e) { // if read fails
                     exceptionCount.incrementAndGet();
                     if (log == LogLevel.HIGH) {
                         System.out.println("Could not read: " + file + ": " + e.getMessage());

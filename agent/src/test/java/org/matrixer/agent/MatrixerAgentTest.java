@@ -87,7 +87,7 @@ public class MatrixerAgentTest {
         @Order(1)
         public void dynamicLoadOfMatrixerAgent() {
             String agentPath = "build/libs/agentJar.jar";
-            Path outputFile = FileUtils.createTempDirectory(FileUtils.getSystemTempDir());
+            Path outputFile = FileUtils.createTempDirectory();
             String targetPackage = "org.matrixer.agent.dynamictargets";
             String testPackage = "org.matrixer.agent";
             String args = String.format("%s:%s:%s", outputFile, targetPackage, testPackage);

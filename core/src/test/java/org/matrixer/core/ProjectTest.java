@@ -13,7 +13,7 @@ import org.junit.jupiter.api.*;
 class ProjectTest {
 
     final static String TEST_REPO_URL = "https://github.com/ikristola/matrixer-test";
-    static Path TARGET_DIR = FileUtils.getSystemTempDir().resolve("matrixer-test");
+    static Path TARGET_DIR = FileUtils.getSystemTempDirectory().resolve("matrixer-test");
     static String targetPackage = TestUtils.targetRootPackage;
 
     static GitRepository git;

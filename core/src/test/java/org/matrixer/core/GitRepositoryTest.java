@@ -13,7 +13,7 @@ import org.junit.jupiter.api.*;
 class GitRepositoryTest {
 
     final static String TEST_REPO_URL = "https://github.com/ikristola/matrixer-test";
-    final static Path TMP_DIR = FileUtils.getSystemTempDir();
+    final static Path TMP_DIR = FileUtils.getSystemTempDirectory();
     final static Path TARGET_DIR = TMP_DIR.resolve("matrixer-test");
 
     @BeforeEach
@@ -117,7 +117,8 @@ class GitRepositoryTest {
         repo.restore();
 
         assertTrue(repo.isClean(), "Still untracked files");
-        // assertFalse(repo.hasUncommittedChanges(), "Still uncommitted changes");
+        // assertFalse(repo.hasUncommittedChanges(), "Still uncommitted
+        // changes");
     }
 
     GitRepository cloneOrOpen(Path projectDir) throws GitAPIException, IOException {

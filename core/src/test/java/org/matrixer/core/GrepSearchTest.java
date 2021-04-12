@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class GrepSearchTest {
 
-    private final Path TMP_DIR = FileUtils.getSystemTempDir();
+    private final Path TMP_DIR = FileUtils.getSystemTempDirectory();
     private Path targetFile;
 
     @BeforeEach
@@ -25,7 +25,7 @@ class GrepSearchTest {
     void correctSearchInFile() throws IOException {
         int expLine = 2;
         int expStart = 5;
-        int expEnd =  11;
+        int expEnd = 11;
         String expString = "target";
 
         Pattern regex = Pattern.compile("target");
@@ -38,7 +38,7 @@ class GrepSearchTest {
     @Test
     void searchInDirectoryWithMultipleFiles() throws IOException {
         Path dir = FileUtils.createTempDirectory(TMP_DIR);
-        Path targetFileCopy =  dir.resolve("copy.txt");
+        Path targetFileCopy = dir.resolve("copy.txt");
         Path targetFileCopy1 = dir.resolve("copy1.txt");
         Files.copy(targetFile, targetFileCopy);
         Files.copy(targetFile, targetFileCopy1);
@@ -50,13 +50,12 @@ class GrepSearchTest {
     }
 
     void assertSearchResult(GrepSearch.SearchResult result, Path expPath,
-                            String expString, int expLine, int expStart, int expEnd) {
+            String expString, int expLine, int expStart, int expEnd) {
         assertAll(
                 () -> assertEquals(expPath, result.file),
                 () -> assertEquals(expString, result.string),
                 () -> assertEquals(expLine, result.line),
                 () -> assertEquals(expStart, result.start),
-                () -> assertEquals(expEnd, result.end)
-        );
+                () -> assertEquals(expEnd, result.end));
     }
 }

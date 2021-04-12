@@ -11,7 +11,7 @@ public class ElementFactory {
     }
 
     public static String html(String... inner) {
-        return "<html>" + concatenateInnerElements(inner) + "</html>";
+        return "<html>" + concat(inner) + "</html>";
     }
 
     public static String body() {
@@ -19,7 +19,7 @@ public class ElementFactory {
     }
 
     public static String body(String... inner) {
-        return "<body>" + concatenateInnerElements(inner) + "</body>";
+        return "<body>" + concat(inner) + "</body>";
     }
 
     public static String main() {
@@ -27,7 +27,7 @@ public class ElementFactory {
     }
 
     public static String main(String... inner) {
-        return "<main>" + concatenateInnerElements(inner) + "</main>";
+        return "<main>" + concat(inner) + "</main>";
     }
 
     public static String style() {
@@ -35,7 +35,7 @@ public class ElementFactory {
     }
 
     public static String style(String... inner) {
-        return "<style>" + concatenateInnerElements(inner) + "</style>";
+        return "<style>" + concat(inner) + "</style>";
     }
 
     public static String header() {
@@ -43,7 +43,7 @@ public class ElementFactory {
     }
 
     public static String header(String... inner) {
-        return "<h1>" + concatenateInnerElements(inner) + "</h1>";
+        return "<h1>" + concat(inner) + "</h1>";
     }
 
     public static String head() {
@@ -51,7 +51,7 @@ public class ElementFactory {
     }
 
     public static String head(String... inner) {
-        return "<head>" + concatenateInnerElements(inner) + "</head>";
+        return "<head>" + concat(inner) + "</head>";
     }
 
     public static String title() {
@@ -59,7 +59,7 @@ public class ElementFactory {
     }
 
     public static String title(String... inner) {
-        return "<title>" + concatenateInnerElements(inner) + "</title>";
+        return "<title>" + concat(inner) + "</title>";
     }
 
     public static String table() {
@@ -67,7 +67,7 @@ public class ElementFactory {
     }
 
     public static String table(String... inner) {
-        return "<table>" + concatenateInnerElements(inner) + "</table>";
+        return "<table>" + concat(inner) + "</table>";
     }
 
     public static String tableHeader() {
@@ -75,12 +75,11 @@ public class ElementFactory {
     }
 
     public static String tableHeader(String... inner) {
-        return "<th>" + concatenateInnerElements(inner) + "</th>";
+        return "<th>" + concat(inner) + "</th>";
     }
 
     public static String rotatedTableHeader(String... inner) {
-        return "<th class='rotate'><div><span>" + concatenateInnerElements(inner)
-                + "</span></div></th>";
+        return "<th class=\"rotate\"><div><span>" + concat(inner) + "</span></div></th>";
     }
 
     public static String tableRow() {
@@ -88,7 +87,7 @@ public class ElementFactory {
     }
 
     public static String tableRow(String... inner) {
-        return "<tr>" + concatenateInnerElements(inner) + "</tr>";
+        return "<tr>" + concat(inner) + "</tr>";
     }
 
     public static String tableCell() {
@@ -96,10 +95,10 @@ public class ElementFactory {
     }
 
     public static String tableCell(String... inner) {
-        return "<td>" + concatenateInnerElements(inner) + "</td>";
+        return "<td>" + concat(inner) + "</td>";
     }
 
-    private static String concatenateInnerElements(String... inner) {
+    private static String concat(String... inner) {
         StringBuilder sb = new StringBuilder();
         for (String string : inner) {
             sb.append(string);

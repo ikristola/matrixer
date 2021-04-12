@@ -17,8 +17,9 @@ public class FileUtils {
 
     /**
      * Check if a directory exists
-     * 
-     * @param path Path to the directory
+     *
+     * @param path
+     *            Path to the directory
      * @return True if directory exists
      */
     public static boolean isExistingDirectory(Path path) {
@@ -27,8 +28,9 @@ public class FileUtils {
 
     /**
      * Check if a file exists
-     * 
-     * @param path Path to the file
+     *
+     * @param path
+     *            Path to the file
      * @return True if file exists
      */
     public static boolean isExistingFile(Path path) {
@@ -37,8 +39,9 @@ public class FileUtils {
 
     /**
      * Create a new directory
-     * 
-     * @param path Path to the new directory
+     *
+     * @param path
+     *            Path to the new directory
      * @return True if operation succeeded
      */
     public static boolean createDirectory(Path path) {
@@ -48,8 +51,9 @@ public class FileUtils {
     /**
      * Create a temporary file in a given directory. Filename:
      * "tmpfileHHmmss"
-     * 
-     * @param dir Path to the directory
+     *
+     * @param dir
+     *            Path to the directory
      * @return The temporary file
      */
     public static Path createTempFile(Path dir) {
@@ -65,12 +69,23 @@ public class FileUtils {
     }
 
     /**
-     * Returns the path to the system temporary directory
+     * Creates a temporary file in an application specific temporary
+     * directory.
      *
-     * On *Nix this is probably /tmp
+     * @return The temporary file
      */
-    public static Path getSystemTempDir() {
-        return Path.of(System.getProperty("java.io.tmpdir"));
+    public static Path createTempFile() {
+        try {
+            Path systemp = getSystemTempDirectory();
+            Path dir = systemp.resolve("matrixer");
+            if (!Files.isDirectory(dir)) {
+                Files.createDirectory(dir);
+                dir.toFile().deleteOnExit();
+            }
+            return createTempFile(dir);
+        } catch (IOException e) {
+            throw new RuntimeException("creating application temp file: " + e.getMessage());
+        }
     }
 
     /**
@@ -84,14 +99,15 @@ public class FileUtils {
      * Creates a new temporary directory in the system temp directory
      */
     public static Path createTempDirectory() {
-        return createTempDirectory(getSystemTempDir());
+        return createTempDirectory(getSystemTempDirectory());
     }
 
     /**
      * Create a temporary directory in a given directory. Filename:
      * "tmpfileHHmmss"
-     * 
-     * @param parent Path to the directory in which to create the directory
+     *
+     * @param parent
+     *            Path to the directory in which to create the directory
      * @return The path to the temporary directory
      */
     public static Path createTempDirectory(Path parent) {
@@ -106,9 +122,11 @@ public class FileUtils {
 
     /**
      * Search a directory and subdirectories for a file
-     * 
-     * @param dir      The directory to search
-     * @param fileName The file to find
+     *
+     * @param dir
+     *            The directory to search
+     * @param fileName
+     *            The file to find
      * @return A path to the file
      *
      * @Throws RuntimeException if the file is not found
@@ -129,7 +147,8 @@ public class FileUtils {
     /**
      * Remove a directory and all its subfiles and subdirectories
      *
-     * @param dir Path to the directory to be removed
+     * @param dir
+     *            Path to the directory to be removed
      */
     public static void removeDirectory(Path dir) {
         if (Files.isDirectory(dir)) {
@@ -164,8 +183,10 @@ public class FileUtils {
     /**
      * Search for a string in a file
      *
-     * @param target The target string
-     * @param file   Path to the file
+     * @param target
+     *            The target string
+     * @param file
+     *            Path to the file
      * @return Optional of Integer with the index of the first occurrence of
      *         the target
      * @throws IOException
@@ -185,9 +206,12 @@ public class FileUtils {
     /**
      * Search and replace the first occurrence of a string in a file
      *
-     * @param file        Path to the file
-     * @param regex       Regex string
-     * @param replaceWith The replacing string
+     * @param file
+     *            Path to the file
+     * @param regex
+     *            Regex string
+     * @param replaceWith
+     *            The replacing string
      */
     public static void replaceFirstOccurrenceInFile(Path file, String regex, String replaceWith) {
         try (Stream<String> lines = Files.lines(file)) {
@@ -205,8 +229,10 @@ public class FileUtils {
     /**
      * Append a string to file
      *
-     * @param file   Path to file
-     * @param append String to append
+     * @param file
+     *            Path to file
+     * @param append
+     *            String to append
      */
     public static void appendToFile(Path file, String append) {
         try {
@@ -221,7 +247,7 @@ public class FileUtils {
      *
      * @return Path to the temporary folder
      */
-    public static Path getTempDirPath() {
+    public static Path getSystemTempDirectory() {
         return Path.of(System.getProperty("java.io.tmpdir"));
     }
 
@@ -241,8 +267,10 @@ public class FileUtils {
      * If the file already exists it will be overwritten with the new
      * string.
      *
-     * @param string   The string to be written
-     * @param filePath String representation of the file path
+     * @param string
+     *            The string to be written
+     * @param filePath
+     *            String representation of the file path
      */
     public static void writeToFile(String string, String filepath) {
         try {

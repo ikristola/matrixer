@@ -1,84 +1,35 @@
 package org.matrixer.core;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.Stream;
+import java.io.*;
 
 /**
- * Analyzes method mapping data
+ * Analyzes data collected with the matrixer agent
  */
 public class Analyzer {
 
-    Path sourceFile;
-    Path targetFile;
-
-    // key: String representing an application methods.
-    // value: Set of test methods that tests the method represented by the
-    // key
-    Map<String, Set<String>> mappedMethods;
-
-    public Analyzer(Path sourceFile, Path targetFile) {
-        this.sourceFile = sourceFile;
-        this.targetFile = targetFile;
-
-        mappedMethods = new HashMap<>();
-    }
-
-    public Analyzer(Path sourceFile) {
-        this(sourceFile, sourceFile.getParent().resolve("matrixer-raw-data"));
-    }
-
     /**
-     * Analyzes method mapping data from the set source file. Writes
-     * formatted results to the set file.
+     * Parses execution data from source
      *
-     * @throws IOException
+     * @param source
+     *            A stream containing execution data from the agent
+     *
+     * @returns the aggregated execution data
      */
-    public void analyze() throws IOException {
-        if (!Files.exists(sourceFile)) {
-            throw new IOException("Analyzer: no such file: " + sourceFile);
-        }
-        try (Stream<String> lines = Files.lines(sourceFile)) { // read source data
-            lines.map(l -> l.split("<=")) // split app method from test method
-                    .forEach(this::addToSet);
-            writeResultsToFile();
-        } catch (IOException e) {
-            throw e;
-        }
-
+    public ExecutionData analyze(InputStream source) {
+        ExecutionData data = new ExecutionData();
+        var stream = new BufferedReader(new InputStreamReader(source));
+        stream.lines()
+                .map(this::parseMethodCall)
+                .forEach(data::addCall);
+        return data;
     }
 
-    private void addToSet(String[] strings) {
-        // parse incoming app method and test method strings
-
-        String appMethod = strings[0];
-        String testMethod = strings[1];
-        var set = new TreeSet<String>();
-        set.add(testMethod);
-
-        // if key is not in set: add new entry
-        // if key already in set: merge old value(s) and new value
-        mappedMethods.merge(appMethod, set, (oldVal, newVal) -> {
-            var newSet = new TreeSet<String>();
-            newSet.addAll(oldVal);
-            newSet.addAll(newVal);
-            return newSet;
-        });
+    private MethodCall parseMethodCall(String line) {
+        int depthIdx = line.indexOf("|");
+        int testCaseIdx = line.indexOf("<=");
+        int depth = Integer.valueOf(line.substring(0, depthIdx));
+        String methodName = line.substring(depthIdx + 1, testCaseIdx);
+        String testCaseName = line.substring(testCaseIdx + 2);
+        return new MethodCall(depth, methodName, testCaseName);
     }
-
-    private void writeResultsToFile() {
-        StringBuilder rawData = new StringBuilder();
-        mappedMethods.forEach((appMethod, testMethods) -> {
-            rawData.append(appMethod);
-            for (String testMethod : testMethods) {
-                rawData.append("|").append(testMethod);
-            }
-            rawData.append("\n");
-        });
-
-        FileUtils.writeToFile(rawData.toString(), targetFile.toString());
-    }
-
 }

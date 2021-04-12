@@ -20,8 +20,10 @@ public abstract class Transformer implements ClassFileTransformer {
     /**
      * Creates a new transformer Should be called by subclasses.
      *
-     * @param className   the name of the class to transform
-     * @param classLoader the classs loader for the class
+     * @param className
+     *            the name of the class to transform
+     * @param classLoader
+     *            the classs loader for the class
      */
     Transformer(String className, ClassLoader classLoader) {
         this.targetClassName = className;
@@ -39,7 +41,7 @@ public abstract class Transformer implements ClassFileTransformer {
      * Transforms a class if it matches the className passed to the
      * constructor. This method is meant to be called by an java agent in
      * production code.
-     * 
+     *
      * @return A bytearray containing the instrumented class
      */
     @Override
@@ -91,8 +93,9 @@ public abstract class Transformer implements ClassFileTransformer {
 
     /**
      * Instruments a method. Must be implemented by concrete subclasses.
-     * 
-     * @param method The method to be instrumented
+     *
+     * @param method
+     *            The method to be instrumented
      * @return True if successful
      * @throws NotFoundException
      * @throws CannotCompileException

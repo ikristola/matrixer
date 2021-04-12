@@ -1,5 +1,6 @@
 package org.matrixer.core;
 
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -12,7 +13,7 @@ class TestUtils {
             Path.of(CWD, "../agent/build/libs/agentJar.jar").normalize();
 
     static Path targetDirectory() {
-        return FileUtils.getSystemTempDir().resolve("matrixer-test");
+        return FileUtils.getSystemTempDirectory().resolve("matrixer-test");
     }
 
     static URI testRepoURL() {
@@ -24,8 +25,8 @@ class TestUtils {
     }
 
     static void removeGradleFiles(Path projectDir) {
-        var gradleFiles = new String[] {"gradle", "gradlew", "gradlew.bat", "build.gradle",
-                "gradle.settings"};
+        String[] gradleFiles =
+                {"gradle", "gradlew", "gradlew.bat", "build.gradle", "gradle.settings"};
         FileUtils.removeFiles(projectDir, gradleFiles);
     }
 
@@ -56,6 +57,14 @@ class TestUtils {
         return String.format("-javaagent:%s=%s:%s:%s",
                 agentJarPath.toString(), outputPath.toString(),
                 targetPkg, testPkg);
+    }
+
+    static InputStream asInputStream(String s) {
+        return new ByteArrayInputStream(s.getBytes());
+    }
+
+    static String getString(ByteArrayOutputStream out) {
+        return new String(out.toByteArray());
     }
 
 }

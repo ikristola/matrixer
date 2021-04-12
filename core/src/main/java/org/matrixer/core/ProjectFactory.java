@@ -6,13 +6,16 @@ import java.nio.file.Path;
 class ProjectFactory {
 
     /**
-     * Creates a Project by scanning targetDir for Maven and Gradle build scripts
-     * and returns a suitible Project.
+     * Creates a Project by scanning targetDir for Maven and Gradle build
+     * scripts and returns a suitible Project.
+     *
+     * @param targetDir
+     *            the directory to scan
      *
      * @returns the Project instance
      *
-     * @throws IllegalArgumentException if the project does not contain any valid build
-     * scripts
+     * @throws IllegalArgumentException
+     *             if the project does not contain any valid build scripts
      */
     static Project scan(Path targetDir) {
         Properties prop = new Properties();
@@ -23,13 +26,13 @@ class ProjectFactory {
     /**
      * Creates a Project as specified by the Properties.
      *
-     * This method scans the project directory for Maven and Gradle build scripts
-     * and returns a suitible Project.
+     * This method scans the project directory for Maven and Gradle build
+     * scripts and returns a suitible Project.
      *
      * @returns the Project instance
      *
-     * @throws IllegalArgumentException if the project does not contain any valid build
-     * scripts
+     * @throws IllegalArgumentException
+     *             if the project does not contain any valid build scripts
      */
     static Project from(Properties prop) {
         if (!Files.exists(prop.targetDir())) {

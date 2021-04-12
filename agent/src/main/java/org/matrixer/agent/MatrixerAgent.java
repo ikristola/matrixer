@@ -20,8 +20,8 @@ import java.util.Optional;
  *
  * outputDirectory:targetPackage:testPackage
  *
- * outputDirectory - the directory where the agent should place its logfile and the results
- * from the instrumented methods.
+ * outputDirectory - the directory where the agent should place its
+ * logfile and the results from the instrumented methods.
  *
  * targetPackage - the root package that will be tested, sub-packages
  * will be instrumented as well.
@@ -77,8 +77,10 @@ public class MatrixerAgent {
     /**
      * Run when the agent is started statically
      *
-     * @param agentArgs Agent arguments
-     * @param inst      Instrumentation instance
+     * @param agentArgs
+     *            Agent arguments
+     * @param inst
+     *            Instrumentation instance
      * @throws IOException
      */
     public static void premain(String agentArgs, Instrumentation inst) throws IOException {
@@ -89,8 +91,10 @@ public class MatrixerAgent {
     /**
      * Run when the agent is started dynamically
      *
-     * @param agentArgs Agent arguments
-     * @param inst      Instrumentation instance
+     * @param agentArgs
+     *            Agent arguments
+     * @param inst
+     *            Instrumentation instance
      * @throws IOException
      */
     public static void agentmain(String agentArgs, Instrumentation inst) throws IOException {
@@ -159,11 +163,14 @@ public class MatrixerAgent {
     /**
      * Retransforms the class using a new transformer.
      *
-     * @param targetCls the class to transform
-     * @param inst      the instrumentation instance to use for registering
-     *                  the transformer
-     * @param outputDir the directory where the results from the transformer
-     *                  should be stored
+     * @param targetCls
+     *            the class to transform
+     * @param inst
+     *            the instrumentation instance to use for registering the
+     *            transformer
+     * @param outputDir
+     *            the directory where the results from the transformer
+     *            should be stored
      */
     private void transform(Class<?> targetCls, Instrumentation inst, String outputDir) {
         try {

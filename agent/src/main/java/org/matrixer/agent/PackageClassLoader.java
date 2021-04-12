@@ -8,7 +8,8 @@ import java.util.jar.JarInputStream;
 
 
 /**
- * Locates all classes for a specified package in the class path and loads them.
+ * Locates all classes for a specified package in the class path and
+ * loads them.
  */
 class PackageClassLoader {
     String packageName;
@@ -18,7 +19,8 @@ class PackageClassLoader {
     /**
      * Creates a new loader
      *
-     * @param packageName the package name for the classes to load
+     * @param packageName
+     *            the package name for the classes to load
      */
     PackageClassLoader(String packageName) {
         this.packageName = packageName;
@@ -109,8 +111,8 @@ class PackageClassLoader {
     /**
      * Returns a list of the loaded classes.
      *
-     * If no classes where found or if loadClasses has not been called an empty list is
-     * returned.
+     * If no classes where found or if loadClasses has not been called an
+     * empty list is returned.
      */
     public List<Class<?>> getClasses() {
         if (classes == null) {

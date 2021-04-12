@@ -165,8 +165,8 @@ class PropertiesTest {
     void canSetTargetPackage() {
         String pkg = "org.matrixer";
         String[] args = {
-            "--target", ANY_PATH.toString(),
-            "--pkg", pkg
+                "--target", ANY_PATH.toString(),
+                "--pkg", pkg
         };
         Properties prop = new Properties();
 
@@ -178,8 +178,8 @@ class PropertiesTest {
     void canSetTestPackage() {
         String testpkg = "org.matrixer.test";
         String[] args = {
-            "--target", ANY_PATH.toString(),
-            "--testpkg", testpkg
+                "--target", ANY_PATH.toString(),
+                "--testpkg", testpkg
         };
         Properties prop = new Properties();
 

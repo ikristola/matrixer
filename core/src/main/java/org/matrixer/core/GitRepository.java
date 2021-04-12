@@ -1,9 +1,8 @@
 package org.matrixer.core;
 
 import java.io.IOException;
-import java.nio.file.Path;
-
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -26,9 +25,10 @@ public class GitRepository {
     /**
      * Clones a git repository located at url to target
      *
-     * @param url             A remote url or local path to a repository
-     * @param targetDirectory The directory in which the repository will be
-     *                        cloned to
+     * @param url
+     *            A remote url or local path to a repository
+     * @param targetDirectory
+     *            The directory in which the repository will be cloned to
      * @returns a GitRepository instance of the repository
      */
     public static GitRepository clone(String url, Path targetDirectory) throws GitAPIException {
@@ -47,7 +47,8 @@ public class GitRepository {
     /**
      * Opens an existing git repository
      *
-     * @param projectDir The path to the respository
+     * @param projectDir
+     *            The path to the respository
      * @returns a GitRepository instance of the repository
      */
     public static GitRepository open(Path projectDir) throws IOException {

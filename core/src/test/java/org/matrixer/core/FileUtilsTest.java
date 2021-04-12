@@ -22,7 +22,7 @@ class FileUtilsTest {
 
     @Test
     void returnCorrectTempPath() {
-        Path tmpDir = FileUtils.getSystemTempDir();
+        Path tmpDir = FileUtils.getSystemTempDirectory();
         assertFalse(tmpDir.toString().isEmpty());
         assertEquals(Path.of(System.getProperty("java.io.tmpdir")), tmpDir);
     }
@@ -90,7 +90,7 @@ class FileUtilsTest {
     void appendStringToFile() throws IOException {
         String junk = "some junk\nstuff\n";
         String expected = "appended string";
-        var file = FileUtils.createTempFile(FileUtils.getSystemTempDir());
+        var file = FileUtils.createTempFile(FileUtils.getSystemTempDirectory());
         Files.writeString(file, junk);
 
         FileUtils.appendToFile(file, expected);

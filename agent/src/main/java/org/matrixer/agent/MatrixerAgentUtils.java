@@ -12,7 +12,8 @@ public class MatrixerAgentUtils {
     /**
      * Get a list of all classes in package
      * 
-     * @param packageName Target package
+     * @param packageName
+     *            Target package
      * @return List of classes
      */
     public static final List<Class<?>> getClassesInPackage(String packageName) {
@@ -23,8 +24,9 @@ public class MatrixerAgentUtils {
 
     /**
      * Determine if a class contains Junit unit tests
-     * 
-     * @param cls The class to examine
+     *
+     * @param cls
+     *            The class to examine
      * @return True if class contains test
      */
     public static final boolean isTestClass(Class<?> cls) {

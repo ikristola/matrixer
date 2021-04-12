@@ -50,7 +50,7 @@ class GradleProject extends Project {
 
     @Override
     List<String> getTestCommand() {
-        String[] cmd = new String[] { "./gradlew", "test" };
+        String[] cmd = new String[] {"./gradlew", "test"};
         return Arrays.asList(cmd);
     }
 

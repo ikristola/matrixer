@@ -90,7 +90,7 @@ class MavenProject extends Project {
 
     @Override
     List<String> getTestCommand() {
-        String[] cmd = new String[] { "mvn", "test" };
+        String[] cmd = new String[] {"mvn", "test"};
         return Arrays.asList(cmd);
     }
 

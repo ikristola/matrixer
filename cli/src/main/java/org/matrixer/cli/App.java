@@ -1,10 +1,13 @@
 package org.matrixer.cli;
 
-import org.matrixer.report.Report;
-
+import java.io.*;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.matrixer.core.*;
+import org.matrixer.report.HTMLReporter;
 
 public class App {
 
@@ -44,31 +47,56 @@ public class App {
         if (!properties.isValid()) {
             throw new IllegalArgumentException(properties.reasonForFailure());
         }
-        System.out.println("Preparing target project");
-        ProjectPreparer preparer = new ProjectPreparer();
-        project = preparer.prepare(properties);
+        project = prepareProject();
 
-        System.out.println("Running target project tests");
-        ProjectRunner runner = new ProjectRunner();
-        int status = runner.runTests(project);
-
+        int status = runProject();
         if (status != 0) {
             System.out.println("Target project tests exited with error: " + status);
             return;
         }
         System.out.println("Target project tests was run successfully!");
 
-        System.out.println("Analyzing results");
-        Path results = project.outputDirectory().resolve(ANALYZED_FILENAME);
-        Analyzer analyzer = new Analyzer(project.resultsFile(), results);
-        analyzer.analyze();
+        ExecutionData results = analyzeProject();
+        generateHTMLReport(results);
+    }
 
+    private Project prepareProject() throws GitAPIException, IOException {
+        System.out.println("Preparing target project");
+        ProjectPreparer preparer = new ProjectPreparer();
+        return preparer.prepare(properties);
+    }
+
+    private int runProject() {
+        System.out.println("Running target project tests");
+        ProjectRunner runner = new ProjectRunner();
+        return runner.runTests(project);
+    }
+
+    private ExecutionData analyzeProject() throws IOException {
+        System.out.println("Analyzing results");
+        Path file = project.resultsFile();
+        try (var in = Files.newInputStream(file)) {
+            Analyzer analyzer = new Analyzer();
+            ExecutionData results = analyzer.analyze(in);
+            return results;
+        } catch (IOException e) {
+            var ex = new IOException("Analyzing " + file + ": " + e.getMessage());
+            ex.initCause(e);
+            throw e;
+        }
+    }
+
+    private void generateHTMLReport(ExecutionData data) throws IOException {
         System.out.println("Generating html report");
-        Report report = new Report.Builder()
-            .dataFile(results)
-            .outputPath(project.outputDirectory())
-            .build();
-        report.generate();
+        Path htmlFile = project.outputDirectory().resolve("matrixer-report.html");
+        try (var out = Files.newOutputStream(htmlFile)) {
+            HTMLReporter reporter = new HTMLReporter(data);
+            reporter.reportTo(out);
+        } catch (IOException e) {
+            var ex = new IOException("Analyzing " + htmlFile + ": " + e.getMessage());
+            ex.initCause(e);
+            throw e;
+        }
     }
 
     Project getProject() {
@@ -87,13 +115,12 @@ public class App {
     static void printUsage() {
         System.err.println(
                 "Usage: " + "\n\tmatrixer --target <path> --pkg <target package name> "
-                + "[--testpkg <test package name>] [--output <path>] [--git <URL>]\n\n\t"
-                + "--target  - the location of an existing project or the path to clone the remote repo to\n\t"
-                + "--pkg     - root package name of the target project, will be used to identify target methods\n\t"
-                + "--testpkg - root package name of the tests, will be used to identify test cases (defaults to --pkg)\n\t"
-                + "--output  - the location where logs and results will be stored. Defaults to build/matrix-cov for gradle and target/matrix-cov for maven\n\t"
-                + "--git     - if the project is remote, provide a URL to the repository\n"
-        );
+                        + "[--testpkg <test package name>] [--output <path>] [--git <URL>]\n\n\t"
+                        + "--target  - the location of an existing project or the path to clone the remote repo to\n\t"
+                        + "--pkg     - root package name of the target project, will be used to identify target methods\n\t"
+                        + "--testpkg - root package name of the tests, will be used to identify test cases (defaults to --pkg)\n\t"
+                        + "--output  - the location where logs and results will be stored. Defaults to build/matrix-cov for gradle and target/matrix-cov for maven\n\t"
+                        + "--git     - if the project is remote, provide a URL to the repository\n");
     }
 
 }

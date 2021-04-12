@@ -30,11 +30,15 @@ public class MethodMapTransformer extends Transformer {
     /**
      * Creates a new transformer
      *
-     * @param cls           The class to transform
-     * @param outputDir     A path to the directory where results should be stored
-     * @param targetPackage The root package name for the target of the
-     *                      instrumentation
-     * @param testerPackage The root package name for the testing package
+     * @param cls
+     *            The class to transform
+     * @param outputDir
+     *            A path to the directory where results should be stored
+     * @param targetPackage
+     *            The root package name for the target of the
+     *            instrumentation
+     * @param testerPackage
+     *            The root package name for the testing package
      */
     MethodMapTransformer(Class<?> cls, String outputDir, String targetPackage,
             String testerPackage) {
@@ -48,7 +52,8 @@ public class MethodMapTransformer extends Transformer {
      * Transform a method so that it prints out the caller method when
      * called
      *
-     * @param method The method to be instrumented
+     * @param method
+     *            The method to be instrumented
      * @return True if successful
      * @throws NotFoundException
      * @throws CannotCompileException
@@ -74,9 +79,10 @@ public class MethodMapTransformer extends Transformer {
     /**
      * Returns the java source code to inject each method with.
      *
-     * @param fname            the filename that the method should write to.
-     * @param calledMethodName the name of the method that will be
-     *                         instumented
+     * @param fname
+     *            the filename that the method should write to.
+     * @param calledMethodName
+     *            the name of the method that will be instumented
      */
     private String getCodeString(String fname, String calledMethodName) {
         String regex = classNameRegex();
@@ -90,12 +96,17 @@ public class MethodMapTransformer extends Transformer {
                         // First StackTraceElement is getStackTrace()
                         + "for (int i = elems.length - 1; i > 1; i--) {"
                         + "   StackTraceElement elem = elems[i];"
-                        + "   if (elem.getClassName().matches(\"" + regex + "\")) {"
+                        + "   if (elem.getClassName().matches(\"%3$s\")) {"
                         + "       String caller = elem.getClassName() + \":\" + elem.getMethodName();"
-                        + "       String towrite = \"%2$s<=\" + caller + \"\\n\";"
+                        + "       int callDepth = i-1;"
+                        + "       String towrite = callDepth +\"|%2$s<=\" + caller + \"\\n\";"
                         + "       System.out.print(towrite);"
                         + "       out.write(towrite.getBytes());"
                         + "       System.out.println(\"Wrote to %1$s \");"
+                        + "       for (int j = i; j >= 0; j--) {"
+                        + "           StackTraceElement callerm = elems[j];"
+                        + "           System.out.println(callerm.getClassName() + \":\" + callerm.getMethodName());"
+                        + "       }"
                         + "       break;"
                         + "   }"
                         + "}"
@@ -106,7 +117,7 @@ public class MethodMapTransformer extends Transformer {
                         + "        out.close();"
                         + "    }"
                         + "}",
-                fname, calledMethodName);
+                fname, calledMethodName, regex);
     }
 
     private String classNameRegex() {

@@ -14,7 +14,7 @@ import org.matrixer.core.Project;
 
 class AppTest {
 
-    static Path targetDirectory = FileUtils.getSystemTempDir().resolve("matrixer-test");
+    static Path targetDirectory = FileUtils.getSystemTempDirectory().resolve("matrixer-test");
     static String testRepoURL = "https://github.com/ikristola/matrixer-test";
 
     static App app;
@@ -63,7 +63,7 @@ class AppTest {
     @Test
     void htmlReportIsGenerated() {
         Project project = app.getProject();
-        String reportFilename = "matrixer-results.txt";
+        String reportFilename = "matrixer-report.html";
         Path HTMLreport = project.outputDirectory().resolve(reportFilename);
         assertTrue(Files.exists(HTMLreport), HTMLreport + " does not exist");
     }

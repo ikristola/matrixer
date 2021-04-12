@@ -13,9 +13,9 @@ public class ProjectRunner {
     /**
      * Runs the project.
      *
-     * The output streams will be redirected to the log file.
-     * Note: if running a cleaning task, such as 'gradle clean', it will
-     * remove the output directory
+     * The output streams will be redirected to the log file. Note: if
+     * running a cleaning task, such as 'gradle clean', it will remove the
+     * output directory
      */
     public int runTests(Project project) {
         if (!Files.isDirectory(project.outputDirectory())) {

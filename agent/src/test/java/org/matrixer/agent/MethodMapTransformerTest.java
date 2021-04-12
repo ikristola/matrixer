@@ -17,7 +17,7 @@ public class MethodMapTransformerTest {
     private static CustomTestAgent customTestAgent;
 
     @BeforeAll
-    static void setupClass() {
+    static void loadAgent() {
         try {
             customTestAgent = CustomTestAgent.getInstance();
         } catch (Exception e) {
@@ -27,7 +27,7 @@ public class MethodMapTransformerTest {
 
     @Test
     public void transformedMethodPrintsCallerMethod() {
-        Path dummyOut = FileUtils.createTempDirectory(FileUtils.getSystemTempDir());
+        Path dummyOut = FileUtils.createTempDirectory();
         Class<?> targetClass = MethodMapTransformerTestClass.class;
         String rootPkg = "org.matrixer";
         String testPkg = "org.matrixer";
