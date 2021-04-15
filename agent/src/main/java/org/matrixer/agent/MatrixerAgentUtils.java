@@ -34,8 +34,18 @@ public class MatrixerAgentUtils {
         for (Method method : m) {
             Annotation[] annotations = method.getDeclaredAnnotations();
             for (Annotation annotation : annotations) {
-                return annotation.toString().startsWith("@org.junit");
+                if (annotation.toString().matches("^@org.(junit|testng).*")) {
+                    return true;
+                }
             }
+        }
+        Class<?> enclosingClass = cls.getEnclosingClass();
+        if (enclosingClass != null && isTestClass(enclosingClass)) {
+            return true;
+        }
+        Class<?> declaringClass = cls.getDeclaringClass();
+        if (declaringClass != null && isTestClass(declaringClass)) {
+            return true;
         }
         return false;
     }

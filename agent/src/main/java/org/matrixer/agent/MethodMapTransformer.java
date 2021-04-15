@@ -1,8 +1,6 @@
 package org.matrixer.agent;
 
 import java.io.IOException;
-import java.nio.file.Path;
-
 import javassist.*;
 
 /**
@@ -10,17 +8,6 @@ import javassist.*;
  * target class methods
  */
 public class MethodMapTransformer extends Transformer {
-
-    /**
-     * The path in which to store results
-     */
-    final private String outputPath;
-
-    /**
-     * The package that contains the tests Will be used to determine test
-     * cases
-     */
-    final private String testerPackageName;
 
     /**
      * The package under test Will be used to match classes to instrument
@@ -32,19 +19,14 @@ public class MethodMapTransformer extends Transformer {
      *
      * @param cls
      *            The class to transform
-     * @param outputDir
-     *            A path to the directory where results should be stored
      * @param targetPackage
      *            The root package name for the target of the
      *            instrumentation
      * @param testerPackage
      *            The root package name for the testing package
      */
-    MethodMapTransformer(Class<?> cls, String outputDir, String targetPackage,
-            String testerPackage) {
+    MethodMapTransformer(Class<?> cls, String targetPackage, String testerPackage) {
         super(cls.getName(), cls.getClassLoader());
-        this.outputPath = outputDir;
-        this.testerPackageName = testerPackage;
         this.targetPackageName = targetPackage;
     }
 
@@ -59,74 +41,33 @@ public class MethodMapTransformer extends Transformer {
      * @throws CannotCompileException
      * @throws IOException
      */
-    public boolean instrument(CtMethod method)
-            throws NotFoundException, CannotCompileException, IOException {
+    public boolean instrument(CtMethod method) throws CannotCompileException, IOException {
 
         final var methodName = method.getLongName();
         if (!methodName.startsWith(targetPackageName)) {
             return false;
         }
-
-        String fname = Path.of(outputPath, "matrixer-results.txt").toString();
-        String endBlock = getCodeString(fname, methodName);
-        method.insertBefore(endBlock);
-
         System.out.println("[MethodMapTransformer] Found method: " + methodName);
-        System.out.println("[MethodMapTransformer] Method will write to: " + fname);
+        String instrumentation = getCodeString(methodName);
+        method.insertBefore(instrumentation);
+
         return true;
     }
 
     /**
      * Returns the java source code to inject each method with.
      *
-     * @param fname
+     * @param methodName
      *            the filename that the method should write to.
      * @param calledMethodName
      *            the name of the method that will be instumented
      */
-    private String getCodeString(String fname, String calledMethodName) {
-        String regex = classNameRegex();
-        return String.format(
-                "java.io.BufferedOutputStream out = null;"
-                        + "try {"
-                        + "java.io.File results = new java.io.File(\"%1$s\");"
-                        + "java.io.FileOutputStream fos = new java.io.FileOutputStream(results, true);"
-                        + "out = new java.io.BufferedOutputStream(fos);"
-                        + "StackTraceElement[] elems = Thread.currentThread().getStackTrace();"
-                        // First StackTraceElement is getStackTrace()
-                        + "for (int i = elems.length - 1; i > 1; i--) {"
-                        + "   StackTraceElement elem = elems[i];"
-                        + "   if (elem.getClassName().matches(\"%3$s\")) {"
-                        + "       String caller = elem.getClassName() + \":\" + elem.getMethodName();"
-                        + "       int callDepth = i-1;"
-                        + "       String towrite = callDepth +\"|%2$s<=\" + caller + \"\\n\";"
-                        + "       System.out.print(towrite);"
-                        + "       out.write(towrite.getBytes());"
-                        + "       System.out.println(\"Wrote to %1$s \");"
-                        + "       for (int j = i; j >= 0; j--) {"
-                        + "           StackTraceElement callerm = elems[j];"
-                        + "           System.out.println(callerm.getClassName() + \":\" + callerm.getMethodName());"
-                        + "       }"
-                        + "       break;"
-                        + "   }"
-                        + "}"
-                        + "} catch(java.io.IOException e) {"
-                        + "    System.err.println(\"Something went wrong! \" + e);"
-                        + "} finally { "
-                        + "    if (out != null) {"
-                        + "        out.close();"
-                        + "    }"
-                        + "}",
-                fname, calledMethodName, regex);
+    private String getCodeString(String methodName) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(InvocationLogger.class.getName())
+                .append(".report(\"")
+                .append(methodName)
+                .append("\", Thread.currentThread().getStackTrace());");
+        return builder.toString();
     }
-
-    private String classNameRegex() {
-        String root = escapePeriod(testerPackageName);
-        return "^" + root + "\\.(.*\\.)*(Test[^.]*|[^.]*Test)$";
-    }
-
-    private String escapePeriod(String str) {
-        return str.replaceAll("\\.", "\\\\.");
-    }
-
 }

@@ -18,6 +18,19 @@ class PropertiesTest {
     static final String INVALID_URL = "\\/#@£${[]}\\``´!%&/()=?`^*_:;><";
 
     @Test
+    void canSetAnalyzeOnlyToSkipRunningStep() {
+        Path projectDir = ANY_PATH;
+        String[] args = {"--analyze", projectDir.toString()};
+        Properties prop = new Properties();
+
+        prop.parse(args);
+
+        assertValid(prop);
+        assertTrue(prop.analyzeOnly());
+        assertEquals(projectDir, prop.targetDir());
+    }
+
+    @Test
     void parseOutputPathFromArgs() {
         Path expected = SOME_PATH;
         String[] args = {"--target", ANY_PATH.toString(), "--output", expected.toString()};

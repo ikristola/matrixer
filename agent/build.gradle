@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     implementation project(':core')
+    testImplementation group: 'org.testng', name: 'testng', version: '6.8'
 }
 
 jar {

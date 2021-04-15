@@ -3,12 +3,10 @@ package org.matrixer.cli;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.util.HashSet;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.matrixer.core.FileUtils;
 import org.matrixer.core.Project;
 
@@ -28,7 +26,12 @@ class AppTest {
                 "--git", testRepoURL
         };
         app = new App(args);
-        assertDoesNotThrow(() -> app.run());
+        assertDoesNotThrow(app::run);
+    }
+
+    @AfterAll
+    static void cleanUp() {
+        // FileUtils.removeDirectory(targetDirectory);
     }
 
     @Test
@@ -66,5 +69,32 @@ class AppTest {
         String reportFilename = "matrixer-report.html";
         Path HTMLreport = project.outputDirectory().resolve(reportFilename);
         assertTrue(Files.exists(HTMLreport), HTMLreport + " does not exist");
+    }
+
+    @Test
+    void canRunAnalyzerOnly() throws IOException {
+        // Make project non-runnable and remove existing html report
+        Project project = app.getProject();
+        Path projectDir = project.directory();
+
+        Path gradleScript = projectDir.resolve("build.gradle");
+        Path mvnScript = projectDir.resolve("pom.xml");
+        Path html = project.outputDirectory().resolve(App.HTML_REPORT_FILENAME);
+        Path[] paths = {gradleScript, mvnScript, html};
+        for (var p : paths) {
+            Files.move(p, p.resolveSibling(p.getFileName() + ".old"));
+        }
+        Files.createFile(project.buildScript());  // Must be able to prepare project
+
+        try {
+            String[] args = {"--analyze", project.directory().toString(), "--pkg", "org.matrixertest"};
+            App analyzingApp = new App(args);
+            assertDoesNotThrow(analyzingApp::run);
+            assertTrue(Files.exists(html), "New html file not created");
+        } finally {
+            for (var p : paths) {
+                Files.move(p.resolveSibling(p.getFileName() + ".old"), p, StandardCopyOption.REPLACE_EXISTING);
+            }
+        }
     }
 }

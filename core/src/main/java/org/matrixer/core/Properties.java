@@ -31,7 +31,10 @@ public class Properties {
      */
     final static String VCS_FLAG = "--git";
 
+    final static String ANALYZE_ONLY_FLAG = "--analyze";
+
     final static String TARGET_PKG_FLAG = "--pkg";
+
     final static String TEST_PKG_FLAG = "--testpkg";
 
     /**
@@ -46,6 +49,7 @@ public class Properties {
     private URI remoteURL = null;
     private String targetPkg;
     private String testPkg;
+    private boolean analyzeOnly = false;
     private String failureReason = "Properties not parsed";
 
     public static Properties fromArgs(String... args) {
@@ -70,7 +74,7 @@ public class Properties {
     }
 
     private void parseFlag(List<String> flagPair) {
-        failureReason = null;
+        failureReason = "";
         if (flagPair.size() != 2) {
             throw new IllegalArgumentException("Argument must be --flag <value>: " + flagPair);
         }
@@ -78,10 +82,10 @@ public class Properties {
         String arg = flagPair.get(1);
         switch (flag) {
             case TARGET_FLAG:
-                setTargetDir(Paths.get(arg));
+                setTargetDir(Path.of(arg));
                 break;
             case OUTDIR_FLAG:
-                setOutputDir(Paths.get(arg));
+                setOutputDir(Path.of(arg));
                 break;
             case VCS_FLAG:
                 setRemoteURL(parseURL(arg));
@@ -91,6 +95,10 @@ public class Properties {
                 break;
             case TEST_PKG_FLAG:
                 setTestPackage(arg);
+                break;
+            case ANALYZE_ONLY_FLAG:
+                setTargetDir(Path.of(arg));
+                analyzeOnly = true;
                 break;
             default:
                 throw new IllegalArgumentException("Unknown flag: '" + flag + "'");
@@ -115,7 +123,6 @@ public class Properties {
             applyDefaults();
         }
     }
-
 
     private void validate() {
         if (targetDir == null) {
@@ -148,7 +155,7 @@ public class Properties {
      * @returns true if parse was successful, false otherwise
      */
     public boolean isValid() {
-        return failureReason == null;
+        return failureReason.isEmpty();
     }
 
     /**
@@ -236,6 +243,10 @@ public class Properties {
      */
     public void setTestPackage(String packageName) {
         testPkg = packageName;
+    }
+
+    public boolean analyzeOnly() {
+        return analyzeOnly;
     }
 
 }

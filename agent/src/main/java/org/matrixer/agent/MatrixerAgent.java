@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * MatrixerAgent is a agent that transforms classes in target package.
@@ -46,7 +47,7 @@ public class MatrixerAgent {
     /**
      * The path in which to store results
      */
-    final private String outputPath;
+    final private Path outputFile;
 
     /**
      * The package under test Will be used to match classes to instrument
@@ -65,13 +66,26 @@ public class MatrixerAgent {
         if (args.length < 3) {
             throw new IllegalArgumentException("[Agent] Not enough arguments!");
         }
-        outputPath = args[0];
+        outputFile = Path.of(args[0], "matrixer-results.txt");
         targetPackage = args[1];
         testerPackage = args[2];
         setupLog();
         log("started " + type + ":\n\tArgs: " + agentArgs);
-        log(String.format("OutputPath: %s\ntarget: %s\ntest: %s", outputPath, targetPackage,
-                testerPackage));
+        log(
+                String.format("OutputPath: %s\ntarget: %s\ntest: %s",
+                        outputFile, targetPackage, testerPackage));
+        SynchronizedWriter w = new SynchronizedWriter(Files.newBufferedWriter(outputFile));
+        InvocationLogger.init(w, testerPackage);
+        addShutdownHook();
+    }
+
+    void addShutdownHook() {
+        Runtime rt = Runtime.getRuntime();
+        rt.addShutdownHook(new Thread(() -> {
+            System.out.print("Stopping invocationlogger...");
+            InvocationLogger.awaitFinished(10, TimeUnit.MINUTES);
+            System.out.println("Done");
+        }));
     }
 
     /**
@@ -104,8 +118,7 @@ public class MatrixerAgent {
 
     private void setupLog() throws IOException {
         try {
-            var out =
-                    Files.newOutputStream(Path.of(outputPath).resolve(("matrixer-agent-log.txt")));
+            var out = Files.newOutputStream(outputFile.resolveSibling(("matrixer-agent-log.txt")));
             log = new PrintStream(out);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -137,7 +150,7 @@ public class MatrixerAgent {
         if (targetCls.isEmpty()) {
             throw new RuntimeException("Could not find class [" + className + "]");
         }
-        transform(targetCls.get(), inst, outputPath);
+        transform(targetCls.get(), inst);
     }
 
     Optional<Class<?>> findClassInInstrumentation(String className, Instrumentation inst) {
@@ -172,10 +185,9 @@ public class MatrixerAgent {
      *            the directory where the results from the transformer
      *            should be stored
      */
-    private void transform(Class<?> targetCls, Instrumentation inst, String outputDir) {
+    private void transform(Class<?> targetCls, Instrumentation inst) {
         try {
-            var transformer =
-                    new MethodMapTransformer(targetCls, outputDir, targetPackage, testerPackage);
+            var transformer = new MethodMapTransformer(targetCls, targetPackage, testerPackage);
             inst.addTransformer(transformer, true);
             inst.retransformClasses(targetCls);
         } catch (Exception e) {

@@ -3,21 +3,51 @@ package org.matrixer.agent;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.matrixer.agent.util.Assertions.assertFoundTestCase;
 
+import java.io.*;
 import java.nio.file.Path;
-
-import org.matrixer.core.FileUtils;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.*;
 import org.matrixer.agent.dynamictargets.AnotherTestClassDynamic;
 import org.matrixer.agent.dynamictargets.TestClassDynamic;
 import org.matrixer.agent.statictargets.AnotherTestClassStatic;
 import org.matrixer.agent.statictargets.TestClassStatic;
-import org.matrixer.agent.util.StreamHijacker;
+import org.matrixer.core.FileUtils;
 
 public class MatrixerAgentTest {
 
-    // For capturing output
-    StreamHijacker streamHijacker = new StreamHijacker();
+    ByteArrayOutputStream out;
+    SynchronizedWriter writer;
+
+    @BeforeEach
+    void startLogger() {
+        out = new ByteArrayOutputStream();
+        writer = new SynchronizedWriter(new BufferedWriter(new OutputStreamWriter(out)));
+        boolean replace = true;
+        InvocationLogger.init(writer, "org.matrixer.agent", replace);
+    }
+
+    String getOutput() throws IOException {
+        await();
+        writer.lock();
+        try {
+            String output = out.toString();
+            out.reset();
+            return output;
+        } finally {
+            writer.unlock();
+        }
+    }
+
+    static void await() {
+        try {
+            Thread.sleep(1);
+        } catch (InterruptedException e) {
+            System.out.println("Sleep failed");
+            e.printStackTrace();
+        }
+        InvocationLogger.awaitFinished(10, TimeUnit.SECONDS);
+    }
 
     /**
      * Tests of agent run statically
@@ -40,39 +70,35 @@ public class MatrixerAgentTest {
         }
 
         @Test
-        public void instrumentedMethodPrintsCallerMethod() {
+        public void instrumentedMethodPrintsCallerMethod() throws IOException {
             String caller = getClass().getName() + ":instrumentedMethodPrintsCallerMethod";
             String callee = TestClassStatic.class.getName() + ".returnInput";
 
-            String output = streamHijacker.getOutput(() -> {
-                TestClassStatic.returnInput("Dummy string");
-            });
+            TestClassStatic.returnInput("Dummy string");
+            String output = getOutput();
 
             assertFoundTestCase(output, caller, callee);
         }
 
         @Test
-        public void canInstrumentMultipleClasses() {
+        public void canInstrumentMultipleClasses() throws IOException {
             String caller = getClass().getName() + ":canInstrumentMultipleClasses";
 
             String callee1 = TestClassStatic.class.getName() + ".returnInput";
-            String output1 = streamHijacker.getOutput(() -> {
-                TestClassStatic.returnInput("Dummy string");
-            });
-            assertFoundTestCase(output1, caller, callee1);
+            TestClassStatic.returnInput("Dummy string");
 
             String callee2 = AnotherTestClassStatic.class.getName() + ".trueReturner";
-            String output2 = streamHijacker.getOutput(() -> {
-                AnotherTestClassStatic.trueReturner();
-            });
-            assertFoundTestCase(output2, caller, callee2);
+            AnotherTestClassStatic.trueReturner();
 
+            String callee3 = AnotherTestClassStatic.class.getName() + ".oneReturner";
+            AnotherTestClassStatic.oneReturner();
 
-            String callee3 = AnotherTestClassStatic.class.getName();
-            String output3 = streamHijacker.getOutput(() -> {
-                AnotherTestClassStatic.oneReturner();
-            });
-            assertFoundTestCase(output3, caller, callee3);
+            String[] output = getOutput().split("\n");
+
+            assertEquals(3, output.length, "Did not write 3 lines\n" + String.join("\n", output));
+            assertFoundTestCase(output[0], caller, callee1);
+            assertFoundTestCase(output[1], caller, callee2);
+            assertFoundTestCase(output[2], caller, callee3);
         }
     }
 
@@ -95,6 +121,12 @@ public class MatrixerAgentTest {
         }
 
         @Test
+        @Order(2)
+        public void invocationLoggerIsInitialized() {
+            assertNotNull(InvocationLogger.getInstance(), "InvocationLogger not initialized");
+        }
+
+        @Test
         public void instrumentDoesNotBreakMethod() {
             String argument = "this is an argument";
             assertEquals(argument, TestClassDynamic.returnInput(argument));
@@ -109,38 +141,35 @@ public class MatrixerAgentTest {
         }
 
         @Test
-        public void instrumentedMethodPrintsCallerMethod() {
+        public void instrumentedMethodPrintsCallerMethod() throws IOException {
             String caller = getClass().getName() + ":instrumentedMethodPrintsCallerMethod";
             String callee = TestClassDynamic.class.getName() + ".returnInput";
 
-            String output = streamHijacker.getOutput(() -> {
-                TestClassDynamic.returnInput("Dummy string");
-            });
+            TestClassDynamic.returnInput("Dummy string");
+            String output = getOutput();
 
             assertFoundTestCase(output, caller, callee);
         }
 
         @Test
-        public void canInstrumentMultipleClasses() {
+        public void canInstrumentMultipleClasses() throws IOException {
             String caller = getClass().getName() + ":canInstrumentMultipleClasses";
 
             String callee1 = TestClassStatic.class.getName() + ".returnInput";
-            String output1 = streamHijacker.getOutput(() -> {
-                TestClassStatic.returnInput("Dummy string");
-            });
-            assertFoundTestCase(output1, caller, callee1);
+            TestClassStatic.returnInput("Dummy string");
 
             String callee2 = AnotherTestClassStatic.class.getName() + ".trueReturner";
-            String output2 = streamHijacker.getOutput(() -> {
-                AnotherTestClassStatic.trueReturner();
-            });
-            assertFoundTestCase(output2, caller, callee2);
+            AnotherTestClassStatic.trueReturner();
 
-            String callee3 = AnotherTestClassStatic.class.getName();
-            String output3 = streamHijacker.getOutput(() -> {
-                AnotherTestClassStatic.oneReturner();
-            });
-            assertFoundTestCase(output3, caller, callee3);
+            String callee3 = AnotherTestClassStatic.class.getName() + ".oneReturner";
+            AnotherTestClassStatic.oneReturner();
+
+            String[] output = getOutput().split("\n");
+
+            assertEquals(3, output.length, "Did not write 3 lines\n" + String.join("\n", output));
+            assertFoundTestCase(output[0], caller, callee1);
+            assertFoundTestCase(output[1], caller, callee2);
+            assertFoundTestCase(output[2], caller, callee3);
         }
     }
 }

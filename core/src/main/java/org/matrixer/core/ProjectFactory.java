@@ -36,7 +36,7 @@ class ProjectFactory {
      */
     static Project from(Properties prop) {
         if (!Files.exists(prop.targetDir())) {
-            throw new IllegalArgumentException("");
+            throw new IllegalArgumentException("Directory does not exist: " + prop.targetDir());
         }
         var paths = FileUtils.fileSearch(prop.targetDir(), GradleProject.scriptName);
         if (paths.length > 0) {

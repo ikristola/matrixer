@@ -131,7 +131,7 @@ public class ExecutedMethod implements Comparable<ExecutedMethod> {
          * @param depth
          *            the depth of the first call
          */
-        Call(String name, int depth) {
+        public Call(String name, int depth) {
             callerName = name;
             depthRange = new Range(depth, depth);
         }
