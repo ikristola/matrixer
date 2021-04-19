@@ -5,10 +5,10 @@ import static org.matrixer.agent.MatrixerAgentUtils.isTestClass;
 
 import java.io.*;
 import java.lang.instrument.Instrumentation;
+import java.lang.instrument.UnmodifiableClassException;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -79,12 +79,21 @@ public class MatrixerAgent {
         addShutdownHook();
     }
 
+    private void setupLog() throws IOException {
+        try {
+            var out = Files.newOutputStream(outputFile.resolveSibling(("matrixer-agent-log.txt")));
+            log = new PrintStream(out);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     void addShutdownHook() {
         Runtime rt = Runtime.getRuntime();
         rt.addShutdownHook(new Thread(() -> {
-            System.out.print("Stopping invocationlogger...");
+            log("Stopping invocationlogger...");
             InvocationLogger.awaitFinished(10, TimeUnit.MINUTES);
-            System.out.println("Done");
+            log("Done");
         }));
     }
 
@@ -116,61 +125,19 @@ public class MatrixerAgent {
         agent.run();
     }
 
-    private void setupLog() throws IOException {
-        try {
-            var out = Files.newOutputStream(outputFile.resolveSibling(("matrixer-agent-log.txt")));
-            log = new PrintStream(out);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
     private void run() {
-        log("Starting agent transformation");
+        log("Starting class instrumentations");
         List<Class<?>> classes = getClassesInPackage(targetPackage);
         log("# classes in package: " + classes.size());
 
         for (Class<?> cls : classes) {
-            log("class found: " + cls);
             if (isTestClass(cls)) {
-                log("This is a test class. Skipping transform");
+                log("Skipping test class: \n\t" + cls.getName());
                 continue;
             }
-            log("This is not a test class. Transforming it..");
-            transformClass(cls.getName(), inst);
+            transform(cls, inst);
         }
-
-    }
-
-    private void transformClass(String className, Instrumentation inst) {
-        var targetCls = findClassInCurrentLoader(className);
-        if (targetCls.isEmpty()) {
-            targetCls = findClassInInstrumentation(className, inst);
-        }
-        if (targetCls.isEmpty()) {
-            throw new RuntimeException("Could not find class [" + className + "]");
-        }
-        transform(targetCls.get(), inst);
-    }
-
-    Optional<Class<?>> findClassInInstrumentation(String className, Instrumentation inst) {
-        for (Class<?> clazz : inst.getAllLoadedClasses()) {
-            if (clazz.getName().equals(className)) {
-                System.out.println("Found class " + clazz.getName());
-                return Optional.of(clazz);
-            }
-        }
-        return Optional.empty();
-    }
-
-    Optional<Class<?>> findClassInCurrentLoader(String className) {
-        try {
-            var targetCls = Class.forName(className);
-            return Optional.of(targetCls);
-        } catch (Exception e) {
-            log("Class not found with Class.forName");
-            return Optional.empty();
-        }
+        log("Class instrumenations done");
     }
 
     /**

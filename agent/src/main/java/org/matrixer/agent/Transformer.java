@@ -62,7 +62,7 @@ public abstract class Transformer implements ClassFileTransformer {
 
     private byte[] tryTransform(String className) {
         try {
-            System.out.println("[Transformer] Transforming class " + className);
+            System.out.println("[Transformer] Transforming class\n\t" + className);
             return transform(className);
         } catch (CannotCompileException e) {
             System.err.println("[Transformer] Err Transformer.transform(): " + e.getReason());
@@ -86,7 +86,7 @@ public abstract class Transformer implements ClassFileTransformer {
             throws IOException, NotFoundException, CannotCompileException {
         for (var m : cls.getMethods()) {
             if (instrument(m)) {
-                System.out.println("[Transformer] Instrumented " + m.getLongName());
+                System.out.println("[Transformer] Instrumented\n\t" + m.getLongName());
             }
         }
     }

@@ -47,9 +47,17 @@ public class MethodMapTransformer extends Transformer {
         if (!methodName.startsWith(targetPackageName)) {
             return false;
         }
-        System.out.println("[MethodMapTransformer] Found method: " + methodName);
+        System.out.println("[MethodMapTransformer] Instrumenting method:\n\t" + methodName);
         String instrumentation = getCodeString(methodName);
-        method.insertBefore(instrumentation);
+
+        if (method.isEmpty()) {
+            if (!method.getDeclaringClass().isInterface() &&
+                    !Modifier.isAbstract(method.getModifiers())) {
+                method.setBody(instrumentation);
+            }
+        } else {
+            method.insertBefore(instrumentation);
+        }
 
         return true;
     }

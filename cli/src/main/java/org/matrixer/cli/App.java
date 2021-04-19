@@ -51,7 +51,8 @@ public class App {
         if (!properties.analyzeOnly()) {
             int status = runProject();
             if (status != 0) {
-                throw new RuntimeException("Target project tests exited with error: " + status);
+                throw new RuntimeException("Target project tests exited with error(" + status
+                        + ") see logfile for details");
             }
             System.out.println("Target project tests was run successfully!");
         }
@@ -62,7 +63,7 @@ public class App {
     }
 
     private Project prepareProject() throws GitAPIException, IOException {
-        System.out.println("Preparing target project");
+        System.out.println("Preparing target project: " + properties.targetDir());
         ProjectPreparer preparer = new ProjectPreparer();
         return preparer.prepare(properties);
     }

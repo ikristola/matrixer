@@ -14,6 +14,9 @@ import org.matrixer.agent.statictargets.AnotherTestClassStatic;
 import org.matrixer.agent.statictargets.TestClassStatic;
 import org.matrixer.core.FileUtils;
 
+import javassist.CtClass;
+import javassist.bytecode.Descriptor;
+
 public class MatrixerAgentTest {
 
     ByteArrayOutputStream out;

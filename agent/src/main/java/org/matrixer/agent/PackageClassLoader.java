@@ -57,9 +57,8 @@ class PackageClassLoader {
     private void tryLoadClassesFromJar(File jar) {
         try (JarInputStream is = new JarInputStream(new FileInputStream(jar))) {
             loadClassesFromJar(jar, is);
-        } catch (Exception ex) {
-            // Silence is gold
-            // What to do here?
+        } catch (Exception e) {
+            throw error(e);
         }
     }
 
@@ -78,14 +77,18 @@ class PackageClassLoader {
     private void tryLoadClassesFromPath(String classPathEntry, File base) {
         try {
             loadClassesFromPath(classPathEntry, base);
-        } catch (Exception ex) {
-            // What to do here?
-            System.out.println("[PackageClassLoader] Error: " + ex);
+        } catch (Exception e) {
+            throw error(e);
         }
     }
 
     private void loadClassesFromPath(String classPathEntry, File base) throws Exception {
-        for (File file : base.listFiles()) {
+        File[] files = base.listFiles();
+        if (files == null) {
+            System.err.println("[PackageClassLoader] Skipping: " + base);
+            return;
+        }
+        for (File file : files) {
             if (file.isDirectory()) {
                 loadClassesFromPath(classPathEntry, file);
                 continue;
@@ -93,12 +96,12 @@ class PackageClassLoader {
             String canonical = file.getCanonicalPath().toString();
             String name = canonical.substring(classPathEntry.length() + 1);
             String className = stripClassExtension(name.replaceAll("[\\\\/]", "."));
-            System.out.println("[PackageClassLoader]Trying to load: " + name);
             if (name.endsWith(".class")) {
                 try {
                     classes.add(Class.forName(className));
-                } catch (Exception e) {
-                    throw new RuntimeException("Could not find: " + className + "\n\t" + canonical);
+                } catch (ClassNotFoundException e) {
+                    throw new ClassNotFoundException("Could not find:\n\t" + className + "\n\t"
+                            + canonical + ": " + e.getMessage(), e);
                 }
             }
         }
@@ -121,4 +124,12 @@ class PackageClassLoader {
         return classes;
     }
 
+    RuntimeException error(Exception e) {
+        return new RuntimeException("[PackageClassLoader] Error: " + e.getMessage(), e);
+    }
+
+    RuntimeException error(Exception e, String msg) {
+        return new RuntimeException("[PackageClassLoader] Error: " + msg + ": " + e.getMessage(),
+                e);
+    }
 }

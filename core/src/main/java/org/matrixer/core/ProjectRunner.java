@@ -32,13 +32,15 @@ public class ProjectRunner {
 
     private void redirectStreams(ProcessBuilder builder, Path logFile) {
         builder.redirectErrorStream(true);
-        System.out.println("Redirecting to" + logFile);
+        System.out.println("Logile: " + logFile);
         builder.redirectOutput(logFile.toFile());
     }
 
     private int runProcess(ProcessBuilder builder) {
         try {
             Process process = builder.start();
+            // Make sure child process terminates when JVM terminates
+            Runtime.getRuntime().addShutdownHook(new Thread(process::destroyForcibly));
             System.out.println("Waiting for project to finish...");
             return process.waitFor();
         } catch (IOException e) {
