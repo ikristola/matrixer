@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     implementation project(':core')
+    implementation 'org.ow2.asm:asm:9.1'
     testImplementation group: 'org.testng', name: 'testng', version: '6.8'
 }
 

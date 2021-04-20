@@ -4,12 +4,13 @@ import static org.matrixer.agent.MatrixerAgentUtils.getClassesInPackage;
 import static org.matrixer.agent.MatrixerAgentUtils.isTestClass;
 
 import java.io.*;
-import java.lang.instrument.Instrumentation;
-import java.lang.instrument.UnmodifiableClassException;
-import java.nio.file.Path;
+import java.lang.instrument.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import javassist.*;
 
 /**
  * MatrixerAgent is a agent that transforms classes in target package.
@@ -60,7 +61,7 @@ public class MatrixerAgent {
      */
     final private String testerPackage;
 
-    private MatrixerAgent(String agentArgs, Instrumentation inst, String type) throws IOException {
+    private MatrixerAgent(String agentArgs, Instrumentation inst, String type) throws IOException, ClassNotFoundException, UnmodifiableClassException, InterruptedException {
         this.inst = inst;
         String[] args = agentArgs.split(":");
         if (args.length < 3) {
@@ -74,6 +75,10 @@ public class MatrixerAgent {
         log(
                 String.format("OutputPath: %s\ntarget: %s\ntest: %s",
                         outputFile, targetPackage, testerPackage));
+        transformThreadClass();
+        var t = new Thread(() -> System.out.println("Running thread: " + Thread.currentThread().getName()));
+        t.start();
+        t.join();
         SynchronizedWriter w = new SynchronizedWriter(Files.newBufferedWriter(outputFile));
         InvocationLogger.init(w, testerPackage);
         addShutdownHook();
@@ -105,8 +110,11 @@ public class MatrixerAgent {
      * @param inst
      *            Instrumentation instance
      * @throws IOException
+     * @throws InterruptedException
+     * @throws UnmodifiableClassException
+     * @throws ClassNotFoundException
      */
-    public static void premain(String agentArgs, Instrumentation inst) throws IOException {
+    public static void premain(String agentArgs, Instrumentation inst) throws IOException, ClassNotFoundException, UnmodifiableClassException, InterruptedException {
         var agent = new MatrixerAgent(agentArgs, inst, "statically");
         agent.run();
     }
@@ -119,8 +127,11 @@ public class MatrixerAgent {
      * @param inst
      *            Instrumentation instance
      * @throws IOException
+     * @throws InterruptedException
+     * @throws UnmodifiableClassException
+     * @throws ClassNotFoundException
      */
-    public static void agentmain(String agentArgs, Instrumentation inst) throws IOException {
+    public static void agentmain(String agentArgs, Instrumentation inst) throws IOException, ClassNotFoundException, UnmodifiableClassException, InterruptedException {
         var agent = new MatrixerAgent(agentArgs, inst, "dynamically");
         agent.run();
     }
@@ -161,6 +172,14 @@ public class MatrixerAgent {
             throw new RuntimeException("Transform failed for: [" + targetCls.getName() + "]", e);
         }
     }
+
+    void transformThreadClass() throws ClassNotFoundException, UnmodifiableClassException {
+        ClassFileTransformer cf = new ThreadClassTransformer();
+        inst.addTransformer(cf, true);
+        inst.retransformClasses(Thread.class);
+        inst.removeTransformer(cf);
+    }
+
 
     private void log(String msg) {
         if (useLog) {

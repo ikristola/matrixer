@@ -90,6 +90,14 @@ public class InvocationLogger {
         }
     }
 
+    public static void newThread(Thread parent, Thread newThread) {
+        System.out.println("Parent thread " + parent.getName() + " started thread " + newThread.getName());
+    }
+
+    public static void newThread(String s) {
+        System.out.println("Invocation logger: Received " + s);
+    }
+
     private void logError(String msg) {
         System.err.println(msg);
     }
