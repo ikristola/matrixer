@@ -90,8 +90,10 @@ public class InvocationLogger {
         }
     }
 
-    public static void newThread(Thread parent, Thread newThread) {
-        System.out.println("Parent thread " + parent.getName() + " started thread " + newThread.getName());
+    public static void newThread(Thread t) {
+        long parent = Thread.currentThread().getId();
+        long current = t.getId();
+        System.out.println("InvocationLogger: Parent thread " + parent + " started thread " + current);
     }
 
     public static void newThread(String s) {

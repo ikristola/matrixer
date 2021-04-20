@@ -14,8 +14,8 @@ class ThreadClassTransformer implements ClassFileTransformer {
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
             ProtectionDomain protectionDomain, byte[] classfileBuffer)
             throws IllegalClassFormatException {
-        Consumer<String> foo = str -> InvocationLogger.newThread(str);
-        System.getProperties().put("__$__Thread<init>__$__", foo);
+        Consumer<Thread> consumer = InvocationLogger::newThread;
+        System.getProperties().put("__$__Thread<init>__$__", consumer);
 
         if (className.equals("java/lang/Thread") && classBeingRedefined == Thread.class) {
             ClassReader cr = new ClassReader(classfileBuffer);
@@ -31,15 +31,20 @@ class ThreadClassTransformer implements ClassFileTransformer {
                             @Override
                             public void visitInsn(int opcode) {
                                 if (opcode == Opcodes.RETURN) {
+                                    // Properties p = System.getProperties();
                                     visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/System",
                                             "getProperties", "()Ljava/util/Properties;", false);
+
+                                    // Object obj = p.get(...)
                                     visitLdcInsn("__$__Thread<init>__$__");
                                     visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/util/Properties",
                                             "get", "(Ljava/lang/Object;)Ljava/lang/Object;", false);
+
+                                    // Consumer consumer = (Consumer) obj;
                                     visitTypeInsn(Opcodes.CHECKCAST, "java/util/function/Consumer");
-                                    visitVarInsn(Opcodes.ALOAD, 0);
-                                    visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Thread",
-                                            "getName", "()Ljava/lang/String;", false);
+
+                                    // consumer.accept(this)
+                                    visitVarInsn(Opcodes.ALOAD, 0);  // Loads "this" to stack
                                     visitMethodInsn(Opcodes.INVOKEINTERFACE,
                                             "java/util/function/Consumer", "accept",
                                             "(Ljava/lang/Object;)V", true);
