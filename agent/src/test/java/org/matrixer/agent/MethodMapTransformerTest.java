@@ -1,11 +1,15 @@
 package org.matrixer.agent;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.matrixer.agent.util.Assertions.assertFoundTestCase;
 
 import java.io.*;
+import java.lang.instrument.ClassFileTransformer;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.*;
+import org.matrixer.agent.testclasses.Wrapped;
 import org.matrixer.agent.util.CustomTestAgent;
 import org.matrixer.agent.util.StreamHijacker;
 
@@ -74,6 +78,28 @@ public class MethodMapTransformerTest {
         String output = getOutput();
 
         assertFoundTestCase(output, caller, callee);
+    }
+
+    @Test
+    void testWrapMethodBody() throws IOException {
+        try {
+            ClassFileTransformer tf = new CallLoggingTransformer(Wrapped.class);
+            customTestAgent.transformClass(Wrapped.class, tf);
+            assertWrappedWorks();
+        } catch (ClassFormatError e) {
+            System.out.println("Format error!");
+        }
+    }
+
+    private static void assertWrappedWorks() {
+        System.out.println("Creating class wrapped");
+        Wrapped w = new Wrapped();
+        assertEquals(1, w.towrap(1));
+        assertThrows(RuntimeException.class, () -> w.towrap(2));
+        assertThrows(IllegalArgumentException.class, () -> w.towrap(3));
+        assertThrows(RuntimeException.class, () -> w.towrap(4));
+        assertEquals(100, w.towrap(5));
+        System.out.println("Done");
     }
 
     private static class MethodMapTransformerTestClass {
