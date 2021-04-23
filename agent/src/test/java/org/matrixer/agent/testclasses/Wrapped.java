@@ -2,6 +2,8 @@ package org.matrixer.agent.testclasses;
 
 public class Wrapped {
 
+    private int x = 100;
+
     // Locals: 0 - this,, 1 - path
     public int towrap(int path) throws IllegalArgumentException {
         if (path == 1) {
@@ -16,7 +18,7 @@ public class Wrapped {
         if (path == 4) {
             thrower();
         }
-        return 100;
+        return x;
     }
 
     private void thrower() {

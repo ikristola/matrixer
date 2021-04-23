@@ -42,7 +42,7 @@ public class CallLoggingTransformer implements ClassFileTransformer {
                     return mv;
                 }
                 System.out.println("Instrumenting " + className + ":" + name + " " + desc);
-                return new TryFinallyAdapter(VERSION, access, name, desc, mv);
+                return new TryFinallyAdapter(VERSION, access, className, name, desc, mv);
             }
         };
         cr.accept(cv, 0);

@@ -97,7 +97,7 @@ public class InvocationLogger {
     }
 
     public static void newThread(String s) {
-        System.out.println("Invocation logger: Received " + s);
+        System.out.println("Invocation logger: Received " + s + "\n on thread " + Thread.currentThread().getId());
     }
 
     private void logError(String msg) {

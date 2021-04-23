@@ -81,7 +81,7 @@ public class MethodMapTransformerTest {
     }
 
     @Test
-    void testWrapMethodBody() throws IOException {
+    void testWrapMethodBody() throws IOException, InterruptedException {
         try {
             ClassFileTransformer tf = new CallLoggingTransformer(Wrapped.class);
             customTestAgent.transformClass(Wrapped.class, tf);
@@ -91,10 +91,13 @@ public class MethodMapTransformerTest {
         }
     }
 
-    private static void assertWrappedWorks() {
+    private static void assertWrappedWorks() throws InterruptedException {
         System.out.println("Creating class wrapped");
         Wrapped w = new Wrapped();
-        assertEquals(1, w.towrap(1));
+        Thread t = new Thread( () -> assertEquals(1, w.towrap(1)));
+        t.start();
+        t.join();
+
         assertThrows(RuntimeException.class, () -> w.towrap(2));
         assertThrows(IllegalArgumentException.class, () -> w.towrap(3));
         assertThrows(RuntimeException.class, () -> w.towrap(4));
