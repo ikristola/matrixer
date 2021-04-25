@@ -8,10 +8,10 @@ import java.lang.instrument.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import org.matrixer.agent.instrumentation.MethodMapTransformer;
+import org.matrixer.agent.instrumentation.CallLoggingTransformer;
+import org.matrixer.agent.instrumentation.TestCaseTransformer;
 import org.matrixer.agent.instrumentation.ThreadClassTransformer;
 
 /**
@@ -63,6 +63,8 @@ public class MatrixerAgent {
      */
     final private String testerPackage;
 
+    private static MatrixerAgent agent;
+
     private MatrixerAgent(String agentArgs, Instrumentation inst, String type) throws IOException, ClassNotFoundException, UnmodifiableClassException, InterruptedException {
         this.inst = inst;
         String[] args = agentArgs.split(":");
@@ -78,12 +80,11 @@ public class MatrixerAgent {
                 String.format("OutputPath: %s\ntarget: %s\ntest: %s",
                         outputFile, targetPackage, testerPackage));
         transformThreadClass();
-        var t = new Thread(() -> System.out.println("Running thread: " + Thread.currentThread().getName()));
+        var t = new Thread(() -> System.out.println("Running thread: " + Thread.currentThread().getId()));
         t.start();
         t.join();
         SynchronizedWriter w = new SynchronizedWriter(Files.newBufferedWriter(outputFile));
-        InvocationLogger.init(w, testerPackage);
-        addShutdownHook();
+        InvocationLogger.init(w);
     }
 
     private void setupLog() throws IOException {
@@ -93,15 +94,6 @@ public class MatrixerAgent {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-    }
-
-    void addShutdownHook() {
-        Runtime rt = Runtime.getRuntime();
-        rt.addShutdownHook(new Thread(() -> {
-            log("Stopping invocationlogger...");
-            InvocationLogger.awaitFinished(10, TimeUnit.MINUTES);
-            log("Done");
-        }));
     }
 
     /**
@@ -117,7 +109,7 @@ public class MatrixerAgent {
      * @throws ClassNotFoundException
      */
     public static void premain(String agentArgs, Instrumentation inst) throws IOException, ClassNotFoundException, UnmodifiableClassException, InterruptedException {
-        var agent = new MatrixerAgent(agentArgs, inst, "statically");
+        agent = new MatrixerAgent(agentArgs, inst, "statically");
         agent.run();
     }
 
@@ -134,7 +126,7 @@ public class MatrixerAgent {
      * @throws ClassNotFoundException
      */
     public static void agentmain(String agentArgs, Instrumentation inst) throws IOException, ClassNotFoundException, UnmodifiableClassException, InterruptedException {
-        var agent = new MatrixerAgent(agentArgs, inst, "dynamically");
+        agent = new MatrixerAgent(agentArgs, inst, "dynamically");
         agent.run();
     }
 
@@ -145,10 +137,12 @@ public class MatrixerAgent {
 
         for (Class<?> cls : classes) {
             if (isTestClass(cls)) {
-                log("Skipping test class: \n\t" + cls.getName());
-                continue;
+                log("Instrumenting test class: " + cls.getName());
+                transformTestClass(cls);
+            } else {
+                log("Instrumenting target class: " + cls.getName());
+                transformTargetMethod(cls);
             }
-            transform(cls, inst);
         }
         log("Class instrumenations done");
     }
@@ -165,9 +159,19 @@ public class MatrixerAgent {
      *            the directory where the results from the transformer
      *            should be stored
      */
-    private void transform(Class<?> targetCls, Instrumentation inst) {
+    void transformTargetMethod(Class<?> targetCls) {
         try {
-            var transformer = new MethodMapTransformer(targetCls, targetPackage, testerPackage);
+            var transformer = new CallLoggingTransformer(targetCls);
+            inst.addTransformer(transformer, true);
+            inst.retransformClasses(targetCls);
+        } catch (Exception e) {
+            throw new RuntimeException("Transform failed for: [" + targetCls.getName() + "]", e);
+        }
+    }
+
+    void transformTestClass(Class<?> targetCls) {
+        try {
+            var transformer = new TestCaseTransformer(targetCls);
             inst.addTransformer(transformer, true);
             inst.retransformClasses(targetCls);
         } catch (Exception e) {
@@ -183,6 +187,12 @@ public class MatrixerAgent {
         inst.removeTransformer(cf);
     }
 
+    public static MatrixerAgent getAgent() {
+        if (agent == null) {
+            throw new RuntimeException("Agent not initialized!");
+        }
+        return agent; 
+    }
 
     private void log(String msg) {
         if (useLog) {

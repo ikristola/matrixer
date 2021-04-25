@@ -2,7 +2,7 @@ package org.matrixer.agent.instrumentation;
 
 import org.objectweb.asm.*;
 
-public class TryFinallyMethodWrapper extends MethodVisitor {
+public abstract class TryFinallyMethodWrapper extends MethodVisitor {
 
     protected String methodName;
 
@@ -46,19 +46,9 @@ public class TryFinallyMethodWrapper extends MethodVisitor {
     }
 
     // Override this in subclasses
-    protected void onMethodEnter() {
-        println(mv, "Entering " + methodName);
-    }
+    protected abstract void onMethodEnter();
 
     // Override this in subclasses
-    protected void onMethodExit() {
-        println(mv, "Exiting " + methodName);
-    }
-
-    private void println(MethodVisitor mv, String line) {
-        mv.visitLdcInsn(line);
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, "org/matrixer/agent/InvocationLogger", "newThread",
-                "(Ljava/lang/String;)V", false);
-    }
+    protected abstract void onMethodExit();
 
 }

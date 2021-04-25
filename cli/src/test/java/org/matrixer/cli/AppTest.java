@@ -43,9 +43,9 @@ class AppTest {
 
             BufferedReader reader = new BufferedReader(new FileReader(resultsFile.toFile()));
             String[] methods = {
-                    "org.matrixertest.calculator.Calculator.multiplication(int,int)",
-                    "org.matrixertest.calculator.Calculator.addition(int,int)",
-                    "org.matrixertest.calculator.Calculator.subtraction(int,int)",
+                    "org.matrixertest.calculator.Calculator.multiplication(II)I",
+                    "org.matrixertest.calculator.Calculator.addition(II)I",
+                    "org.matrixertest.calculator.Calculator.subtraction(II)I",
             };
             HashSet<String> foundMethods = new HashSet<>();
             var lines = reader.lines().iterator();

@@ -3,12 +3,11 @@ package org.matrixer.agent.instrumentation;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 
-public class LoggingClassAdapter extends ClassVisitor {
-
+class TestCaseClassAdapter extends ClassVisitor {
     String className;
     private static final String pathSeparator = System.getProperty("file.separator");
 
-    public LoggingClassAdapter(int version, ClassVisitor cv, String className) {
+    public TestCaseClassAdapter(int version, ClassVisitor cv, String className) {
         super(version, cv);
         this.className = className.replaceAll(pathSeparator, ".");
     }
@@ -22,10 +21,10 @@ public class LoggingClassAdapter extends ClassVisitor {
             return super.visitMethod(access, name, desc, sign, exceptions);
         }
         MethodVisitor mv = super.visitMethod(access, name, desc, sign, exceptions);
-        return new MethodCallLogger(api, mv, qualifiedMethodName(name, desc));
+        return new TestCaseMethodAdapter(api, mv, testCaseName(name));
     }
 
-    private String qualifiedMethodName(String name, String desc) {
-        return className + "." + name + desc;
+    private String testCaseName(String name) {
+        return className + "." + name;
     }
 }

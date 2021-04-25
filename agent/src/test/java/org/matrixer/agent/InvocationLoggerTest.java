@@ -2,10 +2,8 @@ package org.matrixer.agent;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
-import java.util.Collection;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 class InvocationLoggerTest {
 
@@ -16,7 +14,7 @@ class InvocationLoggerTest {
     void setup() {
         out = new ByteArrayOutputStream();
         SynchronizedWriter w = new SynchronizedWriter(new OutputStreamWriter(out));
-        logger = new InvocationLogger(w, "org.matrixer");
+        logger = new InvocationLogger(w);
     }
 
     // @Test

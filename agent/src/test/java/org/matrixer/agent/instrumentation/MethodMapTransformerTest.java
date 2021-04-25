@@ -25,11 +25,13 @@ public class MethodMapTransformerTest {
     @BeforeAll
     static void loadAgent() {
         try {
-            customTestAgent = CustomTestAgent.getInstance();
             out = new ByteArrayOutputStream();
             writer = new SynchronizedWriter(new BufferedWriter(new OutputStreamWriter(out)));
             boolean replace = true;
-            InvocationLogger.init(writer, "org.matrixer", replace);
+            InvocationLogger.init(writer, replace);
+
+            customTestAgent = CustomTestAgent.getInstance();
+            customTestAgent.transformClass(MethodMapTransformerTest.class, new TestCaseTransformer(MethodMapTransformerTest.class));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -46,13 +48,6 @@ public class MethodMapTransformerTest {
     }
 
     static void await() {
-        try {
-            Thread.sleep(50);
-        } catch (InterruptedException e) {
-            System.out.println("Sleep failed");
-            e.printStackTrace();
-        }
-        InvocationLogger.awaitFinished(1, TimeUnit.SECONDS);
     }
 
     String getOutput() throws IOException {
@@ -69,14 +64,13 @@ public class MethodMapTransformerTest {
     @Test
     public void transformedMethodPrintsCallerMethod() throws IOException {
         Class<?> targetClass = MethodMapTransformerTestClass.class;
-        String rootPkg = "org.matrixer";
-        String testPkg = "org.matrixer";
-        MethodMapTransformer transformer = new MethodMapTransformer(targetClass, rootPkg, testPkg);
+        ClassFileTransformer transformer = new CallLoggingTransformer(targetClass);
         customTestAgent.transformClass(targetClass, transformer);
-        String caller = getClass().getName() + ":transformedMethodPrintsCallerMethod";
+        String caller = getClass().getName() + ".transformedMethodPrintsCallerMethod";
         String callee = targetClass.getName() + ".trueReturner";
 
         MethodMapTransformerTestClass.trueReturner();
+        InvocationLogger.endTestCase(caller);
         String output = getOutput();
 
         assertFoundTestCase(output, caller, callee);

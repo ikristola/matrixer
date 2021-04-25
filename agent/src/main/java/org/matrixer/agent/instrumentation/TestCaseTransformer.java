@@ -1,25 +1,24 @@
 package org.matrixer.agent.instrumentation;
 
+import static org.matrixer.agent.MatrixerAgentUtils.isTestClass;
+
 import java.io.PrintWriter;
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 
 import org.objectweb.asm.*;
-import org.objectweb.asm.util.Printer;
-import org.objectweb.asm.util.Textifier;
-import org.objectweb.asm.util.TraceClassVisitor;
+import org.objectweb.asm.util.*;
 
+public class TestCaseTransformer implements ClassFileTransformer {
 
-public class CallLoggingTransformer implements ClassFileTransformer {
-
+    private static final boolean debug = false; 
     private static final int VERSION = Opcodes.ASM9;
     private static final String fileSeparator = System.getProperty("file.separator");
-    private static final boolean debug = false;
 
-    String targetName;
+    private final String targetName;
 
-    public CallLoggingTransformer(Class<?> target) {
-        targetName = target.getName().replaceAll("\\.", fileSeparator);
+    public TestCaseTransformer(Class<?> target) {
+        this.targetName = target.getName().replaceAll("\\.", fileSeparator);
     }
 
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
@@ -33,7 +32,7 @@ public class CallLoggingTransformer implements ClassFileTransformer {
         ClassReader cr = new ClassReader(classfileBuffer);
         ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
         ClassVisitor parent = (debug) ? new TraceClassVisitor(cw, printer, printWriter) : cw;
-        ClassVisitor cv = new LoggingClassAdapter(VERSION, parent, className);
+        ClassVisitor cv = new TestCaseClassAdapter(VERSION, parent, className);
         cr.accept(cv, 0);
         return cw.toByteArray();
     }
