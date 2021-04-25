@@ -1,4 +1,4 @@
-package org.matrixer.agent;
+package org.matrixer.agent.instrumentation;
 
 import javassist.*;
 

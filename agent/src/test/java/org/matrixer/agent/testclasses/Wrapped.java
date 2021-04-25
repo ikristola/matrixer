@@ -4,7 +4,6 @@ public class Wrapped {
 
     private int x = 100;
 
-    // Locals: 0 - this,, 1 - path
     public int towrap(int path) throws IllegalArgumentException {
         if (path == 1) {
             return 1;
@@ -25,7 +24,6 @@ public class Wrapped {
         throw new RuntimeException("thrower");
     }
 
-    // Locals: 0 - this,, 1 - path
     public int wrapped(int path) throws IllegalArgumentException {
         System.out.println("Before");
         try {
@@ -36,7 +34,14 @@ public class Wrapped {
                 throw new RuntimeException();
             }
             if (path == 3) {
-                throw new IllegalArgumentException();
+                try {
+                    throw new IllegalArgumentException();
+                } finally {
+                    System.out.println("Inner Finally");
+                }
+            }
+            if (path == 4) {
+                thrower();
             }
             return 100;
         } finally {

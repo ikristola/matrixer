@@ -9,8 +9,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
-import javassist.*;
+import org.matrixer.agent.instrumentation.MethodMapTransformer;
+import org.matrixer.agent.instrumentation.ThreadClassTransformer;
 
 /**
  * MatrixerAgent is a agent that transforms classes in target package.
@@ -174,7 +176,8 @@ public class MatrixerAgent {
     }
 
     void transformThreadClass() throws ClassNotFoundException, UnmodifiableClassException {
-        ClassFileTransformer cf = new ThreadClassTransformer();
+        Consumer<Thread> consumer = InvocationLogger::newThread;
+        ClassFileTransformer cf = new ThreadClassTransformer(consumer);
         inst.addTransformer(cf, true);
         inst.retransformClasses(Thread.class);
         inst.removeTransformer(cf);

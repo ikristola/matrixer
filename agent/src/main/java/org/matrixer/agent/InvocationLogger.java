@@ -62,7 +62,7 @@ public class InvocationLogger {
      * expired. Note. This depletes the thread pool of workers so the
      * logger has to be initialized again by calling init.
      */
-    static void awaitFinished(long duration, TimeUnit unit) {
+    public static void awaitFinished(long duration, TimeUnit unit) {
         getInstance().await(duration, unit);
     }
 
@@ -90,14 +90,30 @@ public class InvocationLogger {
         }
     }
 
+    public static void newThread(String s) {
+        System.out.println("Invocation logger: Received " + s + "\n on thread " + Thread.currentThread().getId());
+    }
+
+    public static void pushMethod(String name) {
+        System.out.println("Invocation logger: Entering " + name);
+    }
+
+    public static void popMethod(String name) {
+        System.out.println("Invocation logger: Exiting " + name);
+    }
+
+    public static void beginTestCase(String name) {
+        System.out.println("Invocation logger: Start test " + name);
+    }
+
+    public static void endTestCase(String name) {
+        System.out.println("Invocation logger: End test " + name);
+    }
+
     public static void newThread(Thread t) {
         long parent = Thread.currentThread().getId();
         long current = t.getId();
         System.out.println("InvocationLogger: Parent thread " + parent + " started thread " + current);
-    }
-
-    public static void newThread(String s) {
-        System.out.println("Invocation logger: Received " + s + "\n on thread " + Thread.currentThread().getId());
     }
 
     private void logError(String msg) {

@@ -1,6 +1,9 @@
-package org.matrixer.agent;
+package org.matrixer.agent.instrumentation;
 
 import java.io.IOException;
+
+import org.matrixer.agent.InvocationLogger;
+
 import javassist.*;
 
 /**
@@ -25,7 +28,7 @@ public class MethodMapTransformer extends Transformer {
      * @param testerPackage
      *            The root package name for the testing package
      */
-    MethodMapTransformer(Class<?> cls, String targetPackage, String testerPackage) {
+    public MethodMapTransformer(Class<?> cls, String targetPackage, String testerPackage) {
         super(cls.getName(), cls.getClassLoader());
         this.targetPackageName = targetPackage;
     }

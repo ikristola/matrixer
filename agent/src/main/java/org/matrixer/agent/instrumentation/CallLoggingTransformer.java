@@ -1,4 +1,4 @@
-package org.matrixer.agent;
+package org.matrixer.agent.instrumentation;
 
 import java.io.PrintWriter;
 import java.lang.instrument.ClassFileTransformer;
@@ -31,20 +31,7 @@ public class CallLoggingTransformer implements ClassFileTransformer {
 
         ClassReader cr = new ClassReader(classfileBuffer);
         ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
-        ClassVisitor cv = new ClassVisitor(VERSION, new TraceClassVisitor(cw, printer, printWriter)) {
-            @Override
-            public MethodVisitor visitMethod(int access, String name, String desc, String sign, String[] exceptions) {
-                MethodVisitor mv =
-                        super.visitMethod(access, name, desc, sign, exceptions);
-
-                // Skrip static and non-static constructors
-                if (name.equals("<init>") || name.equals("<clinit>")) {
-                    return mv;
-                }
-                System.out.println("Instrumenting " + className + ":" + name + " " + desc);
-                return new TryFinallyAdapter(VERSION, access, className, name, desc, mv);
-            }
-        };
+        ClassVisitor cv = new LoggingClassAdapter(VERSION, new TraceClassVisitor(cw, printer, printWriter), className);
         cr.accept(cv, 0);
         return cw.toByteArray();
     }

@@ -1,4 +1,4 @@
-package org.matrixer.agent;
+package org.matrixer.agent.instrumentation;
 
 import org.objectweb.asm.*;
 
@@ -67,7 +67,8 @@ public class TryFinallyAdapter extends MethodVisitor implements Opcodes {
                 visitJumpInsn(GOTO, exitReturnLabel);
                 break;
             case ATHROW:
-                visitJumpInsn(GOTO, exitExceptionLabel);
+                super.visitInsn(opcode);
+                // visitJumpInsn(GOTO, exitExceptionLabel);
                 break;
             default:
                 super.visitInsn(opcode);

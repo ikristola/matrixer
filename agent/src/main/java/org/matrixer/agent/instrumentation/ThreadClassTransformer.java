@@ -1,4 +1,4 @@
-package org.matrixer.agent;
+package org.matrixer.agent.instrumentation;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
@@ -7,15 +7,18 @@ import java.util.function.Consumer;
 
 import org.objectweb.asm.*;
 
+public class ThreadClassTransformer implements ClassFileTransformer {
 
-class ThreadClassTransformer implements ClassFileTransformer {
+    private final static String propKey = "__$__Thread<init>__$__";
+
+    public ThreadClassTransformer(Consumer<Thread> onThreadCreate) {
+        System.getProperties().put(propKey, onThreadCreate);
+    }
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
             ProtectionDomain protectionDomain, byte[] classfileBuffer)
             throws IllegalClassFormatException {
-        Consumer<Thread> consumer = InvocationLogger::newThread;
-        System.getProperties().put("__$__Thread<init>__$__", consumer);
 
         if (className.equals("java/lang/Thread") && classBeingRedefined == Thread.class) {
             ClassReader cr = new ClassReader(classfileBuffer);
@@ -36,7 +39,7 @@ class ThreadClassTransformer implements ClassFileTransformer {
                                             "getProperties", "()Ljava/util/Properties;", false);
 
                                     // Object obj = p.get(...)
-                                    visitLdcInsn("__$__Thread<init>__$__");
+                                    visitLdcInsn(propKey);
                                     visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/util/Properties",
                                             "get", "(Ljava/lang/Object;)Ljava/lang/Object;", false);
 
