@@ -3,9 +3,9 @@ package org.matrixer.agent.instrumentation;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-public class MethodCallLogger extends TryFinallyMethodWrapper {
+public class LoggingMethodAdapter extends TryFinallyMethodWrapper {
 
-    public MethodCallLogger(int api, MethodVisitor mv, String methodName) {
+    public LoggingMethodAdapter(int api, MethodVisitor mv, String methodName) {
         super(api, mv, methodName);
     }
 

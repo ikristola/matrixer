@@ -22,7 +22,7 @@ public class LoggingClassAdapter extends ClassVisitor {
             return super.visitMethod(access, name, desc, sign, exceptions);
         }
         MethodVisitor mv = super.visitMethod(access, name, desc, sign, exceptions);
-        return new MethodCallLogger(api, mv, qualifiedMethodName(name, desc));
+        return new LoggingMethodAdapter(api, mv, qualifiedMethodName(name, desc));
     }
 
     private String qualifiedMethodName(String name, String desc) {

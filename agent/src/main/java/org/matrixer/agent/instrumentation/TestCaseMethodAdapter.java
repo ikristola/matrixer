@@ -12,10 +12,20 @@ public class TestCaseMethodAdapter extends TryFinallyMethodWrapper {
 
     @Override 
     public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-        if (desc.endsWith("Test;")) {
+        if (desc.endsWith("/Test;")) {
             isTestCase = true;
         }
         return super.visitAnnotation(desc, visible);
+    }
+
+    @Override
+    public void visitCode() {
+        if (isTestCase) {
+            super.visitCode();
+        } else {
+            // Short out instrumentation
+            mv.visitCode();
+        }
     }
 
     @Override
@@ -23,6 +33,26 @@ public class TestCaseMethodAdapter extends TryFinallyMethodWrapper {
         if (isTestCase) {
             logBeginTestCase();
         } 
+    }
+
+    @Override
+    public void visitInsn(int opcode) {
+        if (isTestCase) {
+            super.visitInsn(opcode);
+        } else {
+            // Short out instrumentation
+            mv.visitInsn(opcode);
+        }
+    }
+
+    @Override
+    public void visitMaxs(int maxStack, int maxLocals) {
+        if (isTestCase) {
+            super.visitMaxs(maxStack, maxLocals);
+        } else {
+            // Short out instrumentation
+            mv.visitMaxs(maxStack, maxLocals);
+        }
     }
 
     private void logBeginTestCase() {

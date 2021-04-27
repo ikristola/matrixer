@@ -92,7 +92,7 @@ class ProjectPreparerTest {
             ProjectPreparer preparer = new ProjectPreparer();
 
             Project project = preparer.prepare(properties);
-            String agentString = TestUtils.agentString(project.outputDirectory());
+            String agentString = preparer.agentString(project);
             String expected = "jvmArgs \"" + agentString + "\"";
             assertFileContainsString(project.buildScript(), expected);
         }
@@ -114,7 +114,7 @@ class ProjectPreparerTest {
             ProjectPreparer preparer = new ProjectPreparer();
 
             Project project = preparer.prepare(properties);
-            String agentString = TestUtils.agentString(project.outputDirectory());
+            String agentString = preparer.agentString(project);
             String agentArg = "<argLine>" + agentString + "</argLine>";
             String manifest = "<useManifestOnlyJar>false</useManifestOnlyJar>";
             assertFileContainsString(project.buildScript(), agentArg);

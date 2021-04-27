@@ -4,13 +4,16 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Logs method invocations from the target methods. Each instrumented method
- * calls the report method when it is invoked. Each invocation report will be handled
- * concurrently so as not to interfere with the normal flow of the SUT.
+ * Logs method invocations from each test case.
  *
- * This class has to be initialized by calling the static init method. For testing
- * purposes the awaitTermination method can be used for synchronization. In this case the
- * invocation logger has to be initialized again, since the thread pool is shutdown.
+ * The logger is thread aware and maps each test case to a thread. When
+ * that thread spawns child threads these will also be mapped to the
+ * test case. When a method is called the logger detects from which
+ * thread the call originated and thus in which test case the called
+ * belonged to.
+ *
+ * When a test case ends the incocations that occured during that test
+ * case are written on a separate line to the writer
  */
 public class InvocationLogger {
 
@@ -57,7 +60,7 @@ public class InvocationLogger {
     public void logPushMethod(String name) {
         long thread = Thread.currentThread().getId();
         TestCase tc = threads.get(thread);
-        if (tc != null){
+        if (tc != null) {
             tc.addCall(name);
         }
     }
@@ -68,10 +71,13 @@ public class InvocationLogger {
     }
 
     public void logPopMethod(String name) {
-        TestCase tc = tests.get(name);
-        if (tc != null) {
-            tc.popLastCall();
+        long thread = Thread.currentThread().getId();
+        TestCase tc = threads.get(thread);
+        if (tc == null) {
+            logError("Could not find test case " + name);
+            return;
         }
+        tc.popLastCall();
     }
 
     public static void beginTestCase(String name) {
@@ -114,45 +120,46 @@ public class InvocationLogger {
         if (tc == null) {
             return;
         }
-        // Remove test case
-        tests.remove(tc.name, tc);
-        // Unmap threads
-        for (long thread : tc.threads) {
-            threads.remove(thread, tc);
-        }
-
+        removeTestCase(tc);
         tc.writeCalls(writer);
     }
 
-    public static void newThread(Thread t) {
-        long parent = Thread.currentThread().getId();
-        long current = t.getId();
-        System.out.println("InvocationLogger: Parent thread " + parent + " started thread " + current);
+    private void removeTestCase(TestCase tc) {
+        tests.remove(tc.name, tc);
+        unmapThreads(tc);
+    }
 
-        // Use explicit instance here, since Threads need to be created even if not
-        // initialized this class.
+    private void unmapThreads(TestCase tc) {
+        for (long thread : tc.threads) {
+            threads.remove(thread, tc);
+        }
+    }
+
+    public static void newThread(Thread t) {
+        // Use explicit instance here, since Threads need to be created even if
+        // this class has not been initialized
         if (instance != null) {
             instance.logNewThread(t);
         }
     }
 
     public void logNewThread(Thread t) {
-        long parent = Thread.currentThread().getId();
-        long current = t.getId();
+        long current = Thread.currentThread().getId();
+        long child = t.getId();
 
-        TestCase testCase = threads.get(parent);
+        TestCase testCase = threads.get(current);
         if (testCase == null) {
             // No test case mapped to current thread.
             return;
         }
         // Add new thread to the test case
-        testCase.threads.add(current);
+        testCase.threads.add(child);
         // Map the thread to the test case
-        threads.put(current, testCase);
+        threads.put(child, testCase);
     }
 
     private void logError(String msg) {
-        System.err.println(msg);
+        System.err.println("ERROR: " + msg);
     }
 
     class TestCase {
@@ -168,8 +175,8 @@ public class InvocationLogger {
         void addCall(String methodName) {
             currentDepth++;
             calls.add(new Call(methodName, currentDepth));
-            System.err.println("TestCase: " + name);
-            System.err.println("Logging call (d=" + currentDepth + "): " + methodName);
+            System.out.println("TestCase: " + name);
+            System.out.println("Logging call (d=" + currentDepth + "): " + methodName);
         }
 
         void popLastCall() {
@@ -179,11 +186,11 @@ public class InvocationLogger {
         // Should prob be in a separate thread. MAKE SURE that
         // the test case has been unmapped from any threads first, otherwise
         void writeCalls(SynchronizedWriter writer) {
-            System.err.println("TestCase: " + name);
-            System.err.println("Writing " + calls.size() + " calls");
-            for (var call: calls) {
+            System.out.println("TestCase: " + name);
+            System.out.println("Writing " + calls.size() + " calls");
+            for (var call : calls) {
                 String line = call.stackDepth + "|" + call.calledMethod + "<=" + name;
-            System.err.println("Writing line:\n" + line);
+                System.err.println("Writing line:\n" + line);
                 writeLine(writer, line);
             }
         }
