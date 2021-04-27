@@ -1,4 +1,4 @@
-package org.matrixer.core;
+package org.matrixer.core.runtime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

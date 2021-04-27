@@ -9,6 +9,9 @@ import java.nio.file.Path;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.*;
+import org.matrixer.core.testsupport.TestUtils;
+import org.matrixer.core.util.FileUtils;
+import org.matrixer.core.util.GitRepository;
 
 public class ProjectRunnerTest {
 

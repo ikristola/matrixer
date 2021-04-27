@@ -2,13 +2,16 @@ package org.matrixer.core;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.*;
+import org.matrixer.core.util.FileUtils;
+import org.matrixer.core.testsupport.TestUtils;
+import org.matrixer.core.util.GitRepository;
 
 class ProjectPreparerTest {
 

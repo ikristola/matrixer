@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 
 import org.matrixer.agent.instrumentation.CallLoggingTransformer;
 import org.matrixer.agent.instrumentation.ThreadClassTransformer;
-import org.matrixer.core.AgentOptions;
+import org.matrixer.core.runtime.AgentOptions;
 
 /**
  * MatrixerAgent is a agent that transforms classes in target package.

@@ -1,4 +1,4 @@
-package org.matrixer.core;
+package org.matrixer.core.util;
 
 import java.io.*;
 import java.nio.file.*;

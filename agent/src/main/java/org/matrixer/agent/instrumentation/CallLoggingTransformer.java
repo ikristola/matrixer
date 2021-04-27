@@ -6,7 +6,7 @@ import java.security.CodeSource;
 import java.security.ProtectionDomain;
 
 import org.matrixer.agent.MatrixerAgent;
-import org.matrixer.core.AgentOptions;
+import org.matrixer.core.runtime.AgentOptions;
 import org.objectweb.asm.*;
 
 

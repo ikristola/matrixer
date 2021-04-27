@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.matrixer.core.util.GitRepository;
+import org.matrixer.core.runtime.AgentOptions;
 
 /**
  * Prepares a target project for further processing

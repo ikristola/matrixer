@@ -7,7 +7,7 @@ import java.nio.file.*;
 import java.util.HashSet;
 
 import org.junit.jupiter.api.*;
-import org.matrixer.core.FileUtils;
+import org.matrixer.core.util.FileUtils;
 import org.matrixer.core.Project;
 
 class AppTest {

@@ -54,11 +54,11 @@ public class InvocationLogger {
 
     public static void pushMethod(String name) {
         System.out.println("Invocation logger: Entering " + name);
-        getInstance().logPushMethod(name);
+        long thread = Thread.currentThread().getId();
+        getInstance().logPushMethod(name, thread);
     }
 
-    public void logPushMethod(String name) {
-        long thread = Thread.currentThread().getId();
+    public void logPushMethod(String name, long thread) {
         TestCase tc = threads.get(thread);
         if (tc != null) {
             tc.addCall(name);
@@ -67,11 +67,11 @@ public class InvocationLogger {
 
     public static void popMethod(String name) {
         System.out.println("Invocation logger: Exiting " + name);
-        getInstance().logPopMethod(name);
+        long thread = Thread.currentThread().getId();
+        getInstance().logPopMethod(name, thread);
     }
 
-    public void logPopMethod(String name) {
-        long thread = Thread.currentThread().getId();
+    public void logPopMethod(String name, long thread) {
         TestCase tc = threads.get(thread);
         if (tc == null) {
             logError("Could not find test case " + name);

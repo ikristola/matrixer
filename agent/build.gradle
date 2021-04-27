@@ -27,6 +27,8 @@ jar {
     from {
         files("${project(':core').buildDir}/classes/java/main/")
     }
+    exclude('org/matrixer/core/util')
+    exclude('org/matrixer/core/*.class')
     doLast {
         println "default jar task run"
     }

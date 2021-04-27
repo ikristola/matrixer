@@ -3,6 +3,8 @@ package org.matrixer.core;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.matrixer.core.util.FileUtils;
+
 class ProjectFactory {
 
     /**
