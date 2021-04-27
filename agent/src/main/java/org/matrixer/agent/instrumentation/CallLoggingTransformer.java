@@ -53,7 +53,9 @@ public class CallLoggingTransformer implements ClassFileTransformer {
     }
 
     boolean isTestClass(String className, URL location) {
-        return location.getFile().contains("/test/");
+        // Maven surefire places test classes in target/test-classes and target classes in
+        // target/classes. Gradle preserves the hierarchy in src/
+        return location.getFile().matches(".*/(test|test-classes)/.*");
     }
 
     boolean shouldTransform(URL location, final ClassLoader loader, String classname) {
