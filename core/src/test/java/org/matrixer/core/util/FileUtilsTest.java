@@ -113,7 +113,7 @@ class FileUtilsTest {
     void catchesFileSearchInNonReadableDir() {
         Path dir = new ThrowingPath();
         String fname = "non-existant.txt";
-        assertThrows(RuntimeException.class, () -> FileUtils.fileSearch(dir, fname));
+        assertThrows(RuntimeException.class, () -> FileUtils.findFiles(dir, fname));
     }
 
     @Test

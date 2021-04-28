@@ -40,11 +40,11 @@ class ProjectFactory {
         if (!Files.exists(prop.targetDir())) {
             throw new IllegalArgumentException("Directory does not exist: " + prop.targetDir());
         }
-        var paths = FileUtils.fileSearch(prop.targetDir(), GradleProject.scriptName);
+        var paths = FileUtils.findFiles(prop.targetDir(), GradleProject.scriptName);
         if (paths.length > 0) {
             return new GradleProject(prop);
         }
-        paths = FileUtils.fileSearch(prop.targetDir(), MavenProject.scriptName);
+        paths = FileUtils.findFiles(prop.targetDir(), MavenProject.scriptName);
         if (paths.length > 0) {
             return new MavenProject(prop);
         }
