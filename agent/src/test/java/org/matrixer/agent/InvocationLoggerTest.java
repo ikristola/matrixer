@@ -33,6 +33,10 @@ class InvocationLoggerTest {
         logger.logPopMethod(method);
         logger.logEndTestCase(testCase);
 
+        assertTrue(logger.tests.isEmpty(), "Logger.tests not empty");
+        int size = logger.threads.size();
+        assertTrue(logger.threads.isEmpty(), "Logger.threads not empty " + size);
+
         String line = out.toString();
         assertTrue(line.contains(testCase));
         assertTrue(line.contains(method));

@@ -64,31 +64,31 @@ public class InvocationLogger {
         getInstance().logPushMethod(name, thread);
     }
 
-    public void logPushMethod(String name) {
-        logPushMethod(name, Thread.currentThread().getId());
+    public void logPushMethod(String methodName) {
+        logPushMethod(methodName, Thread.currentThread().getId());
     }
 
-    public void logPushMethod(String name, long thread) {
+    public void logPushMethod(String methodName, long thread) {
         TestCase tc = threads.get(thread);
         if (tc != null) {
-            tc.addCall(name);
+            tc.addCall(methodName);
         }
     }
 
-    public static void popMethod(String name) {
-        log("Invocation logger: Exiting " + name);
+    public static void popMethod(String methodName) {
+        log("Invocation logger: Exiting " + methodName);
         long thread = Thread.currentThread().getId();
-        getInstance().logPopMethod(name, thread);
+        getInstance().logPopMethod(methodName, thread);
     }
 
-    public void logPopMethod(String name) {
-        logPopMethod(name, Thread.currentThread().getId());
+    public void logPopMethod(String methodName) {
+        logPopMethod(methodName, Thread.currentThread().getId());
     }
 
-    public void logPopMethod(String name, long thread) {
+    public void logPopMethod(String methodName, long thread) {
         TestCase tc = threads.get(thread);
         if (tc == null) {
-            logError("Could not find test case " + name);
+            logError("Could not find test case " + methodName);
             return;
         }
         tc.popLastCall();
@@ -106,7 +106,12 @@ public class InvocationLogger {
 
         // Map it to the current thread
         long thread = Thread.currentThread().getId();
+        map(tc, thread);
+    }
+
+    private void map(TestCase tc, long thread) {
         threads.put(thread, tc);
+        tc.threads.add(thread);
     }
 
     public static void endTestCase(String name) {
@@ -145,7 +150,9 @@ public class InvocationLogger {
     }
 
     private void unmapThreads(TestCase tc) {
+        System.out.println("Test case " + tc.name);
         for (long thread : tc.threads) {
+            System.out.println("Removing thread " + thread);
             threads.remove(thread, tc);
         }
     }
