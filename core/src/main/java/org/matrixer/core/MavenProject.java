@@ -72,15 +72,11 @@ class MavenProject extends Project {
             .filter(pl -> pluginName.equals(pl.get("artifactId").getText()))
             .findFirst();
         if (plugin.isEmpty()) {
-            var surefire = plugins.add("plugin");
-            surefire.add("artifactId").text(pluginName);
-            return surefire;
+            var newPlugin = plugins.add("plugin");
+            newPlugin.add("artifactId").text(pluginName);
+            return newPlugin;
         }
         return plugin.get();
-    }
-
-
-    void injectBuildScript(InputStream in, OutputStream out, String agentString) {
     }
 
     void addAgentConfiguration(VElement<?> plugin, String agentString) {
