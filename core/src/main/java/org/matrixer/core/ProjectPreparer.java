@@ -30,11 +30,13 @@ public class ProjectPreparer {
 
     String agentString(Project project) {
         Path destfile = project.resultsFile();
-
         AgentOptions options = new AgentOptions();
         options.setDestFilename(destfile.toString());
         options.setTargetPackage(project.targetPackage());
         options.setTestPackage(project.testPackage());
+        if (project.properties.getDebug()) {
+            options.setDebug(true);
+        }
 
         return options.getJVMArgument(pathToAgent());
     }

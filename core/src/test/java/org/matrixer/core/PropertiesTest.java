@@ -200,6 +200,13 @@ class PropertiesTest {
         assertEquals(testpkg, prop.testPackage());
     }
 
+    @Test
+    void canSetDebug() {
+        Properties properties = new Properties();
+        properties.setDebug(true);
+        assertTrue(properties.getDebug());
+    }
+
     void assertValidRemote(Properties prop, String url) {
         assertTrue(prop.isValid(), "Not valid");
         assertTrue(prop.isRemote(), "Not remote");

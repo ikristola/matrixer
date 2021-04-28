@@ -37,6 +37,8 @@ public class Properties {
 
     final static String TEST_PKG_FLAG = "--testpkg";
 
+    final static String DEBUG_FLAG = "--debug";
+
     /**
      * The default output directory if none is provided is a subdirectory of
      * the target directory with this name.
@@ -49,6 +51,7 @@ public class Properties {
     private URI remoteURL = null;
     private String targetPkg;
     private String testPkg;
+    private boolean debug = false;
     private boolean analyzeOnly = false;
     private String failureReason = "Properties not parsed";
 
@@ -95,6 +98,9 @@ public class Properties {
                 break;
             case TEST_PKG_FLAG:
                 setTestPackage(arg);
+                break;
+            case DEBUG_FLAG:
+                setDebug(true);
                 break;
             case ANALYZE_ONLY_FLAG:
                 setTargetDir(Path.of(arg));
@@ -247,6 +253,14 @@ public class Properties {
 
     public boolean analyzeOnly() {
         return analyzeOnly;
+    }
+
+    public boolean getDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
     }
 
 }
