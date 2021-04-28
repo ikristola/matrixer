@@ -110,7 +110,7 @@ public class MatrixerAgent {
             SynchronizedWriter w = new SynchronizedWriter(Files.newBufferedWriter(destFile));
             InvocationLogger.init(w);
             inst.addTransformer(new CallLoggingTransformer(options));
-            transformThreadClass();
+            transformThreadClass(InvocationLogger::newThread);
         } catch (Throwable e) {
             log("Error: " + e.getMessage());
             e.printStackTrace(log);
@@ -121,9 +121,8 @@ public class MatrixerAgent {
      * The call logging transformer needs to know when new threads are
      * created and the parent thread.
      */
-    void transformThreadClass() throws ClassNotFoundException, UnmodifiableClassException {
-        Consumer<Thread> consumer = InvocationLogger::newThread;
-        ClassFileTransformer cf = new ThreadClassTransformer(consumer);
+    void transformThreadClass(Consumer<Thread> callback) throws ClassNotFoundException, UnmodifiableClassException {
+        ClassFileTransformer cf = new ThreadClassTransformer(callback);
         inst.addTransformer(cf, true);
         inst.retransformClasses(Thread.class);
         inst.removeTransformer(cf);

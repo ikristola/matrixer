@@ -18,6 +18,7 @@ import java.util.*;
 public class InvocationLogger {
 
     private static InvocationLogger instance;
+    private static boolean debug;
 
     // Maps each thread to a test case
     Map<Long, TestCase> threads = new HashMap<>();
@@ -33,15 +34,20 @@ public class InvocationLogger {
     }
 
     public static void init(SynchronizedWriter writer) {
-        init(writer, false);
+        init(writer, false, false);
+    }
+
+    public static void init(SynchronizedWriter writer, boolean replace) {
+        init(writer, replace, false);
     }
 
     /**
      * Initializes the logger.
      */
-    public static void init(SynchronizedWriter writer, boolean replace) {
+    public static void init(SynchronizedWriter writer, boolean replace, boolean debug) {
         if (instance == null || replace) {
             instance = new InvocationLogger(writer);
+            InvocationLogger.debug = debug;
         }
     }
 
@@ -53,9 +59,13 @@ public class InvocationLogger {
     }
 
     public static void pushMethod(String name) {
-        System.out.println("Invocation logger: Entering " + name);
+        log("Invocation logger: Entering " + name);
         long thread = Thread.currentThread().getId();
         getInstance().logPushMethod(name, thread);
+    }
+
+    public void logPushMethod(String name) {
+        logPushMethod(name, Thread.currentThread().getId());
     }
 
     public void logPushMethod(String name, long thread) {
@@ -66,9 +76,13 @@ public class InvocationLogger {
     }
 
     public static void popMethod(String name) {
-        System.out.println("Invocation logger: Exiting " + name);
+        log("Invocation logger: Exiting " + name);
         long thread = Thread.currentThread().getId();
         getInstance().logPopMethod(name, thread);
+    }
+
+    public void logPopMethod(String name) {
+        logPopMethod(name, Thread.currentThread().getId());
     }
 
     public void logPopMethod(String name, long thread) {
@@ -81,7 +95,7 @@ public class InvocationLogger {
     }
 
     public static void beginTestCase(String name) {
-        System.out.println("Invocation logger: Start test " + name);
+        log("Invocation logger: Start test " + name);
         getInstance().logBeginTestCase(name);
     }
 
@@ -96,12 +110,12 @@ public class InvocationLogger {
     }
 
     public static void endTestCase(String name) {
-        System.out.println("Invocation logger: End test " + name);
+        log("Invocation logger: End test " + name);
         getInstance().logEndTestCase(name);
     }
 
     public static void endTestCase() {
-        System.out.println("Invocation logger: End current test");
+        log("Invocation logger: End current test");
         getInstance().logEndTestCase();
     }
 
@@ -118,6 +132,7 @@ public class InvocationLogger {
 
     public void logEndTestCase(TestCase tc) {
         if (tc == null) {
+            logError("Could not find test case ");
             return;
         }
         removeTestCase(tc);
@@ -158,8 +173,16 @@ public class InvocationLogger {
         threads.put(child, testCase);
     }
 
-    private void logError(String msg) {
-        System.err.println("ERROR: " + msg);
+    private static void logError(String msg) {
+        if (debug) {
+            System.err.println("ERROR: " + msg);
+        }
+    }
+
+    private static void log(String msg) {
+        if (debug) {
+            System.out.println("INFO: " + msg);
+        }
     }
 
     class TestCase {
@@ -175,8 +198,8 @@ public class InvocationLogger {
         void addCall(String methodName) {
             currentDepth++;
             calls.add(new Call(methodName, currentDepth));
-            System.out.println("TestCase: " + name);
-            System.out.println("Logging call (d=" + currentDepth + "): " + methodName);
+            log("TestCase: " + name);
+            log("Logging call (d=" + currentDepth + "): " + methodName);
         }
 
         void popLastCall() {
@@ -186,11 +209,10 @@ public class InvocationLogger {
         // Should prob be in a separate thread. MAKE SURE that
         // the test case has been unmapped from any threads first, otherwise
         void writeCalls(SynchronizedWriter writer) {
-            System.out.println("TestCase: " + name);
-            System.out.println("Writing " + calls.size() + " calls");
+            log("TestCase: " + name + "\n\tWriting " + calls.size() + " calls");
             for (var call : calls) {
                 String line = call.stackDepth + "|" + call.calledMethod + "<=" + name;
-                System.err.println("Writing line:\n" + line);
+                log("Writing line:\n" + line);
                 writeLine(writer, line);
             }
         }

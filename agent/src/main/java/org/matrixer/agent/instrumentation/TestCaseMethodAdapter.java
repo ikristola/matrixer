@@ -10,6 +10,10 @@ public class TestCaseMethodAdapter extends TryFinallyMethodWrapper {
         super(api, mv, methodName);
     }
 
+    /*
+     * Annotations are visited before the method body so it can be used to detect
+     * Test annotations.
+     */
     @Override 
     public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
         if (desc.endsWith("/Test;")) {

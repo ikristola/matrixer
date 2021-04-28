@@ -5,11 +5,10 @@ import org.objectweb.asm.MethodVisitor;
 
 class TestCaseClassAdapter extends ClassVisitor {
     String className;
-    private static final String pathSeparator = System.getProperty("file.separator");
 
     public TestCaseClassAdapter(int version, ClassVisitor cv, String className) {
         super(version, cv);
-        this.className = className.replaceAll(pathSeparator, ".");
+        this.className = className.replace('/', '.');
     }
 
     @Override
