@@ -25,14 +25,11 @@ public class ProjectPreparer {
         this.project = ProjectFactory.from(properties);
         String agentString = agentString(project);
         project.injectBuildScript(agentString);
-        if(FileUtils.isExistingDirectory(project.outputDirectory())) {
-            FileUtils.removeDirectory(project.outputDirectory());
-        }
         var outputDirectory = project.outputDirectory();
         if (FileUtils.isExistingDirectory(outputDirectory)) {
             FileUtils.removeDirectory(outputDirectory);
         }
-        Files.createDirectories(project.outputDirectory());
+        Files.createDirectories(outputDirectory);
         return project;
     }
 
