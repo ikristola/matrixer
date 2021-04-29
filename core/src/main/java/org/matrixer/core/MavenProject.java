@@ -46,37 +46,44 @@ class MavenProject extends Project {
 
     @Override
     void injectBuildScript(String agentString) {
+        // Parent project
         injectBuildScript(buildScript(), agentString);
-        for (Path file : FileUtils.findFiles(directory(), scriptName )) {
+        // All subprojects
+        for (Path file : FileUtils.findFiles(directory(), scriptName)) {
             injectBuildScript(file, agentString);
         }
     }
 
     void injectBuildScript(Path buildScript, String agentString) {
         InputStream in = getInputStream(buildScript);
-        var plugins = VDocument.parse(in)
-                .root()
-                .get("build")
-                .get("plugins");
-
-        var surefire = getOrCreatePlugin(plugins, "maven-surefire-plugin");
-        addAgentConfiguration(surefire, agentString);
-        VDocument doc = plugins.__.__.__;
+        VDocument doc = VDocument.parse(in);
+        injectSurefirePlugin(doc, agentString);
         OutputStream out = getOutputStream(buildScript);
         doc.print(out);
     }
 
-    VElement<?> getOrCreatePlugin(VElement<?> plugins, String pluginName) {
-        var plugin = plugins.getAll("plugin")
-            .stream()
-            .filter(pl -> pluginName.equals(pl.get("artifactId").getText()))
-            .findFirst();
-        if (plugin.isEmpty()) {
-            var newPlugin = plugins.add("plugin");
-            newPlugin.add("artifactId").text(pluginName);
-            return newPlugin;
-        }
-        return plugin.get();
+    void injectSurefirePlugin(VDocument doc, String agentString) {
+        var plugins = doc
+                .root()
+                .get("build")
+                .get("plugins");
+        var surefire = getOrCreatePlugin(plugins, "maven-surefire-plugin");
+        addAgentConfiguration(surefire, agentString);
+    }
+
+    <T> VElement<VElement<T>> getOrCreatePlugin(VElement<T> plugins, String pluginName) {
+        return plugins.getAll("plugin")
+                .stream()
+                .filter(pl -> pluginName.equals(pl.get("artifactId").getText()))
+                .findFirst()
+                .orElseGet(() -> addPlugin(plugins, pluginName));
+    }
+
+    <T> VElement<VElement<T>> addPlugin(VElement<T> parent, String pluginName) {
+        return parent.add("plugin")
+                .add("artifactId")
+                    .text(pluginName)
+                .__;
     }
 
     void addAgentConfiguration(VElement<?> plugin, String agentString) {
