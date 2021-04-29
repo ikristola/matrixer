@@ -19,13 +19,14 @@ public class CallLoggingTransformer implements ClassFileTransformer {
     }
 
     private static final int VERSION = Opcodes.ASM9;
-    private static final boolean debug = false;
+    private static boolean debug = false;
 
     private String pkg;
     private Instrumenter instrumenter;
 
     public CallLoggingTransformer(AgentOptions options) {
         this(options.getTargetPackage());
+        debug = options.getDebug();
     }
     public CallLoggingTransformer(String pkg) {
         this.pkg = pkg;
@@ -45,10 +46,10 @@ public class CallLoggingTransformer implements ClassFileTransformer {
             return null;
         }
         if (isTestClass(className, location)) {
-            System.err.println("Instrumenting test " + className);
+            log("Instrumenting test " + className);
             return instrumenter.instrumentTestClass(VERSION, className, classfileBuffer);
         }
-        System.err.println("Instrumenting target " + className);
+        log("Instrumenting target " + className);
         return instrumenter.instrumentTargetClass(VERSION, className, classfileBuffer);
     }
 
@@ -90,5 +91,17 @@ public class CallLoggingTransformer implements ClassFileTransformer {
     // java/lang/String -> java.lang.String
     private static String toPkgName(String classname) {
         return classname.replace('/', '.');
+    }
+
+    private void log(String msg) {
+        if (debug){
+            System.out.println("INFO: " + msg);
+        }
+    }
+
+    private void logError(String msg) {
+        if (debug){
+            System.out.println("ERROR: " + msg);
+        }
     }
 }

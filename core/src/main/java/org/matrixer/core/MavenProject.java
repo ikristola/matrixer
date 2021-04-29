@@ -1,12 +1,15 @@
 package org.matrixer.core;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
 import com.github.djeang.vincerdom.VDocument;
 import com.github.djeang.vincerdom.VElement;
+
+import org.matrixer.core.util.FileUtils;
 
 class MavenProject extends Project {
     public static final String scriptName = "pom.xml";
@@ -43,20 +46,44 @@ class MavenProject extends Project {
 
     @Override
     void injectBuildScript(String agentString) {
-        InputStream in = getScriptInputStream();
-        VDocument doc = VDocument.parse(in)
+        // Parent project
+        injectBuildScript(buildScript(), agentString);
+        // All subprojects
+        for (Path file : FileUtils.findFiles(directory(), scriptName)) {
+            injectBuildScript(file, agentString);
+        }
+    }
+
+    void injectBuildScript(Path buildScript, String agentString) {
+        InputStream in = getInputStream(buildScript);
+        VDocument doc = VDocument.parse(in);
+        injectSurefirePlugin(doc, agentString);
+        OutputStream out = getOutputStream(buildScript);
+        doc.print(out);
+    }
+
+    void injectSurefirePlugin(VDocument doc, String agentString) {
+        var plugins = doc
                 .root()
                 .get("build")
-                .get("plugins")
-                .apply((plugins) -> {
-                    plugins.getAll("plugin")
-                            .stream()
-                            .filter((plugin) -> "maven-surefire-plugin"
-                                    .equals(plugin.get("artifactId").getText()))
-                            .forEach((plugin) -> addAgentConfiguration(plugin, agentString));
-                }).__.__.__;
-        OutputStream out = getScriptOutputStream();
-        doc.print(out);
+                .get("plugins");
+        var surefire = getOrCreatePlugin(plugins, "maven-surefire-plugin");
+        addAgentConfiguration(surefire, agentString);
+    }
+
+    <T> VElement<VElement<T>> getOrCreatePlugin(VElement<T> plugins, String pluginName) {
+        return plugins.getAll("plugin")
+                .stream()
+                .filter(pl -> pluginName.equals(pl.get("artifactId").getText()))
+                .findFirst()
+                .orElseGet(() -> addPlugin(plugins, pluginName));
+    }
+
+    <T> VElement<VElement<T>> addPlugin(VElement<T> parent, String pluginName) {
+        return parent.add("plugin")
+                .add("artifactId")
+                    .text(pluginName)
+                .__;
     }
 
     void addAgentConfiguration(VElement<?> plugin, String agentString) {
@@ -70,19 +97,19 @@ class MavenProject extends Project {
                         .text(agentString);
     }
 
-    InputStream getScriptInputStream() {
+    InputStream getInputStream(Path file) {
         try {
-            return new FileInputStream(buildScript().toFile());
-        } catch (FileNotFoundException e) {
+            return Files.newInputStream(file);
+        } catch (IOException e) {
             throw new RuntimeException(
                     "MavenProjectPreparer: Could not read build script " + buildScript());
         }
     }
 
-    OutputStream getScriptOutputStream() {
+    OutputStream getOutputStream(Path file) {
         try {
-            return new FileOutputStream(buildScript().toFile());
-        } catch (FileNotFoundException e) {
+            return Files.newOutputStream(file);
+        } catch (IOException e) {
             throw new RuntimeException(
                     "MavenProjectPreparer: Could not read build script " + buildScript());
         }

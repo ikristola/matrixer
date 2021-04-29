@@ -12,6 +12,8 @@ import java.util.stream.Stream;
  */
 public class FileUtils {
 
+    private final static int DEFAULT_MAX_DEPTH = 100;
+
     private static final String datePattern = "HHmmss";
     private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(datePattern);
 
@@ -131,13 +133,12 @@ public class FileUtils {
      *
      * @Throws RuntimeException if the file is not found
      */
-    public static Path[] fileSearch(Path dir, String fileName) {
+    public static Path[] findFiles(Path dir, String fileName) {
         try {
-            var paths = Files.find(dir, 100, (path, basicFileAttributes) -> {
+            var paths = Files.find(dir, DEFAULT_MAX_DEPTH, (path, basicFileAttributes) -> {
                 return !Files.isDirectory(path)
                         && path.endsWith(fileName);
-            })
-                    .toArray(Path[]::new);
+            }) .toArray(Path[]::new);
             return paths;
         } catch (IOException e) {
             throw new RuntimeException("Failed to search in file: " + e.getMessage());

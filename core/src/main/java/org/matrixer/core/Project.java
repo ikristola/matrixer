@@ -40,7 +40,7 @@ public abstract class Project {
     public final static String RESULTS_FILE_NAME = "matrixer-results.txt";
     public static final String OUTPUT_DIR_NAME = "matrixer-cov";
 
-    final Properties properties;
+    protected final Properties properties;
 
     Project(Properties properties) {
         this.properties = properties;
