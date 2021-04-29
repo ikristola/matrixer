@@ -211,6 +211,9 @@ public class InvocationLogger {
 
         void popLastCall() {
             currentDepth--;
+            if (currentDepth < 0) {
+                throw new IllegalStateException("Current depth < 0");
+            }
         }
 
         // Should prob be in a separate thread. MAKE SURE that
