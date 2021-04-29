@@ -2,13 +2,15 @@ package org.matrixer.agent;
 
 import java.io.*;
 import java.lang.instrument.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.util.function.Consumer;
 
 import org.matrixer.agent.instrumentation.CallLoggingTransformer;
 import org.matrixer.agent.instrumentation.ThreadClassTransformer;
 import org.matrixer.core.runtime.AgentOptions;
+
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
 
 /**
  * MatrixerAgent is a agent that transforms classes in target package.
@@ -61,7 +63,8 @@ public class MatrixerAgent {
     private void setupLog() throws IOException {
         try {
             Path destFile = Path.of(options.getDestFilename());
-            var out = Files.newOutputStream(destFile.resolveSibling(("matrixer-agent-log.txt")));
+            var out = Files.newOutputStream(
+                    destFile.resolveSibling(("matrixer-agent-log.txt")), CREATE, APPEND);
             log = new PrintStream(out);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -107,7 +110,8 @@ public class MatrixerAgent {
     private void startup() {
         try {
             Path destFile = Path.of(options.getDestFilename());
-            SynchronizedWriter w = new SynchronizedWriter(Files.newBufferedWriter(destFile));
+            SynchronizedWriter w = new SynchronizedWriter(
+                    Files.newBufferedWriter(destFile, CREATE, APPEND));
             InvocationLogger.init(w, true, options.getDebug());
             inst.addTransformer(new CallLoggingTransformer(options));
             transformThreadClass(InvocationLogger::newThread);
