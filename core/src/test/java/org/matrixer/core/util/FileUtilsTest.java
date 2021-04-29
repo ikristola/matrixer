@@ -1,4 +1,4 @@
-package org.matrixer.core;
+package org.matrixer.core.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.matrixer.core.testsupport.ThrowingPath;
 
 class FileUtilsTest {
 

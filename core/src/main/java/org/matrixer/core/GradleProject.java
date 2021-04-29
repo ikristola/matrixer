@@ -4,6 +4,8 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
+import org.matrixer.core.util.FileUtils;
+
 class GradleProject extends Project {
 
     public static final String scriptName = "build.gradle";

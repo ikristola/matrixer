@@ -1,11 +1,11 @@
 package org.matrixer.cli;
 
-import java.io.*;
-import java.net.URISyntaxException;
+import java.io.IOException;
 import java.nio.file.*;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.matrixer.core.*;
+import org.matrixer.core.util.GitRepository;
 import org.matrixer.report.HTMLReporter;
 
 public class App {

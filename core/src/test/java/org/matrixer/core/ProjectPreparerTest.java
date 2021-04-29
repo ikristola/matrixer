@@ -2,13 +2,16 @@ package org.matrixer.core;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.*;
+import org.matrixer.core.util.FileUtils;
+import org.matrixer.core.testsupport.TestUtils;
+import org.matrixer.core.util.GitRepository;
 
 class ProjectPreparerTest {
 
@@ -92,7 +95,7 @@ class ProjectPreparerTest {
             ProjectPreparer preparer = new ProjectPreparer();
 
             Project project = preparer.prepare(properties);
-            String agentString = TestUtils.agentString(project.outputDirectory());
+            String agentString = preparer.agentString(project);
             String expected = "jvmArgs \"" + agentString + "\"";
             assertFileContainsString(project.buildScript(), expected);
         }
@@ -114,7 +117,7 @@ class ProjectPreparerTest {
             ProjectPreparer preparer = new ProjectPreparer();
 
             Project project = preparer.prepare(properties);
-            String agentString = TestUtils.agentString(project.outputDirectory());
+            String agentString = preparer.agentString(project);
             String agentArg = "<argLine>" + agentString + "</argLine>";
             String manifest = "<useManifestOnlyJar>false</useManifestOnlyJar>";
             assertFileContainsString(project.buildScript(), agentArg);

@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 import org.matrixer.core.*;
+import org.matrixer.core.util.Range;
 
 /**
  * Builds a human-readable html report from collected execution data

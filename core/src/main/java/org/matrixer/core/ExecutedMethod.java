@@ -3,6 +3,8 @@ package org.matrixer.core;
 import java.util.Collection;
 import java.util.HashMap;
 
+import org.matrixer.core.util.Range;
+
 /**
  * Stores data about calls to an executed target method
  */

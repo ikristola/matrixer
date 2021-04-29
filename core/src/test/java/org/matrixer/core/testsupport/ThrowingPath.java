@@ -1,4 +1,4 @@
-package org.matrixer.core;
+package org.matrixer.core.testsupport;
 
 import java.io.IOException;
 import java.net.URI;
@@ -6,7 +6,7 @@ import java.nio.file.*;
 import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchEvent.Modifier;
 
-class ThrowingPath implements Path {
+public class ThrowingPath implements Path {
 
     @Override
     public int compareTo(Path arg0) {

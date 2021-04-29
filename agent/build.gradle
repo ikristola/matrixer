@@ -1,10 +1,14 @@
 plugins {
     id 'java-library'
-    id 'matrixer'
+    id 'matrixer-jacoco'
 }
 
 dependencies {
     implementation project(':core')
+    compile group: 'org.ow2.asm', name:'asm', version:'9.1'
+    compile group: 'org.ow2.asm', name:'asm-util', version:'9.1'
+    compile group: 'org.ow2.asm', name:'asm-commons', version:'9.1'
+    implementation group: 'org.junit.platform', name: 'junit-platform-launcher', version: '1.8.0-M1'
     testImplementation group: 'org.testng', name: 'testng', version: '6.8'
 }
 
@@ -20,6 +24,11 @@ jar {
     from {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it)}
     }
+    from {
+        files("${project(':core').buildDir}/classes/java/main/")
+    }
+    exclude('org/matrixer/core/util')
+    exclude('org/matrixer/core/*.class')
     doLast {
         println "default jar task run"
     }
@@ -60,6 +69,6 @@ test {
     dependsOn assemble // Makes sure the jars are assembled before tests
     dependsOn testAgentJar
     // TODO use variables for arguments to make it easier to read/maintain
-    jvmArgs = ["-Djdk.attach.allowAttachSelf=true",
-    "-javaagent:build/libs/agentJar.jar=${buildDir}:org.matrixer.agent.statictargets:org.matrixer.agent"]
+    jvmArgs += ["-Djdk.attach.allowAttachSelf=true",
+    "-javaagent:build/libs/agentJar.jar=destfile=${buildDir}/matrixer-results.txt,pkg=org.matrixer.agent.statictargets,testPkg=org.matrixer.agent"]
 }

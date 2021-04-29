@@ -1,4 +1,4 @@
-package org.matrixer.core;
+package org.matrixer.core.util;
 
 /**
  * A range is an inclusive range of integer values

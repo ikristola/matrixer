@@ -8,6 +8,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
+import org.matrixer.core.testsupport.TestUtils;
+import org.matrixer.core.util.Range;
 
 class AnalyzerTest {
 

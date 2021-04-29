@@ -1,4 +1,4 @@
-package org.matrixer.core;
+package org.matrixer.core.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 

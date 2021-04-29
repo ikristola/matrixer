@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.matrixer.core.util.GitRepository;
+import org.matrixer.core.runtime.AgentOptions;
 
 /**
  * Prepares a target project for further processing
@@ -20,20 +22,21 @@ public class ProjectPreparer {
                     properties.targetDir());
         }
         this.project = ProjectFactory.from(properties);
-        String agentString = agentString(properties);
+        String agentString = agentString(project);
         project.injectBuildScript(agentString);
         Files.createDirectories(project.outputDirectory());
         return project;
     }
 
-    String agentString(Properties properties) {
-        String outputDir = project.outputDirectory().toString();
-        String agentJarPath = pathToAgent().toString();
-        String targetPackage = project.targetPackage();
-        String testPackage = project.testPackage();
+    String agentString(Project project) {
+        Path destfile = project.resultsFile();
 
-        return String.format("-javaagent:%s=%s:%s:%s",
-                agentJarPath, outputDir, targetPackage, testPackage);
+        AgentOptions options = new AgentOptions();
+        options.setDestFilename(destfile.toString());
+        options.setTargetPackage(project.targetPackage());
+        options.setTestPackage(project.testPackage());
+
+        return options.getJVMArgument(pathToAgent());
     }
 
     Path pathToAgent() {
