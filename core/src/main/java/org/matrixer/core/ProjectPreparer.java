@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.matrixer.core.util.FileUtils;
 import org.matrixer.core.util.GitRepository;
 import org.matrixer.core.runtime.AgentOptions;
 
@@ -24,6 +25,13 @@ public class ProjectPreparer {
         this.project = ProjectFactory.from(properties);
         String agentString = agentString(project);
         project.injectBuildScript(agentString);
+        if(FileUtils.isExistingDirectory(project.outputDirectory())) {
+            FileUtils.removeDirectory(project.outputDirectory());
+        }
+        var outputDirectory = project.outputDirectory();
+        if (FileUtils.isExistingDirectory(outputDirectory)) {
+            FileUtils.removeDirectory(outputDirectory);
+        }
         Files.createDirectories(project.outputDirectory());
         return project;
     }
