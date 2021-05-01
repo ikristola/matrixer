@@ -18,6 +18,7 @@ class AgentOptionsTest {
         assertEquals("", options.getTargetPackage());
         assertEquals("", options.getTestPackage());
         assertEquals(false, options.getDebug());
+        assertEquals(0, options.getDepthLimit());
 
         assertEquals("", options.toString());
     }
@@ -87,6 +88,20 @@ class AgentOptionsTest {
     void testGetTestPackage() {
         AgentOptions options = new AgentOptions("testPkg=org.matrixer");
         assertEquals("org.matrixer", options.getTestPackage());
+    }
+
+    @Test
+    void testGetDepthLimit() {
+        AgentOptions options = new AgentOptions("depth=42");
+        assertEquals(42, options.getDepthLimit());
+    }
+
+    @Test
+    void testSetDepthLimit() {
+        AgentOptions options = new AgentOptions();
+        int depth = 142;
+        options.setDepthLimit(depth);
+        assertEquals(depth, options.getDepthLimit());
     }
 
     @Test

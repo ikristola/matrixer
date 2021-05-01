@@ -10,10 +10,11 @@ public class AgentOptions {
 
     public static final String TARGET_PKG = "pkg";
     public static final String TEST_PKG = "testPkg";
+    public static final String DEPTH_LIMIT = "depth";
     public static final String DEBUG = "debug";
 
     private static final Collection<String> VALID_OPTIONS = Arrays.asList(
-        DESTFILENAME, TARGET_PKG, TEST_PKG, DEBUG
+        DESTFILENAME, TARGET_PKG, TEST_PKG, DEPTH_LIMIT, DEBUG
     );
 
     private Map<String, String> options = new HashMap<>();
@@ -72,6 +73,18 @@ public class AgentOptions {
         setOption(DEBUG, debug);
     }
 
+    public int getDepthLimit() {
+        return getOption(DEPTH_LIMIT, 0);
+    }
+
+    public void setDepthLimit(int depth) {
+        setOption(DEPTH_LIMIT, depth);
+    }
+
+    /*
+     * General functions
+     */
+
     public void setOption(String key, String value) {
         options.put(key, value);
     }
@@ -94,6 +107,18 @@ public class AgentOptions {
             return def;
         }
         return Boolean.parseBoolean(value);
+    }
+
+    public void setOption(String key, int value) {
+        options.put(key, Integer.toString(value));
+    }
+
+    public int getOption(String key, int def) {
+        String value = options.get(key);
+        if (value == null) {
+            return def;
+        }
+        return Integer.parseInt(value);
     }
 
     public String getJVMArgument(Path agentJar) {

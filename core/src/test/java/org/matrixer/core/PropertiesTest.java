@@ -59,7 +59,7 @@ class PropertiesTest {
 
         prop.parse(args);
 
-        assertNOTValid(prop);
+        assertNOTValid(prop, "Target");
     }
 
     @Test
@@ -120,7 +120,7 @@ class PropertiesTest {
         String[] args = {"--target", ANY_PATH.toString(), "--git", link};
         Properties prop = new Properties();
         assertDoesNotThrow(() -> prop.parse(args));
-        assertNOTValid(prop);
+        assertNOTValid(prop, "URL");
     }
 
     @Test
@@ -130,7 +130,7 @@ class PropertiesTest {
 
         prop.parse(args);
 
-        assertNOTValid(prop);
+        assertNOTValid(prop, "path");
     }
 
     @Test
@@ -140,7 +140,7 @@ class PropertiesTest {
 
         prop.parse(args);
 
-        assertNOTValid(prop);
+        assertNOTValid(prop, "path");
     }
 
     @Test
@@ -150,7 +150,7 @@ class PropertiesTest {
 
         prop.parse(args);
 
-        assertNOTValid(prop);
+        assertNOTValid(prop, "Unknown flag");
     }
 
     @Test
@@ -160,7 +160,7 @@ class PropertiesTest {
 
         prop.parse(args);
 
-        assertNOTValid(prop);
+        assertNOTValid(prop, "Argument");
     }
 
     @Test
@@ -171,7 +171,7 @@ class PropertiesTest {
 
         prop.parse(args);
 
-        assertNOTValid(prop);
+        assertNOTValid(prop, "Unknown flag");
     }
 
     @Test
@@ -207,6 +207,63 @@ class PropertiesTest {
         assertTrue(properties.getDebug());
     }
 
+    @Test
+    void canParseDebug() {
+        String[] args = {
+            "--debug", "true",
+        };
+        Properties properties = new Properties();
+        properties.parse(args);
+        assertEquals(true, properties.getDebug());
+    }
+
+    @Test
+    void canParseDebugFalse() {
+        String[] args = {
+            "--debug", "false",
+        };
+        Properties properties = new Properties();
+        properties.parse(args);
+        assertEquals(false, properties.getDebug());
+    }
+
+    @Test
+    void invalidIfNonBooleanDebug() {
+        String[] args = {
+            "--debug", "ss",
+        };
+        Properties properties = new Properties();
+        properties.parse(args);
+        assertNOTValid(properties, "Debug");
+    }
+
+    @Test
+    void canParseDepthLimit() {
+        String[] args = {
+            "--depth", "555",
+        };
+        Properties properties = new Properties();
+        properties.parse(args);
+        assertEquals(555, properties.getDepthLimit());
+    }
+
+    @Test
+    void InvalidIfInvalidInteger() {
+        String[] args = {
+            "--depth", "ss",
+        };
+        Properties properties = new Properties();
+        properties.parse(args);
+        assertNOTValid(properties, "Depth");
+    }
+
+    @Test
+    void canSetDepthLimit() {
+        Properties properties = new Properties();
+        properties.setDepthLimit(42);
+        assertEquals(42, properties.getDepthLimit());
+    }
+
     void assertValidRemote(Properties prop, String url) {
         assertTrue(prop.isValid(), "Not valid");
         assertTrue(prop.isRemote(), "Not remote");
@@ -216,9 +273,12 @@ class PropertiesTest {
     /**
      * If parsing failed, there must be a description of why it failed.
      */
-    void assertNOTValid(Properties prop) {
-        assertFalse(prop.isValid());
-        assertFalse(prop.reasonForFailure().isEmpty());
+    void assertNOTValid(Properties prop, String errorHint) {
+        assertFalse(prop.isValid(), "Unexpected valid properties");
+        assertFalse(prop.reasonForFailure().isEmpty(), "Unexpected empty error message");
+
+        String errMsg = prop.reasonForFailure();
+        assertTrue(errMsg.contains(errorHint), "Error message '" + errMsg + "' did not contain hint: " + errorHint);
     }
 
     /**
