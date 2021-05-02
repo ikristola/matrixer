@@ -1,7 +1,8 @@
 package org.matrixer.core;
 
 import java.io.*;
-import java.util.IllegalFormatException;
+
+import org.matrixer.core.runtime.MethodCall;
 
 /**
  * Analyzes data collected with the matrixer agent
@@ -21,24 +22,9 @@ public class Analyzer {
         var stream = new BufferedReader(new InputStreamReader(source));
         stream.lines()
                 .filter(line -> line != null && !line.isBlank())
-                .map(this::parseMethodCall)
+                .map(MethodCall::new)
                 .filter(call -> call != null)
                 .forEach(data::addCall);
         return data;
-    }
-
-    private MethodCall parseMethodCall(String line) {
-        int depthIdx = line.indexOf("|");
-        int testCaseIdx = line.indexOf("<=");
-
-        if (depthIdx == -1 || testCaseIdx == -1) {
-            // throw new IllegalArgumentException("Not a valid line:\n" + line);
-            System.err.println("Not a valid line:\n" + line);
-            return null;
-        }
-        int depth = Integer.valueOf(line.substring(0, depthIdx));
-        String methodName = line.substring(depthIdx + 1, testCaseIdx);
-        String testCaseName = line.substring(testCaseIdx + 2);
-        return new MethodCall(depth, methodName, testCaseName);
     }
 }

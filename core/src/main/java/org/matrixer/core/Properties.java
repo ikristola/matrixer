@@ -2,8 +2,7 @@ package org.matrixer.core;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.List;
 
 import io.reactivex.rxjava3.core.Observable;
@@ -35,6 +34,8 @@ public class Properties {
 
     final static String TARGET_PKG_FLAG = "--pkg";
 
+    final static String DEPTH_LIMIT_FLAG = "--depth";
+
     final static String TEST_PKG_FLAG = "--testpkg";
 
     final static String DEBUG_FLAG = "--debug";
@@ -51,6 +52,7 @@ public class Properties {
     private URI remoteURL = null;
     private String targetPkg;
     private String testPkg;
+    private int depthLimit = 0;
     private boolean debug = false;
     private boolean analyzeOnly = false;
     private String failureReason = "Properties not parsed";
@@ -85,10 +87,10 @@ public class Properties {
         String arg = flagPair.get(1);
         switch (flag) {
             case TARGET_FLAG:
-                setTargetDir(Path.of(arg));
+                setTargetDir(arg);
                 break;
             case OUTDIR_FLAG:
-                setOutputDir(Path.of(arg));
+                setOutputDir(arg);
                 break;
             case VCS_FLAG:
                 setRemoteURL(parseURL(arg));
@@ -100,7 +102,10 @@ public class Properties {
                 setTestPackage(arg);
                 break;
             case DEBUG_FLAG:
-                setDebug(true);
+                setDebug(arg);
+                break;
+            case DEPTH_LIMIT_FLAG:
+                setDepthLimit(arg);
                 break;
             case ANALYZE_ONLY_FLAG:
                 setTargetDir(Path.of(arg));
@@ -152,7 +157,7 @@ public class Properties {
     }
 
     private void setError(String err) {
-        failureReason = err;
+        failureReason += ":" + err;
     }
 
     /**
@@ -174,6 +179,10 @@ public class Properties {
         return failureReason;
     }
 
+    public void setTargetDir(String targetDir) {
+        setTargetDir(asPath(targetDir));
+    }
+
     /**
      * Sets the path to the target project directory
      */
@@ -186,6 +195,20 @@ public class Properties {
      */
     public Path targetDir() {
         return targetDir;
+    }
+
+
+    public void setOutputDir(String outputDir) {
+        setOutputDir(asPath(outputDir));
+    }
+
+    private Path asPath(String path) {
+        try {
+            return Path.of(path);
+        } catch (InvalidPathException e) {
+            setError("Bad path: " + outputDir);
+            return null;
+        }
     }
 
     /**
@@ -259,8 +282,35 @@ public class Properties {
         return debug;
     }
 
+    public void setDebug(String debug) {
+        // Boolean.parse returns false if null or not 'true' or 'TRUE'
+        // To avoid typos etc going unnoticed it's better to be picky.
+        switch(debug.toLowerCase()) {
+            case "true": this.debug = true; break;
+            case "false": this.debug = false; break;
+            default:
+                setError("Debug must be true or false");
+        }
+    }
+
     public void setDebug(boolean debug) {
         this.debug = debug;
+    }
+
+    public int getDepthLimit() {
+        return depthLimit;
+    }
+
+    public void setDepthLimit(String limit) {
+        try {
+            setDepthLimit(Integer.parseInt(limit));
+        } catch (NumberFormatException e) {
+            setError("Depth must be an integer: " +  limit);
+        }
+    }
+
+    public void setDepthLimit(int limit) {
+        depthLimit = limit;
     }
 
 }

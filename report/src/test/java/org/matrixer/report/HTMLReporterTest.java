@@ -6,6 +6,7 @@ import java.io.*;
 
 import org.junit.jupiter.api.Test;
 import org.matrixer.core.*;
+import org.matrixer.core.runtime.MethodCall;
 import org.matrixer.core.util.Range;
 
 class HTMLReporterTest {

@@ -5,16 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.matrixer.agent.util.Assertions.assertFoundTestCase;
 
 import java.io.*;
-import java.lang.instrument.ClassFileTransformer;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.*;
 import org.matrixer.agent.InvocationLogger;
 import org.matrixer.agent.SynchronizedWriter;
 import org.matrixer.agent.testclasses.Wrapped;
-import org.matrixer.agent.util.CustomTestAgent;
 import org.matrixer.agent.util.StreamHijacker;
 
+@Disabled
 public class MethodMapTransformerTest {
 
     StreamHijacker streamHijacker = new StreamHijacker();
@@ -27,7 +25,6 @@ public class MethodMapTransformerTest {
             out = new ByteArrayOutputStream();
             writer = new SynchronizedWriter(new BufferedWriter(new OutputStreamWriter(out)));
             boolean replace = true;
-            InvocationLogger.init(writer, replace);
         } catch (Exception e) {
             e.printStackTrace();
         }

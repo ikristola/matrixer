@@ -9,7 +9,7 @@ import java.security.ProtectionDomain;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.matrixer.core.MethodCall;
+import org.matrixer.core.runtime.MethodCall;
 
 class CallLoggingTransformerTest {
 

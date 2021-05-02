@@ -8,6 +8,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
+import org.matrixer.core.runtime.MethodCall;
 import org.matrixer.core.testsupport.TestUtils;
 import org.matrixer.core.util.Range;
 
@@ -175,12 +176,9 @@ class AnalyzerTest {
     String asRawString(MethodCall[] calls) {
         StringBuilder builder = new StringBuilder();
         for (var call : calls) {
-            builder.append(asRawLine(call));
+            builder.append(call.asLine());
+            builder.append('\n');
         }
         return builder.toString();
-    }
-
-    String asRawLine(MethodCall call) {
-        return call.depth + "|" + call.methodName + "<=" + call.callerName + "\n";
     }
 }

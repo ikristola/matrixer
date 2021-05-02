@@ -3,6 +3,9 @@ package org.matrixer.agent;
 import java.io.IOException;
 import java.util.*;
 
+import org.matrixer.core.runtime.MethodCall;
+import org.matrixer.core.runtime.AgentOptions;
+
 /**
  * Logs method invocations from each test case.
  *
@@ -18,37 +21,21 @@ import java.util.*;
 public class InvocationLogger {
 
     private static InvocationLogger instance;
-    private static boolean debug;
 
-    // Maps each thread to a test case
-    Map<Long, TestCase> threads = new HashMap<>();
-
-    // Maps each test case to its name
-    Map<String, TestCase> tests = new HashMap<>();
-
-    // The writer to used to write the calls
-    SynchronizedWriter writer;
-
-    InvocationLogger(SynchronizedWriter writer) {
-        this.writer = writer;
-    }
-
-    public static void init(SynchronizedWriter writer) {
-        init(writer, false, false);
-    }
-
-    public static void init(SynchronizedWriter writer, boolean replace) {
-        init(writer, replace, false);
+    /**
+     * Initializes the logger.
+     */
+    public static void init(SynchronizedWriter writer, AgentOptions options) {
+        instance = new InvocationLogger(writer, options);
+        instance.setDepthLimit(options.getDepthLimit());
     }
 
     /**
      * Initializes the logger.
      */
-    public static void init(SynchronizedWriter writer, boolean replace, boolean debug) {
-        if (instance == null || replace) {
-            instance = new InvocationLogger(writer);
-            InvocationLogger.debug = debug;
-        }
+    public static void init(SynchronizedWriter writer, int depthLimit, boolean debug) {
+        instance = new InvocationLogger(writer, debug);
+        instance.setDepthLimit(depthLimit);
     }
 
     static InvocationLogger getInstance() {
@@ -58,8 +45,43 @@ public class InvocationLogger {
         return instance;
     }
 
+    // Maps each thread to a test case
+    Map<Long, TestCase> threads = new HashMap<>();
+
+    // Maps each test case to its name
+    Map<String, TestCase> tests = new HashMap<>();
+
+    private int depthLimit = Integer.MAX_VALUE;
+
+    // The writer to used to write the calls
+    SynchronizedWriter writer;
+
+    private boolean debug;
+
+
+    InvocationLogger(SynchronizedWriter writer, boolean debug) {
+        this.writer = writer;
+        this.debug = debug;
+    }
+
+    InvocationLogger(SynchronizedWriter writer, AgentOptions options) {
+        this.writer = writer;
+        debug = options.getDebug();
+        setDepthLimit(options.getDepthLimit());
+    }
+
+    public void setDepthLimit(int depthLimit) {
+        if (depthLimit == 0) {
+            depthLimit = Integer.MAX_VALUE;
+        }
+        this.depthLimit = depthLimit;
+    }
+
+    public int getDepthLimit() {
+        return depthLimit;
+    }
+
     public static void pushMethod(String name) {
-        log("Invocation logger: Entering " + name);
         long thread = Thread.currentThread().getId();
         getInstance().logPushMethod(name, thread);
     }
@@ -69,6 +91,7 @@ public class InvocationLogger {
     }
 
     public void logPushMethod(String methodName, long thread) {
+        log("Invocation logger: Entering " + methodName);
         TestCase tc = threads.get(thread);
         if (tc != null) {
             tc.addCall(methodName);
@@ -76,7 +99,6 @@ public class InvocationLogger {
     }
 
     public static void popMethod(String methodName) {
-        log("Invocation logger: Exiting " + methodName);
         long thread = Thread.currentThread().getId();
         getInstance().logPopMethod(methodName, thread);
     }
@@ -86,6 +108,7 @@ public class InvocationLogger {
     }
 
     public void logPopMethod(String methodName, long thread) {
+        log("Invocation logger: Exiting " + methodName);
         TestCase tc = threads.get(thread);
         if (tc == null) {
             logError("Could not find test case " + methodName);
@@ -95,11 +118,11 @@ public class InvocationLogger {
     }
 
     public static void beginTestCase(String name) {
-        log("Invocation logger: Start test " + name);
         getInstance().logBeginTestCase(name);
     }
 
     public void logBeginTestCase(String name) {
+        log("Invocation logger: Start test " + name);
         // Add test case
         TestCase tc = new TestCase(name);
         tests.put(tc.name, tc);
@@ -115,22 +138,22 @@ public class InvocationLogger {
     }
 
     public static void endTestCase(String name) {
-        log("Invocation logger: End test " + name);
         getInstance().logEndTestCase(name);
     }
 
     public static void endTestCase() {
-        log("Invocation logger: End current test");
         getInstance().logEndTestCase();
     }
 
     public void logEndTestCase() {
+        log("Invocation logger: End current test");
         long thread = Thread.currentThread().getId();
         TestCase tc = threads.get(thread);
         logEndTestCase(tc);
     }
 
     public void logEndTestCase(String name) {
+        log("Invocation logger: End test " + name);
         TestCase tc = tests.get(name);
         logEndTestCase(tc);
     }
@@ -150,9 +173,9 @@ public class InvocationLogger {
     }
 
     private void unmapThreads(TestCase tc) {
-        System.out.println("Test case " + tc.name);
+        log("Test case " + tc.name);
         for (long thread : tc.threads) {
-            System.out.println("Removing thread " + thread);
+            log("Removing thread " + thread);
             threads.remove(thread, tc);
         }
     }
@@ -180,13 +203,13 @@ public class InvocationLogger {
         threads.put(child, testCase);
     }
 
-    private static void logError(String msg) {
+    private void logError(String msg) {
         if (debug) {
             System.err.println("ERROR: " + msg);
         }
     }
 
-    private static void log(String msg) {
+    private void log(String msg) {
         if (debug) {
             System.out.println("INFO: " + msg);
         }
@@ -204,9 +227,10 @@ public class InvocationLogger {
 
         void addCall(String methodName) {
             currentDepth++;
-            calls.add(new Call(methodName, currentDepth));
-            log("TestCase: " + name);
-            log("Logging call (d=" + currentDepth + "): " + methodName);
+            if (depthLimit == 0 || currentDepth <= depthLimit) {
+                calls.add(new Call(methodName, currentDepth));
+            }
+            log("TestCase " + name + " Logging call (d=" + currentDepth + "): " + methodName);
         }
 
         void popLastCall() {
@@ -221,7 +245,7 @@ public class InvocationLogger {
         void writeCalls(SynchronizedWriter writer) {
             log("TestCase: " + name + "\n\tWriting " + calls.size() + " calls");
             for (var call : calls) {
-                String line = call.stackDepth + "|" + call.calledMethod + "<=" + name;
+                String line = new MethodCall(call.stackDepth, call.calledMethod, this.name).asLine();
                 log("Writing line:\n" + line);
                 writeLine(writer, line);
             }
