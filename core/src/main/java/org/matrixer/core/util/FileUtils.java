@@ -17,6 +17,28 @@ public class FileUtils {
     private static final String datePattern = "HHmmss";
     private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(datePattern);
 
+    private static List<Path> toDelete;
+
+    static {
+        toDelete = new ArrayList<>();
+        Runtime.getRuntime()
+                .addShutdownHook(new Thread(FileUtils::removeTempFiles));
+    }
+
+    private static void removeTempFiles() {
+        for (var path : toDelete) {
+            if (isExistingDirectory(path)) {
+                removeDirectory(path);
+            } else {
+                try {
+                    Files.deleteIfExists(path);
+                } catch (IOException e) {
+                    System.err.println("Could not delete " + path);
+                }
+            }
+        }
+    }
+
     /**
      * Check if a directory exists
      *
@@ -63,7 +85,7 @@ public class FileUtils {
             String timestamp = simpleDateFormat.format(new Date());
             String basename = "tmpfile" + timestamp;
             var path = Files.createTempFile(dir, basename, ".txt");
-            path.toFile().deleteOnExit();
+            toDelete.add(path);
             return path;
         } catch (IOException e) {
             throw new RuntimeException("Failed to create temp file: " + e.getMessage());
@@ -82,12 +104,19 @@ public class FileUtils {
             Path dir = systemp.resolve("matrixer");
             if (!Files.isDirectory(dir)) {
                 Files.createDirectory(dir);
-                dir.toFile().deleteOnExit();
+                toDelete.add(dir);
             }
             return createTempFile(dir);
         } catch (IOException e) {
             throw new RuntimeException("creating application temp file: " + e.getMessage());
         }
+    }
+
+    public static void replaceExisting(Path dir) throws IOException {
+        if (isExistingDirectory(dir)) {
+            removeDirectory(dir);
+        }
+        Files.createDirectories(dir);
     }
 
     /**
@@ -115,7 +144,7 @@ public class FileUtils {
     public static Path createTempDirectory(Path parent) {
         try {
             Path newDirPath = Files.createTempDirectory(parent, "tmpdir");
-            newDirPath.toFile().deleteOnExit();
+            toDelete.add(newDirPath);
             return newDirPath;
         } catch (IOException e) {
             throw new RuntimeException("Failed to create temp file: " + e.getMessage());
@@ -138,7 +167,7 @@ public class FileUtils {
             var paths = Files.find(dir, DEFAULT_MAX_DEPTH, (path, basicFileAttributes) -> {
                 return !Files.isDirectory(path)
                         && path.endsWith(fileName);
-            }) .toArray(Path[]::new);
+            }).toArray(Path[]::new);
             return paths;
         } catch (IOException e) {
             throw new RuntimeException("Failed to search in file: " + e.getMessage());
@@ -258,9 +287,11 @@ public class FileUtils {
      * @return Path to the non existing file
      */
     public static Path getNonExistingPath() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS");
         String date = simpleDateFormat.format(new Date());
-        return Path.of(System.getProperty("java.io.tmpdir"), date);
+        Path path = Path.of(System.getProperty("java.io.tmpdir"), "tmpDir" + date);
+        toDelete.add(path);
+        return path;
     }
 
     /**
