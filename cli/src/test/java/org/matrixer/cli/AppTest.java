@@ -76,25 +76,36 @@ class AppTest {
         // Make project non-runnable and remove existing html report
         Project project = app.getProject();
         Path projectDir = project.directory();
-
         Path gradleScript = projectDir.resolve("build.gradle");
         Path mvnScript = projectDir.resolve("pom.xml");
         Path html = project.outputDirectory().resolve(App.HTML_REPORT_FILENAME);
         Path[] paths = {gradleScript, mvnScript, html};
         for (var p : paths) {
-            Files.move(p, p.resolveSibling(p.getFileName() + ".old"));
+            backup(p);
         }
-        Files.createFile(project.buildScript());  // Must be able to prepare project
+        // The preparer uses build script filename to detect the project type
+        Files.createFile(project.buildScript());
 
         try {
-            String[] args = {"--analyze", project.directory().toString(), "--pkg", "org.matrixertest"};
+            String[] args =
+                    {"--analyze", project.directory().toString(), "--pkg", "org.matrixertest"};
             App analyzingApp = new App(args);
             assertDoesNotThrow(analyzingApp::run);
             assertTrue(Files.exists(html), "New html file not created");
         } finally {
             for (var p : paths) {
-                Files.move(p.resolveSibling(p.getFileName() + ".old"), p, StandardCopyOption.REPLACE_EXISTING);
+                restore(p);
             }
         }
+    }
+
+    void backup(Path src) throws IOException {
+        Path backup = src.resolveSibling(src.getFileName() + ".old");
+        Files.move(src, backup);
+    }
+
+    void restore(Path src) throws IOException {
+        Path backup = src.resolveSibling(src.getFileName() + ".old");
+        Files.move(backup, src, StandardCopyOption.REPLACE_EXISTING);
     }
 }

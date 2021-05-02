@@ -149,4 +149,23 @@ class FileUtilsTest {
         assertEquals(expected, stringBuilder.toString());
     }
 
+    @Test
+    void replaceExistingDirectory() throws IOException {
+        Path dir = FileUtils.createTempDirectory();
+        Path file = dir.resolve("file.txt");
+        Files.createFile(file);
+
+        FileUtils.replaceExisting(dir);
+        assertTrue(Files.exists(dir));
+        assertFalse(Files.exists(file));
+    }
+
+    @Test
+    void replaceExistingDirectoryCreatesNewIfNoneExists() throws IOException {
+        Path dir = FileUtils.getNonExistingPath();
+
+        FileUtils.replaceExisting(dir);
+        assertTrue(Files.exists(dir));
+    }
+
 }

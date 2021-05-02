@@ -90,6 +90,13 @@ public class FileUtils {
         }
     }
 
+    public static void replaceExisting(Path dir) throws IOException {
+        if (isExistingDirectory(dir)) {
+            removeDirectory(dir);
+        }
+        Files.createDirectories(dir);
+    }
+
     /**
      * Returns the path to the current working directory
      */
@@ -258,7 +265,7 @@ public class FileUtils {
      * @return Path to the non existing file
      */
     public static Path getNonExistingPath() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS");
         String date = simpleDateFormat.format(new Date());
         return Path.of(System.getProperty("java.io.tmpdir"), date);
     }
