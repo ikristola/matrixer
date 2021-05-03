@@ -1,10 +1,11 @@
 package org.matrixer.agent;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
+import org.matrixer.agent.internal.*;
 import org.matrixer.core.runtime.*;
 
 /**
@@ -33,7 +34,8 @@ public class InvocationLogger {
     /**
      * Initializes the logger.
      */
-    public static void init(SynchronizedWriter writer, int depthLimit, boolean debug, Logger logger) {
+    public static void init(SynchronizedWriter writer, int depthLimit, boolean debug,
+            Logger logger) {
         instance = new InvocationLogger(writer, debug, logger);
         instance.setDepthLimit(depthLimit);
     }
@@ -94,7 +96,8 @@ public class InvocationLogger {
         log("::Entering method:: " + methodName);
         ThreadStack stack = threads.get(thread);
         if (stack == null) {
-            // throw new IllegalStateException("Could not find test case " + methodName);
+            // throw new IllegalStateException("Could not find test case " +
+            // methodName);
             logError("PushMethod: Test case not found");
             return;
         }
@@ -102,6 +105,7 @@ public class InvocationLogger {
         int currentDepth = stack.push();
         if (currentDepth <= depthLimit) {
             tc.addCall(methodName, currentDepth);
+            log("TestCase " + tc.name() + " Logging call (d=" + currentDepth + "): " + methodName);
         }
     }
 
@@ -119,7 +123,8 @@ public class InvocationLogger {
         log("::Exiting method:: " + methodName);
         ThreadStack stack = threads.get(thread);
         if (stack == null) {
-            // throw new IllegalStateException("Could not find test case " + methodName);
+            // throw new IllegalStateException("Could not find test case " +
+            // methodName);
             logError("PushMethod: Test case not found");
             return;
         }
@@ -140,16 +145,9 @@ public class InvocationLogger {
         // Add test case
         log("::Starting test case:: " + name + " in thread " + thread);
 
-        ThreadStack parentStack = new ThreadStack(thread);
         TestCase tc = new TestCase(name);
-        map(tc, parentStack);
-
+        ThreadStack parentStack = new ThreadStack(thread, tc);
         threads.put(thread, parentStack);
-    }
-
-    private void map(TestCase tc, ThreadStack stack) {
-        stack.mapTestCase(tc);
-        tc.threads.add(stack);
     }
 
     public static void endTestCase(String name) {
@@ -164,7 +162,7 @@ public class InvocationLogger {
     public void logEndTestCase(long thread) {
         ThreadStack stack = threads.get(thread);
         TestCase tc = stack.mappedTestCase();
-        log("::End current test:: " + tc.name);
+        log("::End current test:: " + tc.name());
         logEndTestCase(tc);
     }
 
@@ -172,7 +170,7 @@ public class InvocationLogger {
         log("::Ending test case:: " + name);
         ThreadStack stack = threads.get(Thread.currentThread().getId());
         TestCase tc = stack.mappedTestCase();
-        if (debug && !name.equals(tc.name)) {
+        if (debug && !name.equals(tc.name())) {
             throw new IllegalStateException("Found wrong test case");
         }
         logEndTestCase(tc);
@@ -183,16 +181,34 @@ public class InvocationLogger {
             throw new IllegalStateException("endTestCase: Could not find test case ");
         }
         removeTestCase(tc);
-        tc.writeCalls(writer);
+        writeCalls(tc);
     }
+
+    private void writeCalls(TestCase tc) {
+        try {
+            Collection<Call> calls = tc.calls();
+            int size = 0;
+            for (var call : calls) {
+                String line =
+                        new MethodCall(call.stackDepth, call.calledMethod, tc.name()).asLine();
+                log("Writing line:\n\t" + line);
+                writer.writeLine(line);
+                size++;
+            }
+            log("TestCase: " + tc.name() + "\n\tWrote " + size + " calls\n");
+        } catch (IOException e) {
+            logger.logException(e);
+        }
+    }
+
 
     private void removeTestCase(TestCase tc) {
         unmapThreads(tc);
     }
 
     private void unmapThreads(TestCase tc) {
-        log("Test case " + tc.name);
-        for (var threadStack : tc.threads) {
+        log("Test case " + tc.name());
+        for (var threadStack : tc.threads()) {
             log("Removing thread " + threadStack.id());
             threads.remove(threadStack.id(), threadStack);
         }
@@ -225,8 +241,6 @@ public class InvocationLogger {
             log("Found parent thread " + parentStack.id());
             // The childstack inherits the stackdepth of its parent
             ThreadStack childStack = new ThreadStack(childId, parentStack);
-            TestCase tc = parentStack.mappedTestCase();
-            map(tc, childStack);
             threads.put(childId, childStack);
         }
     }
@@ -240,106 +254,6 @@ public class InvocationLogger {
     private void log(String msg) {
         if (debug && logger != null) {
             logger.log("InvocationLogger " + msg);
-        }
-    }
-
-    class TestCase {
-        final List<Call> calls = new ArrayList<>();
-        final List<ThreadStack> threads = new ArrayList<>();
-        final String name;
-
-        TestCase(String testName) {
-            this.name = testName;
-        }
-
-        void addCall(String methodName, int depth) {
-            synchronized (this) {
-                calls.add(new Call(methodName, depth));
-            }
-            log("TestCase " + name + " Logging call (d=" + depth + "): " + methodName);
-        }
-
-        // Should prob be in a separate thread. MAKE SURE that
-        // the test case has been unmapped from any threads first, otherwise
-        void writeCalls(SynchronizedWriter writer) {
-            log("TestCase: " + name + "\n\tWriting " + calls.size() + " calls");
-            synchronized (this) {
-                for (var call : calls) {
-                    String line =
-                            new MethodCall(call.stackDepth, call.calledMethod, this.name).asLine();
-                    log("Writing line:\n\t" + line);
-                    writeLine(writer, line);
-                }
-            }
-        }
-
-        void writeLine(SynchronizedWriter writer, String line) {
-            try {
-                writer.writeLine(line);
-            } catch (IOException e) {
-                logError("Could not write method call:\n" + line);
-            }
-        }
-    }
-
-    /**
-     * Keeps track of the stack depth for a thread
-     */
-    class ThreadStack {
-        private final long threadId;
-
-        // Current height of the stack
-        // The first thread started by a test case begins with depth 0
-        // Each child thread spawned by a parent thread mapped to a test case
-        // will inherit the depth from its parent.
-        AtomicInteger depth;
-
-        // The test case that the thread is running in
-        TestCase test;
-
-        ThreadStack(long threadId) {
-            this.threadId = threadId;
-            this.depth = new AtomicInteger(0);
-        }
-
-        ThreadStack(long threadId, ThreadStack parent) {
-            this.threadId = threadId;
-            this.depth = new AtomicInteger(parent.depth());
-            this.test = parent.test;
-        }
-
-        TestCase mappedTestCase() {
-            return test;
-        }
-
-        void mapTestCase(TestCase tc) {
-            test = tc;
-        }
-
-        int push() {
-            return depth.incrementAndGet();
-        }
-
-        int pop() {
-            return depth.decrementAndGet();
-        }
-
-        int depth() {
-            return depth.get();
-        }
-
-        long id() {
-            return threadId;
-        }
-    }
-
-    class Call {
-        final String calledMethod;
-        final int stackDepth;
-
-        Call(String calledMethod, int stackDepth) {
-            this.calledMethod = calledMethod;
-            this.stackDepth = stackDepth;
         }
     }
 }
