@@ -46,7 +46,7 @@ public class CallLoggingTransformer implements ClassFileTransformer {
             return null;
         }
         if (isTestClass(className, location)) {
-            log("Instrumenting test " + className);
+            log("Instrumenting test   " + className);
             return instrumenter.instrumentTestClass(VERSION, className, classfileBuffer);
         }
         log("Instrumenting target " + className);
