@@ -267,7 +267,7 @@ public class InvocationLogger {
                 for (var call : calls) {
                     String line =
                             new MethodCall(call.stackDepth, call.calledMethod, this.name).asLine();
-                    log("Writing line:\n" + line);
+                    log("Writing line:\n\t" + line);
                     writeLine(writer, line);
                 }
             }
