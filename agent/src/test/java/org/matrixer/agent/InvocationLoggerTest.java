@@ -21,7 +21,7 @@ class InvocationLoggerTest {
     void setup() {
         out = new ByteArrayOutputStream();
         SynchronizedWriter w = new SynchronizedWriter(new OutputStreamWriter(out));
-        boolean debug = false;
+        boolean debug = true;
         logger = new InvocationLogger(w, debug);
     }
 
@@ -163,7 +163,6 @@ class InvocationLoggerTest {
 
     String[] finish() {
         String output = out.toString();
-        assertTrue(logger.tests.isEmpty(), "Logger.tests not empty");
         int size = logger.threads.size();
         assertTrue(logger.threads.isEmpty(), "Logger.threads not empty " + size);
         return output.split("\n");

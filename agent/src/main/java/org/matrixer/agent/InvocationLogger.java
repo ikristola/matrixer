@@ -2,6 +2,8 @@ package org.matrixer.agent;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.matrixer.core.runtime.MethodCall;
 import org.matrixer.core.runtime.AgentOptions;
@@ -45,18 +47,15 @@ public class InvocationLogger {
         return instance;
     }
 
-    // Maps each thread to a test case
-    Map<Long, TestCase> threads = new HashMap<>();
-
-    // Maps each test case to its name
-    Map<String, TestCase> tests = new HashMap<>();
+    // Maps each thread to a stack
+    final Map<Long, ThreadStack> threads = new ConcurrentHashMap<>();
 
     private int depthLimit = Integer.MAX_VALUE;
 
     // The writer to used to write the calls
-    SynchronizedWriter writer;
+    private final SynchronizedWriter writer;
 
-    private boolean debug;
+    private final boolean debug;
 
 
     InvocationLogger(SynchronizedWriter writer, boolean debug) {
@@ -74,6 +73,7 @@ public class InvocationLogger {
         if (depthLimit == 0) {
             depthLimit = Integer.MAX_VALUE;
         }
+        log("New depth limit: " + depthLimit);
         this.depthLimit = depthLimit;
     }
 
@@ -86,15 +86,23 @@ public class InvocationLogger {
         getInstance().logPushMethod(name, thread);
     }
 
-    public void logPushMethod(String methodName) {
+    // For testing
+    void logPushMethod(String methodName) {
         logPushMethod(methodName, Thread.currentThread().getId());
     }
 
     public void logPushMethod(String methodName, long thread) {
         log("Invocation logger: Entering " + methodName);
-        TestCase tc = threads.get(thread);
-        if (tc != null) {
-            tc.addCall(methodName);
+        ThreadStack stack = threads.get(thread);
+        if (stack == null) {
+            // throw new IllegalStateException("Could not find test case " + methodName);
+            log("Test case not found, test helper executed before test?");
+            return;
+        }
+        TestCase tc = stack.mappedTestCase();
+        int currentDepth = stack.push();
+        if (currentDepth <= depthLimit) {
+            tc.addCall(methodName, currentDepth);
         }
     }
 
@@ -103,38 +111,44 @@ public class InvocationLogger {
         getInstance().logPopMethod(methodName, thread);
     }
 
-    public void logPopMethod(String methodName) {
+    // For testing
+    void logPopMethod(String methodName) {
         logPopMethod(methodName, Thread.currentThread().getId());
     }
 
     public void logPopMethod(String methodName, long thread) {
         log("Invocation logger: Exiting " + methodName);
-        TestCase tc = threads.get(thread);
-        if (tc == null) {
-            logError("Could not find test case " + methodName);
-            return;
+        ThreadStack stack = threads.get(thread);
+        if (stack == null) {
+            throw new IllegalStateException("Could not find test case " + methodName);
         }
-        tc.popLastCall();
+        stack.pop();
     }
 
     public static void beginTestCase(String name) {
-        getInstance().logBeginTestCase(name);
-    }
-
-    public void logBeginTestCase(String name) {
-        log("Invocation logger: Start test " + name);
-        // Add test case
-        TestCase tc = new TestCase(name);
-        tests.put(tc.name, tc);
-
-        // Map it to the current thread
         long thread = Thread.currentThread().getId();
-        map(tc, thread);
+        getInstance().logBeginTestCase(name, thread);
     }
 
-    private void map(TestCase tc, long thread) {
-        threads.put(thread, tc);
-        tc.threads.add(thread);
+    // For testing
+    void logBeginTestCase(String name) {
+        logBeginTestCase(name, Thread.currentThread().getId());
+    }
+
+    public void logBeginTestCase(String name, long thread) {
+        // Add test case
+        log("Invocation logger: Start test " + name + " in thread " + thread);
+
+        ThreadStack parentStack = new ThreadStack(thread);
+        TestCase tc = new TestCase(name);
+        map(tc, parentStack);
+
+        threads.put(thread, parentStack);
+    }
+
+    private void map(TestCase tc, ThreadStack stack) {
+        stack.mapTestCase(tc);
+        tc.threads.add(stack);
     }
 
     public static void endTestCase(String name) {
@@ -142,41 +156,44 @@ public class InvocationLogger {
     }
 
     public static void endTestCase() {
-        getInstance().logEndTestCase();
+        long thread = Thread.currentThread().getId();
+        getInstance().logEndTestCase(thread);
     }
 
-    public void logEndTestCase() {
+    public void logEndTestCase(long thread) {
         log("Invocation logger: End current test");
-        long thread = Thread.currentThread().getId();
-        TestCase tc = threads.get(thread);
+        ThreadStack stack = threads.get(thread);
+        TestCase tc = stack.mappedTestCase();
         logEndTestCase(tc);
     }
 
     public void logEndTestCase(String name) {
         log("Invocation logger: End test " + name);
-        TestCase tc = tests.get(name);
+        ThreadStack stack = threads.get(Thread.currentThread().getId());
+        TestCase tc = stack.mappedTestCase();
+        if (debug && !name.equals(tc.name)) {
+            throw new IllegalStateException("Found wrong test case");
+        }
         logEndTestCase(tc);
     }
 
     public void logEndTestCase(TestCase tc) {
         if (tc == null) {
-            logError("Could not find test case ");
-            return;
+            throw new IllegalStateException("Could not find test case ");
         }
         removeTestCase(tc);
         tc.writeCalls(writer);
     }
 
     private void removeTestCase(TestCase tc) {
-        tests.remove(tc.name, tc);
         unmapThreads(tc);
     }
 
     private void unmapThreads(TestCase tc) {
         log("Test case " + tc.name);
-        for (long thread : tc.threads) {
-            log("Removing thread " + thread);
-            threads.remove(thread, tc);
+        for (var threadStack : tc.threads) {
+            log("Removing thread " + threadStack.id());
+            threads.remove(threadStack.id(), threadStack);
         }
     }
 
@@ -184,23 +201,33 @@ public class InvocationLogger {
         // Use explicit instance here, since Threads need to be created even if
         // this class has not been initialized
         if (instance != null) {
-            instance.logNewThread(t);
+            long current = Thread.currentThread().getId();
+            instance.logNewThread(current, t);
         }
     }
 
-    public void logNewThread(Thread t) {
-        long current = Thread.currentThread().getId();
-        long child = t.getId();
+    // For testing
+    void logNewThread(Thread t) {
+        logNewThread(Thread.currentThread().getId(), t);
+    }
 
-        TestCase testCase = threads.get(current);
-        if (testCase == null) {
-            // No test case mapped to current thread.
-            return;
+    public void logNewThread(long parent, Thread t) {
+        long childId = t.getId();
+        log("New thread " + childId + " started by " + parent);
+
+        ThreadStack parentStack = threads.get(parent);
+        if (parentStack == null) {
+            log("No parent thread found");
+            // New parent thread
+            // Test case threads will be added by beginTestCase()
+        } else {
+            log("Found parent thread");
+            // The childstack inherits the stackdepth of its parent
+            ThreadStack childStack = new ThreadStack(childId, parentStack);
+            TestCase tc = parentStack.mappedTestCase();
+            map(tc, childStack);
+            threads.put(childId, childStack);
         }
-        // Add new thread to the test case
-        testCase.threads.add(child);
-        // Map the thread to the test case
-        threads.put(child, testCase);
     }
 
     private void logError(String msg) {
@@ -216,38 +243,32 @@ public class InvocationLogger {
     }
 
     class TestCase {
-        int currentDepth = 0;
         final List<Call> calls = new ArrayList<>();
-        final List<Long> threads = new ArrayList<>();
+        final List<ThreadStack> threads = new ArrayList<>();
         final String name;
 
         TestCase(String testName) {
             this.name = testName;
         }
 
-        void addCall(String methodName) {
-            currentDepth++;
-            if (depthLimit == 0 || currentDepth <= depthLimit) {
-                calls.add(new Call(methodName, currentDepth));
+        void addCall(String methodName, int depth) {
+            synchronized (this) {
+                calls.add(new Call(methodName, depth));
             }
-            log("TestCase " + name + " Logging call (d=" + currentDepth + "): " + methodName);
-        }
-
-        void popLastCall() {
-            currentDepth--;
-            if (currentDepth < 0) {
-                throw new IllegalStateException("Current depth < 0");
-            }
+            log("TestCase " + name + " Logging call (d=" + depth + "): " + methodName);
         }
 
         // Should prob be in a separate thread. MAKE SURE that
         // the test case has been unmapped from any threads first, otherwise
         void writeCalls(SynchronizedWriter writer) {
             log("TestCase: " + name + "\n\tWriting " + calls.size() + " calls");
-            for (var call : calls) {
-                String line = new MethodCall(call.stackDepth, call.calledMethod, this.name).asLine();
-                log("Writing line:\n" + line);
-                writeLine(writer, line);
+            synchronized (this) {
+                for (var call : calls) {
+                    String line =
+                            new MethodCall(call.stackDepth, call.calledMethod, this.name).asLine();
+                    log("Writing line:\n" + line);
+                    writeLine(writer, line);
+                }
             }
         }
 
@@ -257,6 +278,57 @@ public class InvocationLogger {
             } catch (IOException e) {
                 logError("Could not write method call:\n" + line);
             }
+        }
+    }
+
+    /**
+     * Keeps track of the stack depth for a thread
+     */
+    class ThreadStack {
+        private final long threadId;
+
+        // Current height of the stack
+        // The first thread started by a test case begins with depth 0
+        // Each child thread spawned by a parent thread mapped to a test case
+        // will inherit the depth from its parent.
+        AtomicInteger depth;
+
+        // The test case that the thread is running in
+        TestCase test;
+
+        ThreadStack(long threadId) {
+            this.threadId = threadId;
+            this.depth = new AtomicInteger(0);
+        }
+
+        ThreadStack(long threadId, ThreadStack parent) {
+            this.threadId = threadId;
+            this.depth = new AtomicInteger(parent.depth());
+            this.test = parent.test;
+        }
+
+        TestCase mappedTestCase() {
+            return test;
+        }
+
+        void mapTestCase(TestCase tc) {
+            test = tc;
+        }
+
+        int push() {
+            return depth.incrementAndGet();
+        }
+
+        int pop() {
+            return depth.decrementAndGet();
+        }
+
+        int depth() {
+            return depth.get();
+        }
+
+        long id() {
+            return threadId;
         }
     }
 
