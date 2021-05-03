@@ -7,6 +7,7 @@ import java.security.ProtectionDomain;
 
 import org.matrixer.agent.MatrixerAgent;
 import org.matrixer.core.runtime.AgentOptions;
+import org.matrixer.core.runtime.Logger;
 import org.objectweb.asm.*;
 
 
@@ -23,14 +24,16 @@ public class CallLoggingTransformer implements ClassFileTransformer {
 
     private String pkg;
     private Instrumenter instrumenter;
+    private Logger logger;
 
-    public CallLoggingTransformer(AgentOptions options) {
-        this(options.getTargetPackage());
+    public CallLoggingTransformer(AgentOptions options, Logger logger) {
+        this(options.getTargetPackage(), logger);
         debug = options.getDebug();
     }
-    public CallLoggingTransformer(String pkg) {
+    public CallLoggingTransformer(String pkg, Logger logger) {
         this.pkg = pkg;
         this.instrumenter = new Instrumenter(debug);
+        this.logger = logger;
     }
 
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
@@ -95,13 +98,13 @@ public class CallLoggingTransformer implements ClassFileTransformer {
 
     private void log(String msg) {
         if (debug){
-            System.out.println("INFO: " + msg);
+            logger.log("Transformer: " + msg);
         }
     }
 
     private void logError(String msg) {
         if (debug){
-            System.out.println("ERROR: " + msg);
+            logger.logError("Transformer: " + msg);
         }
     }
 }

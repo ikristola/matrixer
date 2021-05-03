@@ -5,8 +5,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.matrixer.core.runtime.MethodCall;
-import org.matrixer.core.runtime.AgentOptions;
+import org.matrixer.core.runtime.*;
 
 /**
  * Logs method invocations from each test case.
@@ -27,16 +26,15 @@ public class InvocationLogger {
     /**
      * Initializes the logger.
      */
-    public static void init(SynchronizedWriter writer, AgentOptions options) {
-        instance = new InvocationLogger(writer, options);
-        instance.setDepthLimit(options.getDepthLimit());
+    public static void init(SynchronizedWriter writer, AgentOptions options, Logger logger) {
+        instance = new InvocationLogger(writer, options, logger);
     }
 
     /**
      * Initializes the logger.
      */
-    public static void init(SynchronizedWriter writer, int depthLimit, boolean debug) {
-        instance = new InvocationLogger(writer, debug);
+    public static void init(SynchronizedWriter writer, int depthLimit, boolean debug, Logger logger) {
+        instance = new InvocationLogger(writer, debug, logger);
         instance.setDepthLimit(depthLimit);
     }
 
@@ -56,16 +54,17 @@ public class InvocationLogger {
     private final SynchronizedWriter writer;
 
     private final boolean debug;
+    private Logger logger;
 
 
-    InvocationLogger(SynchronizedWriter writer, boolean debug) {
+    InvocationLogger(SynchronizedWriter writer, boolean debug, Logger logger) {
         this.writer = writer;
         this.debug = debug;
+        this.logger = logger;
     }
 
-    InvocationLogger(SynchronizedWriter writer, AgentOptions options) {
-        this.writer = writer;
-        debug = options.getDebug();
+    InvocationLogger(SynchronizedWriter writer, AgentOptions options, Logger logger) {
+        this(writer, options.getDebug(), logger);
         setDepthLimit(options.getDepthLimit());
     }
 
@@ -92,11 +91,11 @@ public class InvocationLogger {
     }
 
     public void logPushMethod(String methodName, long thread) {
-        log("Invocation logger: Entering " + methodName);
+        log("::Entering method:: " + methodName);
         ThreadStack stack = threads.get(thread);
         if (stack == null) {
             // throw new IllegalStateException("Could not find test case " + methodName);
-            log("Test case not found, test helper executed before test?");
+            logError("PushMethod: Test case not found");
             return;
         }
         TestCase tc = stack.mappedTestCase();
@@ -117,10 +116,12 @@ public class InvocationLogger {
     }
 
     public void logPopMethod(String methodName, long thread) {
-        log("Invocation logger: Exiting " + methodName);
+        log("::Exiting method:: " + methodName);
         ThreadStack stack = threads.get(thread);
         if (stack == null) {
-            throw new IllegalStateException("Could not find test case " + methodName);
+            // throw new IllegalStateException("Could not find test case " + methodName);
+            logError("PushMethod: Test case not found");
+            return;
         }
         stack.pop();
     }
@@ -137,7 +138,7 @@ public class InvocationLogger {
 
     public void logBeginTestCase(String name, long thread) {
         // Add test case
-        log("Invocation logger: Start test " + name + " in thread " + thread);
+        log("::Starting test case:: " + name + " in thread " + thread);
 
         ThreadStack parentStack = new ThreadStack(thread);
         TestCase tc = new TestCase(name);
@@ -161,14 +162,14 @@ public class InvocationLogger {
     }
 
     public void logEndTestCase(long thread) {
-        log("Invocation logger: End current test");
         ThreadStack stack = threads.get(thread);
         TestCase tc = stack.mappedTestCase();
+        log("::End current test:: " + tc.name);
         logEndTestCase(tc);
     }
 
     public void logEndTestCase(String name) {
-        log("Invocation logger: End test " + name);
+        log("::Ending test case:: " + name);
         ThreadStack stack = threads.get(Thread.currentThread().getId());
         TestCase tc = stack.mappedTestCase();
         if (debug && !name.equals(tc.name)) {
@@ -179,7 +180,7 @@ public class InvocationLogger {
 
     public void logEndTestCase(TestCase tc) {
         if (tc == null) {
-            throw new IllegalStateException("Could not find test case ");
+            throw new IllegalStateException("endTestCase: Could not find test case ");
         }
         removeTestCase(tc);
         tc.writeCalls(writer);
@@ -217,11 +218,11 @@ public class InvocationLogger {
 
         ThreadStack parentStack = threads.get(parent);
         if (parentStack == null) {
-            log("No parent thread found");
+            log("No parent thread found for thread " + childId);
             // New parent thread
             // Test case threads will be added by beginTestCase()
         } else {
-            log("Found parent thread");
+            log("Found parent thread " + parentStack.id());
             // The childstack inherits the stackdepth of its parent
             ThreadStack childStack = new ThreadStack(childId, parentStack);
             TestCase tc = parentStack.mappedTestCase();
@@ -231,14 +232,14 @@ public class InvocationLogger {
     }
 
     private void logError(String msg) {
-        if (debug) {
-            System.err.println("ERROR: " + msg);
+        if (debug && logger != null) {
+            logger.logError("InvocationLogger: " + msg);
         }
     }
 
     private void log(String msg) {
-        if (debug) {
-            System.out.println("INFO: " + msg);
+        if (debug && logger != null) {
+            logger.log("InvocationLogger " + msg);
         }
     }
 

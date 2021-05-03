@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import org.matrixer.agent.instrumentation.CallLoggingTransformer;
 import org.matrixer.agent.instrumentation.ThreadClassTransformer;
 import org.matrixer.core.runtime.AgentOptions;
+import org.matrixer.core.runtime.Logger;
 
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -39,7 +40,7 @@ public class MatrixerAgent {
     /**
      * The stream that will be used for logging
      */
-    private PrintStream log;
+    private Logger logger;
 
     /**
      * The instrumenation handle
@@ -65,7 +66,7 @@ public class MatrixerAgent {
             Path destFile = Path.of(options.getDestFilename());
             var out = Files.newOutputStream(
                     destFile.resolveSibling(("matrixer-agent-log.txt")), CREATE, APPEND);
-            log = new PrintStream(out);
+            logger = new Logger(new PrintStream(out), "Matrixer");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -112,12 +113,11 @@ public class MatrixerAgent {
             Path destFile = Path.of(options.getDestFilename());
             SynchronizedWriter w = new SynchronizedWriter(
                     Files.newBufferedWriter(destFile, CREATE, APPEND));
-            InvocationLogger.init(w, options);
-            inst.addTransformer(new CallLoggingTransformer(options));
+            InvocationLogger.init(w, options, logger);
+            inst.addTransformer(new CallLoggingTransformer(options, logger));
             transformThreadClass(InvocationLogger::newThread);
         } catch (Throwable e) {
-            log("Error: " + e.getMessage());
-            e.printStackTrace(log);
+            logger.logException(e);
         }
     }
 
@@ -141,7 +141,7 @@ public class MatrixerAgent {
 
     private void log(String msg) {
         if (useLog) {
-            log.println("[Agent] " + msg);
+            logger.log("[Agent] " + msg);
         }
     }
 }
