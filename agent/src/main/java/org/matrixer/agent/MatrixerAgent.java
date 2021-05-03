@@ -110,7 +110,8 @@ public class MatrixerAgent {
     private void startup() {
         try {
             Path destFile = Path.of(options.getDestFilename());
-            SynchronizedWriter w = new SynchronizedWriter(Files.newBufferedWriter(destFile));
+            SynchronizedWriter w = new SynchronizedWriter(
+                    Files.newBufferedWriter(destFile, CREATE, APPEND));
             InvocationLogger.init(w, options);
             inst.addTransformer(new CallLoggingTransformer(options));
             transformThreadClass(InvocationLogger::newThread);
