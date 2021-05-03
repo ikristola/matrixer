@@ -2,6 +2,8 @@ package org.matrixer.core;
 
 import java.util.*;
 
+import org.matrixer.core.runtime.MethodCall;
+
 /**
  * Stores coverage information collected by executing the test suite
  * with the matrixer agent

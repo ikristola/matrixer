@@ -18,6 +18,7 @@ public class App {
     Properties properties;
     GitRepository repo;
     Project project;
+    ExecutionData data;
 
     public static void main(String[] args) {
         try {
@@ -57,9 +58,9 @@ public class App {
             System.out.println("Target project tests was run successfully!");
         }
 
-        ExecutionData results = analyzeProject();
-        printStatistics(results);
-        generateHTMLReport(results);
+        data = analyzeProject();
+        printStatistics(data);
+        generateHTMLReport(data);
     }
 
     private Project prepareProject() throws GitAPIException, IOException {
@@ -124,6 +125,10 @@ public class App {
 
     Project getProject() {
         return project;
+    }
+
+    ExecutionData getData() {
+        return data;
     }
 
     static boolean containsHelpFlag(String[] args) {
