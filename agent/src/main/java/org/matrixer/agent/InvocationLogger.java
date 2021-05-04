@@ -186,6 +186,12 @@ public class InvocationLogger {
         logEndTestCase(tc);
     }
 
+    // For testing
+    public void logEndTestCase(String name) {
+        long thread = Thread.currentThread().getId();
+        logEndTestCase(name, thread);
+    }
+
     public void logEndTestCase(String name, long thread) {
         log("::Ending test case:: " + name + " on thread " + thread);
         ThreadStack stack = threads.get(thread);
