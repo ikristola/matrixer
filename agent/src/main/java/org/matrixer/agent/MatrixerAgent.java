@@ -66,7 +66,7 @@ public class MatrixerAgent {
             Path destFile = Path.of(options.getDestFilename());
             var out = Files.newOutputStream(
                     destFile.resolveSibling(("matrixer-agent-log.txt")), CREATE, APPEND);
-            logger = new Logger(new PrintStream(out), "Matrixer");
+            logger = new Logger(new PrintStream(out), "[Matrixer]");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

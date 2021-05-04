@@ -83,8 +83,12 @@ public class InvocationLogger {
     }
 
     public static void pushMethod(String name) {
-        long thread = Thread.currentThread().getId();
-        getInstance().logPushMethod(name, thread);
+        try {
+            long thread = Thread.currentThread().getId();
+            getInstance().logPushMethod(name, thread);
+        } catch (Throwable e) {
+            getInstance().logger.logException(e);
+        }
     }
 
     // For testing
@@ -93,25 +97,29 @@ public class InvocationLogger {
     }
 
     public void logPushMethod(String methodName, long thread) {
-        log("::Entering method:: " + methodName);
+        log("::Entering method:: " + methodName + " on thread " + thread);
         ThreadStack stack = threads.get(thread);
         if (stack == null) {
             // throw new IllegalStateException("Could not find test case " +
             // methodName);
-            logError("PushMethod: Test case not found");
+            logError("PushMethod: Test case not found for thread " + thread);
             return;
         }
         TestCase tc = stack.mappedTestCase();
         int currentDepth = stack.push();
         if (currentDepth <= depthLimit) {
             tc.addCall(methodName, currentDepth);
-            log("TestCase " + tc.name() + " Logging call (d=" + currentDepth + "): " + methodName);
+            log("TestCase " + tc.name() + " Logging call (d=" + currentDepth + "): " + methodName + " on thread " + thread);
         }
     }
 
     public static void popMethod(String methodName) {
-        long thread = Thread.currentThread().getId();
-        getInstance().logPopMethod(methodName, thread);
+        try {
+            long thread = Thread.currentThread().getId();
+            getInstance().logPopMethod(methodName, thread);
+        } catch (Throwable e) {
+            getInstance().logger.logException(e);
+        }
     }
 
     // For testing
@@ -120,20 +128,24 @@ public class InvocationLogger {
     }
 
     public void logPopMethod(String methodName, long thread) {
-        log("::Exiting method:: " + methodName);
+        log("::Exiting method:: " + methodName + " on thread " + thread);
         ThreadStack stack = threads.get(thread);
         if (stack == null) {
             // throw new IllegalStateException("Could not find test case " +
             // methodName);
-            logError("PushMethod: Test case not found");
+            logError("PushMethod: Test case not found for thread" + thread);
             return;
         }
         stack.pop();
     }
 
     public static void beginTestCase(String name) {
-        long thread = Thread.currentThread().getId();
-        getInstance().logBeginTestCase(name, thread);
+        try {
+            long thread = Thread.currentThread().getId();
+            getInstance().logBeginTestCase(name, thread);
+        } catch (Throwable e) {
+            getInstance().logger.logException(e);
+        }
     }
 
     // For testing
@@ -142,7 +154,6 @@ public class InvocationLogger {
     }
 
     public void logBeginTestCase(String name, long thread) {
-        // Add test case
         log("::Starting test case:: " + name + " in thread " + thread);
 
         TestCase tc = new TestCase(name);
@@ -151,24 +162,33 @@ public class InvocationLogger {
     }
 
     public static void endTestCase(String name) {
-        getInstance().logEndTestCase(name);
+        try {
+            long thread = Thread.currentThread().getId();
+            getInstance().logEndTestCase(name, thread);
+        } catch (Throwable e) {
+            getInstance().logger.logException(e);
+        }
     }
 
     public static void endTestCase() {
-        long thread = Thread.currentThread().getId();
-        getInstance().logEndTestCase(thread);
+        try {
+            long thread = Thread.currentThread().getId();
+            getInstance().logEndTestCase(thread);
+        } catch (Throwable e) {
+            getInstance().logger.logException(e);
+        }
     }
 
     public void logEndTestCase(long thread) {
         ThreadStack stack = threads.get(thread);
         TestCase tc = stack.mappedTestCase();
-        log("::End current test:: " + tc.name());
+        log("::End current test:: " + tc.name()  + " on thread " + thread);
         logEndTestCase(tc);
     }
 
-    public void logEndTestCase(String name) {
-        log("::Ending test case:: " + name);
-        ThreadStack stack = threads.get(Thread.currentThread().getId());
+    public void logEndTestCase(String name, long thread) {
+        log("::Ending test case:: " + name + " on thread " + thread);
+        ThreadStack stack = threads.get(thread);
         TestCase tc = stack.mappedTestCase();
         if (debug && !name.equals(tc.name())) {
             throw new IllegalStateException("Found wrong test case");
@@ -216,10 +236,15 @@ public class InvocationLogger {
 
     public static void newThread(Thread t) {
         // Use explicit instance here, since Threads need to be created even if
-        // this class has not been initialized
-        if (instance != null) {
+        // this class has not been initialized we should not throw.
+        if (instance == null) {
+            return;
+        }
+        try {
             long current = Thread.currentThread().getId();
             instance.logNewThread(current, t);
+        } catch (Throwable e) {
+            instance.logger.logException(e);
         }
     }
 

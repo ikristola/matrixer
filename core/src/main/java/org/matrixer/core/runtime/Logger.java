@@ -18,11 +18,11 @@ public class Logger {
     }
 
     public synchronized void log(String msg) {
-        writer.println(prefix + ":INFO:"+ msg);
+        writer.println(prefix + ":INFO: "+ msg);
     }
 
     public synchronized void logError(String msg) {
-        writer.println(prefix + ":ERROR:"+ msg);
+        writer.println(prefix + ":ERROR: "+ msg);
     }
 
     public synchronized void logException(Throwable e) {
@@ -31,7 +31,7 @@ public class Logger {
             return;
         }
         if (e.getMessage() != null) {
-            writer.println(prefix + ":EXCEPTION:" + e.getMessage());
+            writer.println(prefix + ":EXCEPTION: " + e.getMessage());
         }
         e.printStackTrace(writer);
     }

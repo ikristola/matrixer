@@ -32,7 +32,7 @@ public class CallLoggingTransformer implements ClassFileTransformer {
     }
     public CallLoggingTransformer(String pkg, Logger logger) {
         this.pkg = pkg;
-        this.instrumenter = new Instrumenter(debug);
+        this.instrumenter = new Instrumenter(false);
         this.logger = logger;
     }
 
