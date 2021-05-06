@@ -35,7 +35,7 @@ class InvocationLoggerTest {
         logger.logPushMethod(method);
         logger.logPopMethod(method);
         logger.logEndTestCase(testCase);
-        
+
         String[] output = finish();
         assertFound(output, 1, method, testCase);
     }
@@ -54,6 +54,7 @@ class InvocationLoggerTest {
 
         String[] output = finish();
         assertIncreasingDepth(output);
+        assertEquals(depthLimit, output.length);
     }
 
     @Test
@@ -68,6 +69,7 @@ class InvocationLoggerTest {
 
         String[] output = finish();
         assertIncreasingDepth(output);
+        assertEquals(nestCount, output.length);
     }
 
     @Test
@@ -85,7 +87,7 @@ class InvocationLoggerTest {
     }
 
     @Test 
-    void mapsNewThreadToCurrentTestCase() {
+    void mapsNewThreadToCurrentTestCase() throws InterruptedException {
         String testCase = "TestCase" + getUniqueId();
         String method = "Method" + getUniqueId();
         logger.logBeginTestCase(testCase);
@@ -94,15 +96,34 @@ class InvocationLoggerTest {
             logger.logPopMethod(method);
         });
         t.start();
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-        }
+        t.join();
         logger.logEndTestCase(testCase);
 
         String output = finish()[0];
         assertFalse(output.isEmpty(), "Output was empty");
         assertFalse(output.isEmpty(), "Output was empty");
+    }
+
+    @Test
+    void callDepthOnNewThread() throws InterruptedException {
+        int nestCount = 10;
+        String testCase = "TestMethod" + getUniqueId();
+        List<String> sequentialMethods = createTargetMethods(nestCount);
+        List<String> concurrentMethods = createTargetMethods(nestCount);
+
+        logger.logBeginTestCase(testCase);
+        pushMethods(sequentialMethods);
+        Thread t = new Thread(() -> {
+            callNested(concurrentMethods);
+        });
+        logger.logNewThread(t);
+        t.start();
+        t.join();
+        popMethods(sequentialMethods);
+        logger.logEndTestCase(testCase);
+
+        String[] output = finish();
+        assertEquals(2*nestCount, output.length);
     }
 
     void assertFound(String[] output, int depth, String method, String testCase) {
@@ -147,9 +168,17 @@ class InvocationLoggerTest {
     }
 
     public void callNested(List<String> methods) {
+        pushMethods(methods);
+        popMethods(methods);
+    }
+
+    public void pushMethods(List<String> methods) {
         for (var method : methods) {
             logger.logPushMethod(method);
         }
+    }
+
+    public void popMethods(List<String> methods) {
         for (var method : methods) {
             logger.logPopMethod(method);
         }
