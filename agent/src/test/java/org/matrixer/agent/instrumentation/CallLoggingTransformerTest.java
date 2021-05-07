@@ -9,12 +9,12 @@ import java.security.ProtectionDomain;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.matrixer.core.runtime.Logger;
+import org.matrixer.core.runtime.PrintLogger;
 import org.matrixer.core.runtime.MethodCall;
 
 class CallLoggingTransformerTest {
 
-    static Logger logger = new Logger(System.out);
+    static PrintLogger logger = new PrintLogger(System.out);
 
     ClassLoader loader;
     ProtectionDomain protectionDomain;

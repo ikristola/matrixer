@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.matrixer.core.runtime.Logger;
+import org.matrixer.core.runtime.PrintLogger;
 import org.matrixer.core.runtime.MethodCall;
 
 class InvocationLoggerTest {
@@ -22,8 +22,7 @@ class InvocationLoggerTest {
     void setup() {
         out = new ByteArrayOutputStream();
         SynchronizedWriter w = new SynchronizedWriter(new OutputStreamWriter(out));
-        boolean debug = true;
-        recorder = new StackRecorderImpl(w, debug, new Logger(System.out));
+        recorder = new StackRecorderImpl(w, new PrintLogger(System.out));
     }
 
     @Test

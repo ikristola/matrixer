@@ -20,7 +20,6 @@ public class CallLoggingTransformer implements ClassFileTransformer {
     }
 
     private static final int VERSION = Opcodes.ASM9;
-    private static boolean debug = false;
 
     private String pkg;
     private Instrumenter instrumenter;
@@ -28,8 +27,8 @@ public class CallLoggingTransformer implements ClassFileTransformer {
 
     public CallLoggingTransformer(AgentOptions options, Logger logger) {
         this(options.getTargetPackage(), logger);
-        debug = options.getDebug();
     }
+
     public CallLoggingTransformer(String pkg, Logger logger) {
         this.pkg = pkg;
         this.instrumenter = new Instrumenter(false);
@@ -57,7 +56,8 @@ public class CallLoggingTransformer implements ClassFileTransformer {
     }
 
     boolean isTestClass(String className, URL location) {
-        // Maven surefire places test classes in target/test-classes and target classes in
+        // Maven surefire places test classes in target/test-classes and target
+        // classes in
         // target/classes. Gradle preserves the hierarchy in src/
         return location.getFile().matches(".*/(test|test-classes)/.*");
     }
@@ -97,14 +97,10 @@ public class CallLoggingTransformer implements ClassFileTransformer {
     }
 
     private void log(String msg) {
-        if (debug){
-            logger.log("Transformer: " + msg);
-        }
+        logger.log("Transformer: " + msg);
     }
 
     private void logError(String msg) {
-        if (debug){
-            logger.logError("Transformer: " + msg);
-        }
+        logger.logError("Transformer: " + msg);
     }
 }

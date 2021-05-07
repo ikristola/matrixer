@@ -19,15 +19,9 @@ public class InvocationLogger {
     /**
      * Initializes the logger.
      */
-    public static void init(StackRecorder recorder, AgentOptions options, Logger logger) {
-        init(recorder, logger);
-    }
-
-    /**
-     * Initializes the logger.
-     */
     public static void init(StackRecorder recorder, Logger logger) {
         InvocationLogger.recorder = recorder;
+        InvocationLogger.logger = logger;
     }
 
     private static StackRecorder getRecorder() {

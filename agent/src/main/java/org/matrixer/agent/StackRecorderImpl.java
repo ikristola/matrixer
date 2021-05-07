@@ -21,18 +21,15 @@ public class StackRecorderImpl implements StackRecorder {
     // The writer to used to write the calls
     private final SynchronizedWriter writer;
 
-    private final boolean debug;
     private final Logger logger;
 
-
-    public StackRecorderImpl(SynchronizedWriter writer, boolean debug, Logger logger) {
+    public StackRecorderImpl(SynchronizedWriter writer, Logger logger) {
         this.writer = writer;
-        this.debug = debug;
         this.logger = logger;
     }
 
-    public StackRecorderImpl(SynchronizedWriter writer, AgentOptions options, Logger logger) {
-        this(writer, options.getDebug(), logger);
+    public StackRecorderImpl(SynchronizedWriter writer, Logger logger, AgentOptions options) {
+        this(writer, logger);
         setDepthLimit(options.getDepthLimit());
     }
 
@@ -80,7 +77,7 @@ public class StackRecorderImpl implements StackRecorder {
     public void endTestCase(long thread) {
         ThreadStack stack = threads.get(thread);
         TestCase tc = stack.mappedTestCase();
-        log("::End current test:: " + tc.name()  + " on thread " + thread);
+        log("::End current test:: " + tc.name() + " on thread " + thread);
         endTestCase(tc);
     }
 
@@ -94,7 +91,7 @@ public class StackRecorderImpl implements StackRecorder {
         log("::Ending test case:: " + name + " on thread " + thread);
         ThreadStack stack = threads.get(thread);
         TestCase tc = stack.mappedTestCase();
-        if (debug && !name.equals(tc.name())) {
+        if (!name.equals(tc.name())) {
             throw new IllegalStateException("Found wrong test case");
         }
         endTestCase(tc);
@@ -157,7 +154,8 @@ public class StackRecorderImpl implements StackRecorder {
         int currentDepth = stack.push();
         if (currentDepth <= depthLimit) {
             tc.addCall(methodName, currentDepth);
-            log("TestCase " + tc.name() + " Logging call (d=" + currentDepth + "): " + methodName + " on thread " + thread);
+            log("TestCase " + tc.name() + " Logging call (d=" + currentDepth + "): " + methodName
+                    + " on thread " + thread);
         }
     }
 
@@ -184,14 +182,10 @@ public class StackRecorderImpl implements StackRecorder {
     }
 
     private void logError(String msg) {
-        if (debug) {
-            logger.logError("InvocationLogger: " + msg);
-        }
+        logger.logError("InvocationLogger: " + msg);
     }
 
     private void log(String msg) {
-        if (debug) {
-            logger.log("InvocationLogger " + msg);
-        }
+        logger.log("InvocationLogger " + msg);
     }
 }

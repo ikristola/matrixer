@@ -7,8 +7,7 @@ import java.util.function.Consumer;
 
 import org.matrixer.agent.instrumentation.CallLoggingTransformer;
 import org.matrixer.agent.instrumentation.ThreadClassTransformer;
-import org.matrixer.core.runtime.AgentOptions;
-import org.matrixer.core.runtime.Logger;
+import org.matrixer.core.runtime.*;
 
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -78,14 +77,18 @@ public class MatrixerAgent {
     }
 
     private void setupLog() throws IOException {
-        try {
-            Path destFile = Path.of(options.getDestFilename());
-            Path logFile = destFile.resolveSibling("matrixer-agent-log.txt");
-            var out = Files.newOutputStream(logFile, CREATE, APPEND);
-            logger = new Logger(new PrintStream(out), "[Matrixer]");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        if (options.getDebug()) {
+            logger = makePrintLogger();
+        } else {
+            logger = new NoopLogger();
         }
+    }
+
+    Logger makePrintLogger() throws IOException {
+        Path destFile = Path.of(options.getDestFilename());
+        Path logFile = destFile.resolveSibling("matrixer-agent-log.txt");
+        var out = Files.newOutputStream(logFile, CREATE, APPEND);
+        return new PrintLogger(new PrintStream(out), "[Matrixer]");
     }
 
     private void startup() {
@@ -98,8 +101,8 @@ public class MatrixerAgent {
 
     private void tryStartup() throws IOException, UnmodifiableClassException {
         Path destFile = Path.of(options.getDestFilename());
-        SynchronizedWriter w = makeWriter(destFile);
-        StackRecorder recorder = new StackRecorderImpl(w, options, logger);
+        SynchronizedWriter writer = makeWriter(destFile);
+        StackRecorder recorder = new StackRecorderImpl(writer, logger, options);
         InvocationLogger.init(recorder, logger);
         inst.addTransformer(new CallLoggingTransformer(options, logger));
         transformThreadClass(InvocationLogger::newThread);
