@@ -14,43 +14,59 @@ import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
 
 /**
- * MatrixerAgent is a agent that transforms classes in target package.
+ * MatrixerAgent instruments target classes to record the the call stack
+ * depth of their invocations.
  *
- * The agent instruments class methods in the target package to print
- * out the qualified name of itself and the calling test case to file.
+ * The agent arguments are specified as a colon separated list of key
+ * value pairs on the form key=value:
  *
- * The agent arguments are specified as
- *
- * outputDirectory:targetPackage:testPackage
- *
- * outputDirectory - the directory where the agent should place its
- * logfile and the results from the instrumented methods.
- *
- * targetPackage - the root package that will be tested, sub-packages
- * will be instrumented as well.
- *
- * testPackage - the package of the tests class, this will be used to
- * identify test methods
+ * <pre>
+ * debug    - a boolean value that determines if the agent should print debug information
+ * destFile - The path to the file where the matrixer data should be stored
+ * pkg      - The package name for the classes that should be instrumented
+ * testPkg  - Deprecated
+ * depth    - An integer value specifying the maximum call stack depth to record
+ * </pre>
  */
 public class MatrixerAgent {
 
-    final static private boolean useLog = true;
     private static MatrixerAgent agent;
 
     /**
-     * The stream that will be used for logging
+     * Run when the agent is started statically
+     *
+     * @param agentArgs
+     *            Agent arguments
+     * @param inst
+     *            Instrumentation instance
+     * @throws IOException
      */
-    private Logger logger;
+    public static void premain(String agentArgs, Instrumentation inst) throws IOException {
+        agent = new MatrixerAgent(agentArgs, inst, "statically");
+        agent.startup();
+    }
 
     /**
-     * The instrumenation handle
+     * Run when the agent is started dynamically
+     *
+     * @param agentArgs
+     *            Agent arguments
+     * @param inst
+     *            Instrumentation instance
+     * @throws IOException
      */
+    public static void agentmain(String agentArgs, Instrumentation inst) throws IOException {
+        agent = new MatrixerAgent(agentArgs, inst, "dynamically");
+        agent.startup();
+    }
+
+    private Logger logger;
+
     final private Instrumentation inst;
 
     final AgentOptions options;
 
-    private MatrixerAgent(String agentArgs, Instrumentation inst, String type) throws IOException,
-            ClassNotFoundException, UnmodifiableClassException, InterruptedException {
+    private MatrixerAgent(String agentArgs, Instrumentation inst, String type) throws IOException {
         this.inst = inst;
         options = new AgentOptions(agentArgs);
         setupLog();
@@ -64,84 +80,51 @@ public class MatrixerAgent {
     private void setupLog() throws IOException {
         try {
             Path destFile = Path.of(options.getDestFilename());
-            var out = Files.newOutputStream(
-                    destFile.resolveSibling(("matrixer-agent-log.txt")), CREATE, APPEND);
+            Path logFile = destFile.resolveSibling("matrixer-agent-log.txt");
+            var out = Files.newOutputStream(logFile, CREATE, APPEND);
             logger = new Logger(new PrintStream(out), "[Matrixer]");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    /**
-     * Run when the agent is started statically
-     *
-     * @param agentArgs
-     *            Agent arguments
-     * @param inst
-     *            Instrumentation instance
-     * @throws IOException
-     * @throws InterruptedException
-     * @throws UnmodifiableClassException
-     * @throws ClassNotFoundException
-     */
-    public static void premain(String agentArgs, Instrumentation inst) throws IOException,
-            ClassNotFoundException, UnmodifiableClassException, InterruptedException {
-        agent = new MatrixerAgent(agentArgs, inst, "statically");
-        agent.startup();
-    }
-
-    /**
-     * Run when the agent is started dynamically
-     *
-     * @param agentArgs
-     *            Agent arguments
-     * @param inst
-     *            Instrumentation instance
-     * @throws IOException
-     * @throws InterruptedException
-     * @throws UnmodifiableClassException
-     * @throws ClassNotFoundException
-     */
-    public static void agentmain(String agentArgs, Instrumentation inst) throws IOException,
-            ClassNotFoundException, UnmodifiableClassException, InterruptedException {
-        agent = new MatrixerAgent(agentArgs, inst, "dynamically");
-        agent.startup();
-    }
-
     private void startup() {
         try {
-            Path destFile = Path.of(options.getDestFilename());
-            SynchronizedWriter w = new SynchronizedWriter(
-                    Files.newBufferedWriter(destFile, CREATE, APPEND));
-            InvocationLogger.init(w, options, logger);
-            inst.addTransformer(new CallLoggingTransformer(options, logger));
-            transformThreadClass(InvocationLogger::newThread);
+            tryStartup();
         } catch (Throwable e) {
             logger.logException(e);
         }
     }
 
+    private void tryStartup() throws IOException, UnmodifiableClassException {
+        Path destFile = Path.of(options.getDestFilename());
+        SynchronizedWriter w = makeWriter(destFile);
+        StackRecorder recorder = new StackRecorderImpl(w, options, logger);
+        InvocationLogger.init(recorder, logger);
+        inst.addTransformer(new CallLoggingTransformer(options, logger));
+        transformThreadClass(InvocationLogger::newThread);
+    }
+
+    SynchronizedWriter makeWriter(Path file) throws IOException {
+        return new SynchronizedWriter(Files.newBufferedWriter(file, CREATE, APPEND));
+    }
+
     /**
      * The call logging transformer needs to know when new threads are
      * created and the parent thread.
+     *
+     * @throws UnmodifiableClassException
      */
-    void transformThreadClass(Consumer<Thread> callback) throws ClassNotFoundException, UnmodifiableClassException {
+    void transformThreadClass(Consumer<Thread> callback) throws UnmodifiableClassException {
         ClassFileTransformer cf = new ThreadClassTransformer(callback);
         inst.addTransformer(cf, true);
         inst.retransformClasses(Thread.class);
         inst.removeTransformer(cf);
     }
 
-    public static MatrixerAgent getAgent() {
-        if (agent == null) {
-            throw new RuntimeException("Agent not initialized!");
-        }
-        return agent;
-    }
-
     private void log(String msg) {
-        if (useLog) {
-            logger.log("[Agent] " + msg);
+        if (options.getDebug()) {
+            logger.log("Agent: " + msg);
         }
     }
 }
