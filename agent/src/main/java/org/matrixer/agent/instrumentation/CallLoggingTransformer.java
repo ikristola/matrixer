@@ -7,6 +7,7 @@ import java.security.ProtectionDomain;
 
 import org.matrixer.agent.MatrixerAgent;
 import org.matrixer.core.runtime.AgentOptions;
+import org.matrixer.core.runtime.Logger;
 import org.objectweb.asm.*;
 
 
@@ -19,18 +20,19 @@ public class CallLoggingTransformer implements ClassFileTransformer {
     }
 
     private static final int VERSION = Opcodes.ASM9;
-    private static boolean debug = false;
 
     private String pkg;
     private Instrumenter instrumenter;
+    private Logger logger;
 
-    public CallLoggingTransformer(AgentOptions options) {
-        this(options.getTargetPackage());
-        debug = options.getDebug();
+    public CallLoggingTransformer(AgentOptions options, Logger logger) {
+        this(options.getTargetPackage(), logger);
     }
-    public CallLoggingTransformer(String pkg) {
+
+    public CallLoggingTransformer(String pkg, Logger logger) {
         this.pkg = pkg;
-        this.instrumenter = new Instrumenter(debug);
+        this.instrumenter = new Instrumenter(false);
+        this.logger = logger;
     }
 
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
@@ -46,7 +48,7 @@ public class CallLoggingTransformer implements ClassFileTransformer {
             return null;
         }
         if (isTestClass(className, location)) {
-            log("Instrumenting test " + className);
+            log("Instrumenting test   " + className);
             return instrumenter.instrumentTestClass(VERSION, className, classfileBuffer);
         }
         log("Instrumenting target " + className);
@@ -54,7 +56,8 @@ public class CallLoggingTransformer implements ClassFileTransformer {
     }
 
     boolean isTestClass(String className, URL location) {
-        // Maven surefire places test classes in target/test-classes and target classes in
+        // Maven surefire places test classes in target/test-classes and target
+        // classes in
         // target/classes. Gradle preserves the hierarchy in src/
         return location.getFile().matches(".*/(test|test-classes)/.*");
     }
@@ -94,14 +97,10 @@ public class CallLoggingTransformer implements ClassFileTransformer {
     }
 
     private void log(String msg) {
-        if (debug){
-            System.out.println("INFO: " + msg);
-        }
+        logger.log("Transformer: " + msg);
     }
 
     private void logError(String msg) {
-        if (debug){
-            System.out.println("ERROR: " + msg);
-        }
+        logger.logError("Transformer: " + msg);
     }
 }

@@ -9,32 +9,33 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.matrixer.core.runtime.PrintLogger;
 import org.matrixer.core.runtime.MethodCall;
 
 class InvocationLoggerTest {
 
     ByteArrayOutputStream out;
-    InvocationLogger logger;
+    StackRecorder recorder;
     Random random = new Random();
 
     @BeforeEach
     void setup() {
         out = new ByteArrayOutputStream();
         SynchronizedWriter w = new SynchronizedWriter(new OutputStreamWriter(out));
-        boolean debug = false;
-        logger = new InvocationLogger(w, debug);
+        recorder = new StackRecorderImpl(w, new PrintLogger(System.out));
     }
 
     @Test
     void logsTestCase() {
         String testCase = "TestMethod" + getUniqueId();
         String method = "Method" + getUniqueId();
+        long thread = Thread.currentThread().getId();
 
-        logger.logBeginTestCase(testCase);
-        logger.logPushMethod(method);
-        logger.logPopMethod(method);
-        logger.logEndTestCase(testCase);
-        
+        recorder.beginTestCase(testCase, thread);
+        recorder.pushMethod(method, thread);
+        recorder.popMethod(method, thread);
+        recorder.endTestCase(testCase, thread);
+
         String[] output = finish();
         assertFound(output, 1, method, testCase);
     }
@@ -43,16 +44,18 @@ class InvocationLoggerTest {
     void stackDepthLimit() {
         int depthLimit = 2;
         int nestCount = 10;
-        logger.setDepthLimit(depthLimit);
+        recorder.setDepthLimit(depthLimit);
         String testCase = "TestMethod" + getUniqueId();
         List<String> nestedMethods = createTargetMethods(nestCount);
 
-        logger.logBeginTestCase(testCase);
-        callNested(nestedMethods);
-        logger.logEndTestCase(testCase);
+        long thread = Thread.currentThread().getId();
+        recorder.beginTestCase(testCase, thread);
+        callNested(nestedMethods, thread);
+        recorder.endTestCase(testCase, thread);
 
         String[] output = finish();
         assertIncreasingDepth(output);
+        assertEquals(depthLimit, output.length);
     }
 
     @Test
@@ -61,12 +64,14 @@ class InvocationLoggerTest {
         String testCase = "TestMethod" + getUniqueId();
         List<String> nestedMethods = createTargetMethods(nestCount);
 
-        logger.logBeginTestCase(testCase);
-        callNested(nestedMethods);
-        logger.logEndTestCase(testCase);
+        long thread = Thread.currentThread().getId();
+        recorder.beginTestCase(testCase, thread);
+        callNested(nestedMethods, thread);
+        recorder.endTestCase(testCase, thread);
 
         String[] output = finish();
         assertIncreasingDepth(output);
+        assertEquals(nestCount, output.length);
     }
 
     @Test
@@ -74,34 +79,111 @@ class InvocationLoggerTest {
         String testCase = "TestCase" + getUniqueId();
         List<String> methods = createTargetMethods(10);
 
-        logger.logBeginTestCase(testCase);
-        callConsequtive(methods);
-        logger.logEndTestCase(testCase);
+        long thread = Thread.currentThread().getId();
+        recorder.beginTestCase(testCase, thread);
+        callConsequtive(methods, thread);
+        recorder.endTestCase(testCase, thread);
         String[] output = finish();
 
         assertEquals(10, output.length, "Did not log every method");
         assertEqualDepth(1, output);
     }
 
-    @Test 
-    void mapsNewThreadToCurrentTestCase() {
+    @Test
+    void mapsNewThreadToCurrentTestCase() throws InterruptedException {
         String testCase = "TestCase" + getUniqueId();
         String method = "Method" + getUniqueId();
-        logger.logBeginTestCase(testCase);
+
+        long thread = Thread.currentThread().getId();
+        recorder.beginTestCase(testCase, thread);
         Thread t = newThread(() -> {
-            logger.logPushMethod(method);
-            logger.logPopMethod(method);
+            long child = Thread.currentThread().getId();
+            recorder.pushMethod(method, child);
+            recorder.popMethod(method, child);
         });
         t.start();
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-        }
-        logger.logEndTestCase(testCase);
+        t.join();
+        recorder.endTestCase(testCase, thread);
 
         String output = finish()[0];
         assertFalse(output.isEmpty(), "Output was empty");
-        assertFalse(output.isEmpty(), "Output was empty");
+    }
+
+    @Test
+    void callDepthOnNewThread() throws InterruptedException {
+        int nestCount = 10;
+        String testCase = "TestMethod" + getUniqueId();
+        List<String> sequentialMethods = createTargetMethods(nestCount);
+        List<String> concurrentMethods = createTargetMethods(nestCount);
+
+        long thread = Thread.currentThread().getId();
+        recorder.beginTestCase(testCase, thread);
+        pushMethods(sequentialMethods, thread);
+        runInNewThread(thread, () -> {
+            long child = Thread.currentThread().getId();
+            callNested(concurrentMethods, child);
+        });
+        popMethods(sequentialMethods, thread);
+        recorder.endTestCase(testCase, thread);
+
+        String[] output = finish();
+        assertEquals(2 * nestCount, output.length);
+        assertIncreasingDepth(output);
+    }
+
+    @Test
+    void nextTestStartsWithZeroDepth() throws InterruptedException {
+        int nestCount = 10;
+        String testCase = "TestMethod" + getUniqueId();
+        List<String> sequentialMethods = createTargetMethods(nestCount);
+        List<String> concurrentMethods = createTargetMethods(nestCount);
+
+        final long thread = Thread.currentThread().getId();
+        recorder.beginTestCase(testCase, thread);
+        pushMethods(sequentialMethods, thread);
+        runInNewThread(thread, () -> {
+            long child = Thread.currentThread().getId();
+            callNested(concurrentMethods, child);
+        });
+        popMethods(sequentialMethods, thread);
+        recorder.endTestCase(testCase, thread);
+        finish();
+
+
+        recorder.beginTestCase(testCase, thread);
+        recorder.pushMethod("NewMethod", thread);
+        recorder.popMethod("NewMethod", thread);
+        recorder.endTestCase(testCase, thread);
+
+        String[] output = finish();
+        assertFound(output, 1, "NewMethod", testCase);
+    }
+
+    @Test
+    void doesNotLogCallAfterTestCaseEnds() {
+        String testCase = "TestMethod" + getUniqueId();
+        final long thread = Thread.currentThread().getId();
+
+        recorder.beginTestCase(testCase, thread);
+        recorder.pushMethod("NewMethod", thread);
+        recorder.popMethod("NewMethod", thread);
+        recorder.endTestCase(testCase, thread);
+        String[] dummy = finish();
+        out.reset();
+
+        recorder.pushMethod("NewMethod", thread);
+        recorder.popMethod("NewMethod", thread);
+        String[] output = finish();
+
+        assertEquals(0, output.length, "Output not empty: " + String.join("\n", output));
+
+        recorder.beginTestCase("NewTestCase", thread);
+        recorder.pushMethod("NewMethod", thread);
+        recorder.popMethod("NewMethod", thread);
+        recorder.endTestCase("NewTestCase", thread);
+        String[] secondOutput = finish();
+        assertEquals(1, secondOutput.length, "Output was empty: " + String.join("\n", secondOutput));
+
     }
 
     void assertFound(String[] output, int depth, String method, String testCase) {
@@ -124,17 +206,24 @@ class InvocationLoggerTest {
 
     void assertIncreasingDepth(String[] output) {
         try {
-            int expectedDepth = 1;
-            for (var line : output) {
+            for (int i = 0; i < output.length; i++) {
+                String line = output[i];
                 assertFalse(line.isEmpty(), "Line was empty");
                 MethodCall call = new MethodCall(line);
+                int expectedDepth = i + 1;
                 assertEquals(expectedDepth, call.depth, "Call depth incorrect");
-                expectedDepth++;
             }
         } catch (Throwable e) {
             System.out.println("Output:\n" + String.join("\n", output));
             throw e;
         }
+    }
+
+    void runInNewThread(long parentThread, Runnable runnable) throws InterruptedException {
+        Thread t = new Thread(runnable);
+        recorder.newThread(parentThread, t);
+        t.start();
+        t.join();
     }
 
     List<String> createTargetMethods(int count) {
@@ -146,32 +235,47 @@ class InvocationLoggerTest {
     }
 
     public void callNested(List<String> methods) {
+        callNested(methods, Thread.currentThread().getId());
+    }
+
+    public void callNested(List<String> methods, long thread) {
+        pushMethods(methods, thread);
+        popMethods(methods, thread);
+    }
+
+    public void pushMethods(List<String> methods, long thread) {
         for (var method : methods) {
-            logger.logPushMethod(method);
-        }
-        for (var method : methods) {
-            logger.logPopMethod(method);
+            recorder.pushMethod(method, thread);
         }
     }
 
-    public void callConsequtive(List<String> methods) {
+    public void popMethods(List<String> methods, long thread) {
         for (var method : methods) {
-            logger.logPushMethod(method);
-            logger.logPopMethod(method);
+            recorder.popMethod(method, thread);
+        }
+    }
+
+    public void callConsequtive(List<String> methods, long thread) {
+        for (var method : methods) {
+            recorder.pushMethod(method, thread);
+            recorder.popMethod(method, thread);
         }
     }
 
     String[] finish() {
         String output = out.toString();
-        assertTrue(logger.tests.isEmpty(), "Logger.tests not empty");
-        int size = logger.threads.size();
-        assertTrue(logger.threads.isEmpty(), "Logger.threads not empty " + size);
+        int threadCount = recorder.activeThreadCount();
+        assertEquals(0, threadCount, "All threads not released: " + threadCount);
+        if (output.isEmpty()) {
+            return new String[0];
+        }
         return output.split("\n");
     }
 
     Thread newThread(Runnable runnable) {
+        long parent = Thread.currentThread().getId();
         Thread newThread = new Thread(runnable);
-        logger.logNewThread(newThread);
+        recorder.newThread(parent, newThread);
         return newThread;
     }
 

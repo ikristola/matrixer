@@ -9,12 +9,16 @@ import java.security.ProtectionDomain;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.matrixer.core.runtime.PrintLogger;
 import org.matrixer.core.runtime.MethodCall;
 
 class CallLoggingTransformerTest {
 
+    static PrintLogger logger = new PrintLogger(System.out);
+
     ClassLoader loader;
     ProtectionDomain protectionDomain;
+
 
     @BeforeEach
     void setup() {
@@ -24,7 +28,7 @@ class CallLoggingTransformerTest {
 
     @Test
     void should_not_transform_if_location_is_null() {
-        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer-test");
+        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer-test", logger);
         URL location = null;
         String name = "org/matrixer-test/SomeClass";
         assertFalse(
@@ -33,7 +37,7 @@ class CallLoggingTransformerTest {
 
     @Test
     void should_not_transform_if_loader_is_null() {
-        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer-test");
+        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer-test", logger);
         URL location = asURL("file:/tmp");
         String name = "org/matrixer-test/SomeClass";
         assertFalse(
@@ -42,7 +46,7 @@ class CallLoggingTransformerTest {
 
     @Test
     void should_not_transform_classes_in_agent_package() {
-        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer-test");
+        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer-test", logger);
         URL location = asURL("file:/tmp/matrixer-test");
         String name = "org/matrixer/Sample";
         assertFalse(
@@ -51,7 +55,7 @@ class CallLoggingTransformerTest {
 
     @Test
     void should_not_transform_classes_in_other_package() {
-        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer-test");
+        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer-test", logger);
         URL location = asURL("file:/tmp/matrixer-test");
         String name = "org/matrixer/Sample";
         assertFalse(
@@ -60,7 +64,7 @@ class CallLoggingTransformerTest {
 
     @Test
     void should_transform_class_in_package() {
-        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer-test");
+        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer-test", logger);
         URL location = asURL("file:/tmp/matrixer-test");
         String name = "org/matrixer-test/SomeClass";
         assertTrue(
@@ -69,14 +73,14 @@ class CallLoggingTransformerTest {
 
     @Test
     void does_not_transform_boot_strap_classes() {
-        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer");
+        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer", logger);
         assertNull(
                 t.transform(null, "org/matrixer/Sample", null, protectionDomain, new byte[] {0}));
     }
 
     @Test
     void does_not_retransform() throws IOException {
-        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer");
+        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer", logger);
         final Class<?> cls = MethodCall.class;
         assertNull(
                 t.transform(loader, cls.getName(), cls, protectionDomain, getClassBytes(cls)));
@@ -84,13 +88,13 @@ class CallLoggingTransformerTest {
 
     @Test
     void class_in_test_directory_is_test_class() {
-        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer");
+        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer", logger);
         assertTrue(t.isTestClass("", asURL("file:/tmp/project/src/test/java/package")));
     }
 
     @Test
     void class_in_non_test_directory_is_not_test_class() {
-        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer");
+        CallLoggingTransformer t = new CallLoggingTransformer("org.matrixer", logger);
         assertFalse(t.isTestClass("", asURL("file:/tmp/project/src/main/java/package")));
     }
 
