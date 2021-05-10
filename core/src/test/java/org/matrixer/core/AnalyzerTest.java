@@ -26,7 +26,7 @@ class AnalyzerTest {
                 new MethodCall(3, "Class5", "TestCase5"),
                 new MethodCall(3, "Class5", "TestCase6"),
         };
-        InputStream source = asInputStream(calls);
+        InputStream source = TestUtils.asInputStream(calls);
 
         Analyzer analyzer = new Analyzer();
         ExecutionData result = analyzer.analyze(source);
@@ -42,7 +42,7 @@ class AnalyzerTest {
                 new MethodCall(3, targetMethodName, "package.TestClass:TestMethod"),
                 new MethodCall(2, targetMethodName, "package.AnotherTestClass:TestMethod"),
         };
-        InputStream source = asInputStream(calls);
+        InputStream source = TestUtils.asInputStream(calls);
 
         Analyzer analyzer = new Analyzer();
         ExecutionData result = analyzer.analyze(source);
@@ -57,7 +57,7 @@ class AnalyzerTest {
                 new MethodCall(3, "package.Class.AppMethod()", testCaseName),
                 new MethodCall(2, "package.Class.AnotherAppMethod()", testCaseName),
         };
-        InputStream source = asInputStream(calls);
+        InputStream source = TestUtils.asInputStream(calls);
 
         Analyzer analyzer = new Analyzer();
         ExecutionData result = analyzer.analyze(source);
@@ -73,7 +73,7 @@ class AnalyzerTest {
                 new MethodCall(5, targetMethodName, "package.AnotherTestClass:TestMethod"),
                 new MethodCall(10, targetMethodName, "package.AThirdTestClass:TestMethod"),
         };
-        InputStream source = asInputStream(calls);
+        InputStream source = TestUtils.asInputStream(calls);
 
         Analyzer analyzer = new Analyzer();
         ExecutionData result = analyzer.analyze(source);
@@ -93,7 +93,7 @@ class AnalyzerTest {
                 new MethodCall(5, targetMethodName, testCaseName),
                 new MethodCall(10, targetMethodName, testCaseName),
         };
-        InputStream source = asInputStream(calls);
+        InputStream source = TestUtils.asInputStream(calls);
 
         Analyzer analyzer = new Analyzer();
         ExecutionData result = analyzer.analyze(source);
@@ -111,7 +111,7 @@ class AnalyzerTest {
                 new MethodCall(3, "ClassA", "TestCase2"),
                 new MethodCall(3, "ClassB", "TestCase3"),
         };
-        InputStream source = asInputStream(calls);
+        InputStream source = TestUtils.asInputStream(calls);
 
         Analyzer analyzer = new Analyzer();
         ExecutionData result = analyzer.analyze(source);
@@ -129,7 +129,7 @@ class AnalyzerTest {
                 new MethodCall(3, "ClassA", "TestCase2"),
                 new MethodCall(3, "ClassB", "TestCase3"),
         };
-        InputStream source = asInputStream(calls);
+        InputStream source = TestUtils.asInputStream(calls);
 
         Analyzer analyzer = new Analyzer();
         ExecutionData result = analyzer.analyze(source);
@@ -139,6 +139,24 @@ class AnalyzerTest {
         String[] includes = {"TestCase1", "TestCase2"};
         String[] excludes = {"TestCase3"};
         assertCollectionValues(callers, includes, excludes, ExecutedMethod.Call::caller);
+    }
+
+    @Test
+    void canGetMethodCallDepths() {
+        MethodCall[] calls = new MethodCall[] {
+                new MethodCall(1, "ClassA", "TestCase1"),
+                new MethodCall(2, "ClassA", "TestCase2"),
+                new MethodCall(3, "ClassB", "TestCase3"),
+        };
+        InputStream source = TestUtils.asInputStream(calls);
+
+        Analyzer analyzer = new Analyzer();
+        ExecutionData result = analyzer.analyze(source);
+        Collection<Integer> depths = result.getCallStackDepths();
+        for (var call : calls) {
+            assertTrue(depths.contains(call.depth), "Depth collection did not contain " + call.depth);
+        }
+        assertEquals(calls.length, depths.size(), "Size of depth collection not correct");
     }
 
     <T, R> void assertCollectionValues(
@@ -168,17 +186,4 @@ class AnalyzerTest {
         assertTrue(found.isEmpty(), "Incorrectly included " + found);
     }
 
-    InputStream asInputStream(MethodCall[] calls) {
-        String data = asRawString(calls);
-        return TestUtils.asInputStream(data);
-    }
-
-    String asRawString(MethodCall[] calls) {
-        StringBuilder builder = new StringBuilder();
-        for (var call : calls) {
-            builder.append(call.asLine());
-            builder.append('\n');
-        }
-        return builder.toString();
-    }
 }

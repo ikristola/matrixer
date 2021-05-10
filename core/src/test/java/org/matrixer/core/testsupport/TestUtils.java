@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 
+import org.matrixer.core.runtime.MethodCall;
 import org.matrixer.core.util.FileUtils;
 
 public class TestUtils {
@@ -59,6 +60,20 @@ public class TestUtils {
         return String.format("-javaagent:%s=%s:%s:%s",
                 agentJarPath.toString(), outputPath.toString(),
                 targetPkg, testPkg);
+    }
+
+    public static InputStream asInputStream(MethodCall[] calls) {
+        String data = asRawString(calls);
+        return asInputStream(data);
+    }
+
+    public static String asRawString(MethodCall[] calls) {
+        StringBuilder builder = new StringBuilder();
+        for (var call : calls) {
+            builder.append(call.asLine());
+            builder.append('\n');
+        }
+        return builder.toString();
     }
 
     public static InputStream asInputStream(String s) {
