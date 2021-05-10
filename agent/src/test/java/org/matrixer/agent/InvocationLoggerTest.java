@@ -97,8 +97,9 @@ class InvocationLoggerTest {
         long thread = Thread.currentThread().getId();
         recorder.beginTestCase(testCase, thread);
         Thread t = newThread(() -> {
-            recorder.pushMethod(method, thread);
-            recorder.popMethod(method, thread);
+            long child = Thread.currentThread().getId();
+            recorder.pushMethod(method, child);
+            recorder.popMethod(method, child);
         });
         t.start();
         t.join();
@@ -118,13 +119,71 @@ class InvocationLoggerTest {
         long thread = Thread.currentThread().getId();
         recorder.beginTestCase(testCase, thread);
         pushMethods(sequentialMethods, thread);
-        runInNewThread(thread, () -> callNested(concurrentMethods, thread));
+        runInNewThread(thread, () -> {
+            long child = Thread.currentThread().getId();
+            callNested(concurrentMethods, child);
+        });
         popMethods(sequentialMethods, thread);
         recorder.endTestCase(testCase, thread);
 
         String[] output = finish();
-        assertEquals(2*nestCount, output.length);
+        assertEquals(2 * nestCount, output.length);
         assertIncreasingDepth(output);
+    }
+
+    @Test
+    void nextTestStartsWithZeroDepth() throws InterruptedException {
+        int nestCount = 10;
+        String testCase = "TestMethod" + getUniqueId();
+        List<String> sequentialMethods = createTargetMethods(nestCount);
+        List<String> concurrentMethods = createTargetMethods(nestCount);
+
+        final long thread = Thread.currentThread().getId();
+        recorder.beginTestCase(testCase, thread);
+        pushMethods(sequentialMethods, thread);
+        runInNewThread(thread, () -> {
+            long child = Thread.currentThread().getId();
+            callNested(concurrentMethods, child);
+        });
+        popMethods(sequentialMethods, thread);
+        recorder.endTestCase(testCase, thread);
+        finish();
+
+
+        recorder.beginTestCase(testCase, thread);
+        recorder.pushMethod("NewMethod", thread);
+        recorder.popMethod("NewMethod", thread);
+        recorder.endTestCase(testCase, thread);
+
+        String[] output = finish();
+        assertFound(output, 1, "NewMethod", testCase);
+    }
+
+    @Test
+    void doesNotLogCallAfterTestCaseEnds() {
+        String testCase = "TestMethod" + getUniqueId();
+        final long thread = Thread.currentThread().getId();
+
+        recorder.beginTestCase(testCase, thread);
+        recorder.pushMethod("NewMethod", thread);
+        recorder.popMethod("NewMethod", thread);
+        recorder.endTestCase(testCase, thread);
+        String[] dummy = finish();
+        out.reset();
+
+        recorder.pushMethod("NewMethod", thread);
+        recorder.popMethod("NewMethod", thread);
+        String[] output = finish();
+
+        assertEquals(0, output.length, "Output not empty: " + String.join("\n", output));
+
+        recorder.beginTestCase("NewTestCase", thread);
+        recorder.pushMethod("NewMethod", thread);
+        recorder.popMethod("NewMethod", thread);
+        recorder.endTestCase("NewTestCase", thread);
+        String[] secondOutput = finish();
+        assertEquals(1, secondOutput.length, "Output was empty: " + String.join("\n", secondOutput));
+
     }
 
     void assertFound(String[] output, int depth, String method, String testCase) {
@@ -175,6 +234,10 @@ class InvocationLoggerTest {
         return nestedMethods;
     }
 
+    public void callNested(List<String> methods) {
+        callNested(methods, Thread.currentThread().getId());
+    }
+
     public void callNested(List<String> methods, long thread) {
         pushMethods(methods, thread);
         popMethods(methods, thread);
@@ -203,6 +266,9 @@ class InvocationLoggerTest {
         String output = out.toString();
         int threadCount = recorder.activeThreadCount();
         assertEquals(0, threadCount, "All threads not released: " + threadCount);
+        if (output.isEmpty()) {
+            return new String[0];
+        }
         return output.split("\n");
     }
 

@@ -170,7 +170,7 @@ public class StackRecorderImpl implements StackRecorder {
         if (stack == null) {
             // throw new IllegalStateException("Could not find test case " +
             // methodName);
-            logError("PushMethod: Test case not found for thread" + thread);
+            logError("PopMethod: Test case not found for thread" + thread);
             return;
         }
         stack.pop();
