@@ -12,6 +12,7 @@ public class ExecutionData {
 
     private HashMap<String, ExecutedMethod> targetMethods = new HashMap<>();
     private Set<String> testCases = new HashSet<>();
+    private Collection<Integer> depths = new ArrayList<>();
 
     /**
      * Adds a new method call
@@ -29,6 +30,7 @@ public class ExecutionData {
         } else {
             addNewMethod(call.methodName, call.callerName, call.depth);
         }
+        depths.add(call.depth);
     }
 
     private void addNewMethod(String name, String caller, int depth) {
@@ -70,6 +72,10 @@ public class ExecutionData {
      */
     public Collection<String> getAllTestCases() {
         return testCases;
+    }
+
+    public Collection<Integer> getCallStackDepths() {
+        return depths;
     }
 
 }

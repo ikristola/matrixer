@@ -1,12 +1,14 @@
 package org.matrixer.cli;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.*;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.matrixer.core.*;
 import org.matrixer.core.util.GitRepository;
 import org.matrixer.report.HTMLReporter;
+import org.matrixer.report.TextSummaryReporter;
 
 public class App {
 
@@ -59,7 +61,7 @@ public class App {
         }
 
         data = analyzeProject();
-        printStatistics(data);
+        printSummary(data, System.out);
         generateHTMLReport(data);
     }
 
@@ -105,22 +107,9 @@ public class App {
         }
     }
 
-    private void printStatistics(ExecutionData data) {
-        var methods = data.getAllTargetMethods();
-        long methodCount = methods.size();
-        int testCount = data.getAllTestCases().size();
-
-        if (methodCount <= 0) {
-            System.out.println("No executed methods");
-            return;
-        }
-        if (testCount <= 0) {
-            System.out.println("No executed tests");
-            return;
-        }
-        System.out.println("Statistics:\n\t"
-                + "Executed methods: " + methodCount + "\n\t"
-                + "Executed tests: " + testCount);
+    private void printSummary(ExecutionData data, PrintStream out) {
+        var reporter = new TextSummaryReporter();
+        reporter.reportTo(data, out);
     }
 
     Project getProject() {
