@@ -32,6 +32,8 @@ public class Properties {
 
     final static String ANALYZE_ONLY_FLAG = "--analyze";
 
+    final static String INSTRUMENT_ONLY_FLAG = "--instrument";
+
     final static String TARGET_PKG_FLAG = "--pkg";
 
     final static String DEPTH_LIMIT_FLAG = "--depth";
@@ -55,6 +57,7 @@ public class Properties {
     private int depthLimit = 0;
     private boolean debug = false;
     private boolean analyzeOnly = false;
+    private boolean instrumentOnly = false;
     private String failureReason = "Properties not parsed";
 
     public static Properties fromArgs(String... args) {
@@ -106,6 +109,10 @@ public class Properties {
                 break;
             case DEPTH_LIMIT_FLAG:
                 setDepthLimit(arg);
+                break;
+            case INSTRUMENT_ONLY_FLAG:
+                setTargetDir(Path.of(arg));
+                instrumentOnly = true;
                 break;
             case ANALYZE_ONLY_FLAG:
                 setTargetDir(Path.of(arg));
@@ -272,6 +279,10 @@ public class Properties {
      */
     public void setTestPackage(String packageName) {
         testPkg = packageName;
+    }
+
+    public boolean instrumentOnly() {
+        return instrumentOnly;
     }
 
     public boolean analyzeOnly() {

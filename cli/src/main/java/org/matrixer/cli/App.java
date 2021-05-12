@@ -51,6 +51,10 @@ public class App {
         }
         project = prepareProject();
 
+        if (properties.instrumentOnly()) {
+            return;
+        }
+
         if (!properties.analyzeOnly()) {
             int status = runProject();
             if (status != 0) {
@@ -135,6 +139,9 @@ public class App {
                         + "[--testpkg <test package name>] [--output <path>] [--git <URL>]\n"
                         + "or\n"
                         + "\tmatrixer --analyze <path> --pkg <target package name>"
+                        + "[--testpkg <test package name>] [--output <path>] [--git <URL>]\n\n\t"
+                        + "or\n"
+                        + "\tmatrixer --instrument <path> --pkg <target package name>"
                         + "[--testpkg <test package name>] [--output <path>] [--git <URL>]\n\n\t"
                         + "--target  - the location of an existing project or the path to clone the remote repo to\n\t"
                         + "--pkg     - root package name of the target project, will be used to identify target methods\n\t"
