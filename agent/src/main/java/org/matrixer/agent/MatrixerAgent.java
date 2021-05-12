@@ -68,6 +68,8 @@ public class MatrixerAgent {
     private MatrixerAgent(String agentArgs, Instrumentation inst, String type) throws IOException {
         this.inst = inst;
         options = new AgentOptions(agentArgs);
+        Path destDir = Path.of(options.getDestFilename()).getParent();
+        Files.createDirectories(destDir);
         setupLog();
         log("started " + type + ":\n\tArgs: " + agentArgs);
         log(
