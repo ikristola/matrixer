@@ -26,7 +26,7 @@ public class ProjectPreparer {
         String agentString = agentString(project);
         project.injectBuildScript(agentString);
 
-        if (!properties.analyzeOnly()) {
+        if (!properties.analyzeOnly() && !properties.instrumentOnly()) {
             FileUtils.replaceExisting(project.outputDirectory());
         }
         return project;
