@@ -163,8 +163,12 @@ public class FileUtils {
      * @Throws RuntimeException if the file is not found
      */
     public static Path[] findFiles(Path dir, String fileName) {
+        return findFiles(dir, fileName, DEFAULT_MAX_DEPTH);
+    }
+
+    public static Path[] findFiles(Path dir, String fileName, int depth) {
         try {
-            var paths = Files.find(dir, DEFAULT_MAX_DEPTH, (path, basicFileAttributes) -> {
+            var paths = Files.find(dir, depth, (path, basicFileAttributes) -> {
                 return !Files.isDirectory(path)
                         && path.endsWith(fileName);
             }).toArray(Path[]::new);

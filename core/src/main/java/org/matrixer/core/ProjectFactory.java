@@ -40,14 +40,30 @@ class ProjectFactory {
         if (!Files.exists(prop.targetDir())) {
             throw new IllegalArgumentException("Directory does not exist: " + prop.targetDir());
         }
-        var paths = FileUtils.findFiles(prop.targetDir(), GradleProject.scriptName);
-        if (paths.length > 0) {
-            return new GradleProject(prop);
-        }
-        paths = FileUtils.findFiles(prop.targetDir(), MavenProject.scriptName);
-        if (paths.length > 0) {
-            return new MavenProject(prop);
+        // Not all projects have a build script in the project root directory.
+        // But it seems reasonable to assume that one exists in at most depth 2
+        // of the project directory. Any deeper structure than that is probably to
+        // difficult to examine automatically.
+        final int maxDepth = 2;
+        for (int i = 0; i < maxDepth; i++) {
+            final int depth = i + 1;
+            if (findGradleScript(prop.targetDir(), depth)) {
+                return new GradleProject(prop);
+            }
+            if (findMavenScript(prop.targetDir(), depth)) {
+                return new MavenProject(prop);
+            }
         }
         throw new IllegalArgumentException("Not a maven or gradle project");
+    }
+
+    static boolean findGradleScript(Path base, int depth) {
+        var paths = FileUtils.findFiles(base, GradleProject.scriptName, depth);
+        return paths.length > 0;
+    }
+
+    static boolean findMavenScript(Path base, int depth) {
+        var paths = FileUtils.findFiles(base, MavenProject.scriptName, depth);
+        return paths.length > 0;
     }
 }
