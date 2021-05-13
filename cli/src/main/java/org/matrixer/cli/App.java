@@ -3,6 +3,7 @@ package org.matrixer.cli;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.*;
+import java.time.Duration;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.matrixer.core.*;
@@ -52,17 +53,26 @@ public class App {
         project = prepareProject();
 
         if (!properties.analyzeOnly()) {
-            int status = runProject();
-            if (status != 0) {
-                throw new RuntimeException("Target project tests exited with error(" + status
-                        + ") see logfile for details");
+            ExecInfo info = runProject();
+            if (info.status != 0) {
+                throw new RuntimeException("Target project tests exited with error("
+                        + info.status + ") see logfile for details");
             }
-            System.out.println("Target project tests was run successfully!");
+            System.out.println(
+                    "Target project tests was run successfully in " + formatTime(info.duration));
         }
 
         data = analyzeProject();
         printSummary(data, System.out);
         generateHTMLReport(data);
+    }
+
+    private String formatTime(Duration duration) {
+        return String.format("%dh %dm %ds %dms",
+                duration.toHoursPart(),
+                duration.toMinutesPart(),
+                duration.toSecondsPart(),
+                duration.toMillisPart());
     }
 
     private Project prepareProject() throws GitAPIException, IOException {
@@ -71,10 +81,15 @@ public class App {
         return preparer.prepare(properties);
     }
 
-    private int runProject() {
+    private ExecInfo runProject() {
         System.out.println("Running target project tests");
         ProjectRunner runner = new ProjectRunner();
-        return runner.runTests(project);
+
+        long start = System.currentTimeMillis();
+        int status = runner.runTests(project);
+        long end = System.currentTimeMillis();
+        Duration duration = Duration.ofMillis(end - start);
+        return new ExecInfo(status, duration);
     }
 
     private ExecutionData analyzeProject() throws IOException {
@@ -142,6 +157,16 @@ public class App {
                         + "--output  - the location where logs and results will be stored. Defaults to build/matrix-cov for gradle and target/matrix-cov for maven\n\t"
                         + "--git     - if the project is remote, provide a URL to the repository\n\t"
                         + "--analyze - skip the running of tests and only analyze existing results\n");
+    }
+
+    class ExecInfo {
+        public final int status;
+        public final Duration duration;
+
+        public ExecInfo(int status, Duration duration) {
+            this.status = status;
+            this.duration = duration;
+        }
     }
 
 }
