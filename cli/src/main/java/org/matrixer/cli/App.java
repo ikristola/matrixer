@@ -51,11 +51,7 @@ public class App {
         }
         project = prepareProject();
 
-        if (properties.instrumentOnly()) {
-            return;
-        }
-
-        if (!properties.analyzeOnly()) {
+        if (properties.shouldRun()) {
             int status = runProject();
             if (status != 0) {
                 throw new RuntimeException("Target project tests exited with error(" + status
@@ -64,9 +60,14 @@ public class App {
             System.out.println("Target project tests was run successfully!");
         }
 
-        data = analyzeProject();
-        printSummary(data, System.out);
-        generateHTMLReport(data);
+        if (properties.shouldAnalyze()) {
+            data = analyzeProject();
+            printSummary(data, System.out);
+        }
+
+        if (properties.shouldReport()) {
+            generateHTMLReport(data);
+        }
     }
 
     private Project prepareProject() throws GitAPIException, IOException {

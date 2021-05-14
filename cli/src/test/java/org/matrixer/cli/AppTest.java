@@ -7,9 +7,9 @@ import java.nio.file.*;
 import java.util.HashSet;
 
 import org.junit.jupiter.api.*;
-import org.matrixer.core.util.FileUtils;
 import org.matrixer.core.ExecutionData;
 import org.matrixer.core.Project;
+import org.matrixer.core.util.FileUtils;
 
 class AppTest {
 
@@ -86,7 +86,8 @@ class AppTest {
 
             try {
                 String[] args =
-                        {"--instrument", project.directory().toString(), "--pkg", "org.matrixertest"};
+                        {"--instrument", project.directory().toString(), "--pkg",
+                                "org.matrixertest"};
                 App instrumentingApp = new App(args);
                 assertDoesNotThrow(instrumentingApp::run);
             } finally {
