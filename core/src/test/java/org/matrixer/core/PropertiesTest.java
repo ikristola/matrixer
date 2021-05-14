@@ -26,7 +26,8 @@ class PropertiesTest {
         prop.parse(args);
 
         assertValid(prop);
-        assertTrue(prop.analyzeOnly());
+        assertTrue(prop.shouldAnalyze());
+        assertFalse(prop.shouldRun());
         assertEquals(projectDir, prop.targetDir());
     }
 
@@ -210,7 +211,7 @@ class PropertiesTest {
     @Test
     void canParseDebug() {
         String[] args = {
-            "--debug", "true",
+                "--debug", "true",
         };
         Properties properties = new Properties();
         properties.parse(args);
@@ -220,7 +221,7 @@ class PropertiesTest {
     @Test
     void canParseDebugFalse() {
         String[] args = {
-            "--debug", "false",
+                "--debug", "false",
         };
         Properties properties = new Properties();
         properties.parse(args);
@@ -230,7 +231,7 @@ class PropertiesTest {
     @Test
     void invalidIfNonBooleanDebug() {
         String[] args = {
-            "--debug", "ss",
+                "--debug", "ss",
         };
         Properties properties = new Properties();
         properties.parse(args);
@@ -240,7 +241,7 @@ class PropertiesTest {
     @Test
     void canParseDepthLimit() {
         String[] args = {
-            "--depth", "555",
+                "--depth", "555",
         };
         Properties properties = new Properties();
         properties.parse(args);
@@ -250,7 +251,7 @@ class PropertiesTest {
     @Test
     void InvalidIfInvalidInteger() {
         String[] args = {
-            "--depth", "ss",
+                "--depth", "ss",
         };
         Properties properties = new Properties();
         properties.parse(args);
@@ -278,7 +279,8 @@ class PropertiesTest {
         assertFalse(prop.reasonForFailure().isEmpty(), "Unexpected empty error message");
 
         String errMsg = prop.reasonForFailure();
-        assertTrue(errMsg.contains(errorHint), "Error message '" + errMsg + "' did not contain hint: " + errorHint);
+        assertTrue(errMsg.contains(errorHint),
+                "Error message '" + errMsg + "' did not contain hint: " + errorHint);
     }
 
     /**

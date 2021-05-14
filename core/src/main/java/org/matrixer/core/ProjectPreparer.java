@@ -1,13 +1,12 @@
 package org.matrixer.core;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.matrixer.core.runtime.AgentOptions;
 import org.matrixer.core.util.FileUtils;
 import org.matrixer.core.util.GitRepository;
-import org.matrixer.core.runtime.AgentOptions;
 
 /**
  * Prepares a target project for further processing
@@ -23,10 +22,12 @@ public class ProjectPreparer {
                     properties.targetDir());
         }
         this.project = ProjectFactory.from(properties);
-        String agentString = agentString(project);
-        project.injectBuildScript(agentString);
 
-        if (!properties.analyzeOnly() && !properties.instrumentOnly()) {
+        if (properties.shouldInstrument()) {
+            String agentString = agentString(project);
+            project.injectBuildScript(agentString);
+        }
+        if (properties.shouldRun()) {
             FileUtils.replaceExisting(project.outputDirectory());
         }
         return project;

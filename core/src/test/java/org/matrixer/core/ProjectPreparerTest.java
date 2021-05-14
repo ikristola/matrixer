@@ -9,8 +9,8 @@ import java.nio.file.Path;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.*;
-import org.matrixer.core.util.FileUtils;
 import org.matrixer.core.testsupport.TestUtils;
+import org.matrixer.core.util.FileUtils;
 import org.matrixer.core.util.GitRepository;
 
 class ProjectPreparerTest {
@@ -62,19 +62,6 @@ class ProjectPreparerTest {
     }
 
     @Test
-    void prepareCreatesOutputDirectory() throws GitAPIException, IOException {
-        Path target = TestUtils.targetDirectory();
-        Properties properties = new Properties();
-        properties.setTargetPackage(testPackage);
-        properties.setTargetDir(target);
-
-        ProjectPreparer preparer = new ProjectPreparer();
-        Project project = preparer.prepare(properties);
-
-        assertTrue(Files.exists(project.outputDirectory()));
-    }
-
-    @Test
     void throwsExceptionForUnsupportedProject() {
         Path emptyTarget = FileUtils.createTempDirectory();
         Properties properties = new Properties();
@@ -90,6 +77,7 @@ class ProjectPreparerTest {
         void prepareInjectsGradleBuildScript() throws GitAPIException, IOException {
             Path target = TestUtils.targetDirectory();
             Properties properties = new Properties();
+            properties.setShouldInstrument(true);
             properties.setTargetPackage(testPackage);
             properties.setTargetDir(target);
             ProjectPreparer preparer = new ProjectPreparer();
@@ -112,6 +100,7 @@ class ProjectPreparerTest {
         void prepareInjectsMavenBuildScript() throws GitAPIException, IOException {
             Path target = TestUtils.targetDirectory();
             Properties properties = new Properties();
+            properties.setShouldInstrument(true);
             properties.setTargetPackage(testPackage);
             properties.setTargetDir(target);
             ProjectPreparer preparer = new ProjectPreparer();
