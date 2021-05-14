@@ -19,7 +19,7 @@ public class Analyzer {
      */
     public ExecutionData analyze(InputStream source) {
         ExecutionData data = new ExecutionData();
-        var stream = new BufferedReader(new InputStreamReader(source));
+        BufferedReader stream = new BufferedReader(new InputStreamReader(source));
         stream.lines()
                 .filter(line -> line != null && !line.isBlank())
                 .map(MethodCall::new)
