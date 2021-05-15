@@ -58,8 +58,8 @@ public class App {
                 throw new RuntimeException("Target project tests exited with error(" + info.status
                         + ") see logfile for details");
             }
-            System.out.println(
-                    "Target project tests was run successfully in " + formatTime(info.duration));
+            System.out.println("Target project tests was run successfully!"
+                    + "\nTime: " + formatTime(info.duration));
         }
 
         if (properties.shouldAnalyze()) {
@@ -73,7 +73,7 @@ public class App {
     }
 
     private String formatTime(Duration duration) {
-        return String.format("%dh %dm %ds %dms",
+        return String.format("%02d:%02d:%02d:%03d",
                 duration.toHoursPart(),
                 duration.toMinutesPart(),
                 duration.toSecondsPart(),
