@@ -32,6 +32,8 @@ public class Properties {
 
     final static String ANALYZE_ONLY_FLAG = "--analyze";
 
+    final static String INSTRUMENT_ONLY_FLAG = "--instrument";
+
     final static String TARGET_PKG_FLAG = "--pkg";
 
     final static String DEPTH_LIMIT_FLAG = "--depth";
@@ -54,8 +56,11 @@ public class Properties {
     private String testPkg;
     private int depthLimit = 0;
     private boolean debug = false;
-    private boolean analyzeOnly = false;
     private String failureReason = "Properties not parsed";
+    private boolean shouldInstrument = false;
+    private boolean shouldRun = false;
+    private boolean shouldAnalyze = false;
+    private boolean shouldReport = false;
 
     public static Properties fromArgs(String... args) {
         Properties p = new Properties();
@@ -88,6 +93,10 @@ public class Properties {
         switch (flag) {
             case TARGET_FLAG:
                 setTargetDir(arg);
+                shouldInstrument = true;
+                shouldRun = true;
+                shouldAnalyze = true;
+                shouldReport = true;
                 break;
             case OUTDIR_FLAG:
                 setOutputDir(arg);
@@ -107,9 +116,14 @@ public class Properties {
             case DEPTH_LIMIT_FLAG:
                 setDepthLimit(arg);
                 break;
+            case INSTRUMENT_ONLY_FLAG:
+                setTargetDir(Path.of(arg));
+                shouldInstrument = true;
+                break;
             case ANALYZE_ONLY_FLAG:
                 setTargetDir(Path.of(arg));
-                analyzeOnly = true;
+                shouldAnalyze = true;
+                shouldReport = true;
                 break;
             default:
                 throw new IllegalArgumentException("Unknown flag: '" + flag + "'");
@@ -274,10 +288,6 @@ public class Properties {
         testPkg = packageName;
     }
 
-    public boolean analyzeOnly() {
-        return analyzeOnly;
-    }
-
     public boolean getDebug() {
         return debug;
     }
@@ -285,9 +295,13 @@ public class Properties {
     public void setDebug(String debug) {
         // Boolean.parse returns false if null or not 'true' or 'TRUE'
         // To avoid typos etc going unnoticed it's better to be picky.
-        switch(debug.toLowerCase()) {
-            case "true": this.debug = true; break;
-            case "false": this.debug = false; break;
+        switch (debug.toLowerCase()) {
+            case "true":
+                this.debug = true;
+                break;
+            case "false":
+                this.debug = false;
+                break;
             default:
                 setError("Debug must be true or false");
         }
@@ -305,7 +319,7 @@ public class Properties {
         try {
             setDepthLimit(Integer.parseInt(limit));
         } catch (NumberFormatException e) {
-            setError("Depth must be an integer: " +  limit);
+            setError("Depth must be an integer: " + limit);
         }
     }
 
@@ -313,4 +327,35 @@ public class Properties {
         depthLimit = limit;
     }
 
+    public void setShouldInstrument(boolean shouldInstrument) {
+        this.shouldInstrument = shouldInstrument;
+    }
+
+    public void setShouldRun(boolean shouldRun) {
+        this.shouldRun = shouldRun;
+    }
+
+    public void setShouldAnalyze(boolean shouldAnalyze) {
+        this.shouldAnalyze = shouldAnalyze;
+    }
+
+    public void setShouldReport(boolean shouldReport) {
+        this.shouldReport = shouldReport;
+    }
+
+    public boolean shouldInstrument() {
+        return shouldInstrument;
+    }
+
+    public boolean shouldRun() {
+        return shouldRun;
+    }
+
+    public boolean shouldAnalyze() {
+        return shouldAnalyze;
+    }
+
+    public boolean shouldReport() {
+        return shouldReport;
+    }
 }

@@ -7,9 +7,9 @@ import java.nio.file.*;
 import java.util.HashSet;
 
 import org.junit.jupiter.api.*;
-import org.matrixer.core.util.FileUtils;
 import org.matrixer.core.ExecutionData;
 import org.matrixer.core.Project;
+import org.matrixer.core.util.FileUtils;
 
 class AppTest {
 
@@ -68,6 +68,33 @@ class AppTest {
             String reportFilename = "matrixer-report.html";
             Path HTMLreport = project.outputDirectory().resolve(reportFilename);
             assertTrue(Files.exists(HTMLreport), HTMLreport + " does not exist");
+        }
+
+        @Test
+        void canRunInstrumentOnly() throws IOException {
+            Project project = app.getProject();
+            Path projectDir = project.directory();
+            Path gradleScript = projectDir.resolve("build.gradle");
+            Path mvnScript = projectDir.resolve("pom.xml");
+            Path[] paths = {gradleScript, mvnScript};
+            for (var p : paths) {
+                System.out.println("backing up: " + p);
+                backup(p);
+            }
+            // The preparer uses build script filename to detect the project type
+            Files.createFile(project.buildScript());
+
+            try {
+                String[] args =
+                        {"--instrument", project.directory().toString(), "--pkg",
+                                "org.matrixertest"};
+                App instrumentingApp = new App(args);
+                assertDoesNotThrow(instrumentingApp::run);
+            } finally {
+                for (var p : paths) {
+                    restore(p);
+                }
+            }
         }
 
         @Test

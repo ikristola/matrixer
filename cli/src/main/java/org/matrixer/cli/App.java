@@ -52,19 +52,24 @@ public class App {
         }
         project = prepareProject();
 
-        if (!properties.analyzeOnly()) {
+        if (properties.shouldRun()) {
             ExecInfo info = runProject();
             if (info.status != 0) {
-                throw new RuntimeException("Target project tests exited with error("
-                        + info.status + ") see logfile for details");
+                throw new RuntimeException("Target project tests exited with error(" + info.status
+                        + ") see logfile for details");
             }
             System.out.println(
                     "Target project tests was run successfully in " + formatTime(info.duration));
         }
 
-        data = analyzeProject();
-        printSummary(data, System.out);
-        generateHTMLReport(data);
+        if (properties.shouldAnalyze()) {
+            data = analyzeProject();
+            printSummary(data, System.out);
+        }
+
+        if (properties.shouldReport()) {
+            generateHTMLReport(data);
+        }
     }
 
     private String formatTime(Duration duration) {
@@ -150,6 +155,9 @@ public class App {
                         + "[--testpkg <test package name>] [--output <path>] [--git <URL>]\n"
                         + "or\n"
                         + "\tmatrixer --analyze <path> --pkg <target package name>"
+                        + "[--testpkg <test package name>] [--output <path>] [--git <URL>]\n\n\t"
+                        + "or\n"
+                        + "\tmatrixer --instrument <path> --pkg <target package name>"
                         + "[--testpkg <test package name>] [--output <path>] [--git <URL>]\n\n\t"
                         + "--target  - the location of an existing project or the path to clone the remote repo to\n\t"
                         + "--pkg     - root package name of the target project, will be used to identify target methods\n\t"
