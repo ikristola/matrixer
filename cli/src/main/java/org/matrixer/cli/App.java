@@ -59,7 +59,7 @@ public class App {
                         + info.status + ") see logfile for details");
             }
             System.out.println("Target project tests was run successfully!"
-                    + "\nTime:  " + formatTime(info.duration));
+                    + "\nTime: " + formatTime(info.duration));
         }
 
         data = analyzeProject();
@@ -68,7 +68,7 @@ public class App {
     }
 
     private String formatTime(Duration duration) {
-        return String.format("%d:%d:%d:%d",
+        return String.format("%02d:%02d:%02d:%03d",
                 duration.toHoursPart(),
                 duration.toMinutesPart(),
                 duration.toSecondsPart(),
