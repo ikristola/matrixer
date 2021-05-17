@@ -259,6 +259,26 @@ class PropertiesTest {
     }
 
     @Test
+    void canSkipInstrumentBuildSScript() {
+        String[] args = {
+                "--skip-instrument", "true",
+        };
+        Properties properties = new Properties();
+        properties.parse(args);
+        assertFalse(properties.shouldInstrument());
+    }
+
+    @Test
+    void doesNotSkipInstrumentBuildSScriptIfFalse() {
+        String[] args = {
+                "--skip-instrument", "false",
+        };
+        Properties properties = new Properties();
+        properties.parse(args);
+        assertTrue(properties.shouldInstrument());
+    }
+
+    @Test
     void canSetDepthLimit() {
         Properties properties = new Properties();
         properties.setDepthLimit(42);
