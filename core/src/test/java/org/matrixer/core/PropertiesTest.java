@@ -235,7 +235,7 @@ class PropertiesTest {
         };
         Properties properties = new Properties();
         properties.parse(args);
-        assertNOTValid(properties, "Debug");
+        assertNOTValid(properties, "true or false");
     }
 
     @Test
