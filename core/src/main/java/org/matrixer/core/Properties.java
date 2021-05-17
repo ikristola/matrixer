@@ -297,8 +297,8 @@ public class Properties {
         return debug;
     }
 
-    public void setDebug(String debug) {
-        this.debug = parseBool(debug);
+    public void setDebug(String val) {
+        this.debug = parseBool(val);
     }
 
     public boolean parseBool(String val) {
@@ -310,7 +310,7 @@ public class Properties {
             case "false":
                return false;
             default:
-                setError("Debug must be true or false");
+                setError("Must be true or false: " + val);
                 return false;
         }
     }
