@@ -12,7 +12,13 @@ import org.matrixer.core.ExecutionData;
  */
 public class TextSummaryReporter {
 
-    public void reportTo(ExecutionData data, PrintStream out) {
+    private ExecutionData data;
+
+    public TextSummaryReporter(ExecutionData data) {
+        this.data = data;
+    }
+
+    public void reportTo(PrintStream out) {
         var methods = data.getAllTargetMethods();
         long methodCount = methods.size();
 

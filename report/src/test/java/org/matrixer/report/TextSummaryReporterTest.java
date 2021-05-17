@@ -16,10 +16,9 @@ public class TextSummaryReporterTest {
     @Test
     void printsErrorMessageIfDataIsEmpty() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintStream stream = new PrintStream(out);
-        TextSummaryReporter tr = new TextSummaryReporter();
+        TextSummaryReporter tr = new TextSummaryReporter(new ExecutionData());
 
-        tr.reportTo(new ExecutionData(), stream);
+        tr.reportTo(new PrintStream(out));
 
         assertTrue(out.toString().contains("No executed methods"));
     }
@@ -33,10 +32,9 @@ public class TextSummaryReporterTest {
         };
         ExecutionData data = new Analyzer().analyze(asInputStream(calls));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintStream stream = new PrintStream(out);
 
-        TextSummaryReporter tr = new TextSummaryReporter();
-        tr.reportTo(data, stream);
+        TextSummaryReporter tr = new TextSummaryReporter(data);
+        tr.reportTo(new PrintStream(out));
 
         assertContains(out.toString(), "Executed methods: " + 2);
         assertContains(out.toString(), "Executed tests: " + 3);
@@ -51,10 +49,9 @@ public class TextSummaryReporterTest {
         };
         ExecutionData data = new Analyzer().analyze(asInputStream(calls));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintStream stream = new PrintStream(out);
 
-        TextSummaryReporter tr = new TextSummaryReporter();
-        tr.reportTo(data, stream);
+        TextSummaryReporter tr = new TextSummaryReporter(data);
+        tr.reportTo(new PrintStream(out));
 
         assertContains(out.toString(), "Min stack depth: " + 1);
         assertContains(out.toString(), "Max stack depth: " + 3);
@@ -76,10 +73,9 @@ public class TextSummaryReporterTest {
         };
         ExecutionData data = new Analyzer().analyze(asInputStream(calls));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintStream stream = new PrintStream(out);
 
-        TextSummaryReporter tr = new TextSummaryReporter();
-        tr.reportTo(data, stream);
+        TextSummaryReporter tr = new TextSummaryReporter(data);
+        tr.reportTo(new PrintStream(out));
 
         assertContains(out.toString(), "Average stack depth: 2.4");
         assertContains(out.toString(), "Median stack depth: 2.0");
@@ -94,17 +90,16 @@ public class TextSummaryReporterTest {
         };
         ExecutionData data = new Analyzer().analyze(asInputStream(calls));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintStream stream = new PrintStream(out);
 
-        TextSummaryReporter tr = new TextSummaryReporter();
-        tr.reportTo(data, stream);
+        TextSummaryReporter tr = new TextSummaryReporter(data);
+        tr.reportTo(new PrintStream(out));
 
         assertContains(out.toString(), "Average stack depth: 8.3\n");
     }
 
     @Test
     void calcMedianEvenElements() {
-        var reporter = new TextSummaryReporter();
+        var reporter = new TextSummaryReporter(null);
         var ints = Arrays.asList(new Integer[] {1, 2, 4, 5, 6, 7});
         Collections.shuffle(ints);
         assertEquals(4.5, reporter.calcMedian(ints));
@@ -112,7 +107,7 @@ public class TextSummaryReporterTest {
 
     @Test
     void calcMedianOddElements() {
-        var reporter = new TextSummaryReporter();
+        var reporter = new TextSummaryReporter(null);
         var ints = Arrays.asList(new Integer[] {1, 3, 3, 4, 6, 6, 7});
         Collections.shuffle(ints);
         assertEquals(4, reporter.calcMedian(ints));
@@ -120,7 +115,7 @@ public class TextSummaryReporterTest {
 
     @Test
     void calcMedianTwoElements() {
-        var reporter = new TextSummaryReporter();
+        var reporter = new TextSummaryReporter(null);
         var ints = Arrays.asList(new Integer[] {1, 3});
         Collections.shuffle(ints);
         assertEquals(2, reporter.calcMedian(ints));
@@ -128,7 +123,7 @@ public class TextSummaryReporterTest {
 
     @Test
     void calcMedianOneElement() {
-        var reporter = new TextSummaryReporter();
+        var reporter = new TextSummaryReporter(null);
         var ints = Arrays.asList(new Integer[] {3});
         Collections.shuffle(ints);
         assertEquals(3, reporter.calcMedian(ints));
