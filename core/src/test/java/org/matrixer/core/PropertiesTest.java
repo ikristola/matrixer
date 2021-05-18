@@ -235,7 +235,7 @@ class PropertiesTest {
         };
         Properties properties = new Properties();
         properties.parse(args);
-        assertNOTValid(properties, "Debug");
+        assertNOTValid(properties, "true or false");
     }
 
     @Test
@@ -256,6 +256,26 @@ class PropertiesTest {
         Properties properties = new Properties();
         properties.parse(args);
         assertNOTValid(properties, "Depth");
+    }
+
+    @Test
+    void canSkipInstrumentBuildSScript() {
+        String[] args = {
+                "--skip-instrument", "true",
+        };
+        Properties properties = new Properties();
+        properties.parse(args);
+        assertFalse(properties.shouldInstrument());
+    }
+
+    @Test
+    void doesNotSkipInstrumentBuildSScriptIfFalse() {
+        String[] args = {
+                "--skip-instrument", "false",
+        };
+        Properties properties = new Properties();
+        properties.parse(args);
+        assertTrue(properties.shouldInstrument());
     }
 
     @Test

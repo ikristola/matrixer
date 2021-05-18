@@ -164,7 +164,8 @@ public class App {
                         + "--testpkg - root package name of the tests, will be used to identify test cases (defaults to --pkg)\n\t"
                         + "--output  - the location where logs and results will be stored. Defaults to build/matrix-cov for gradle and target/matrix-cov for maven\n\t"
                         + "--git     - if the project is remote, provide a URL to the repository\n\t"
-                        + "--analyze - skip the running of tests and only analyze existing results\n");
+                        + "--analyze - skip the running of tests and only analyze existing results\n"
+                        + "--skip-instrument - skip build script manipulation. For manual manipulation of buildscript\n\t");
     }
 
     class ExecInfo {

@@ -34,6 +34,8 @@ public class Properties {
 
     final static String INSTRUMENT_ONLY_FLAG = "--instrument";
 
+    final static String SKIP_INSTRUMENT_FLAG = "--skip-instrument";
+
     final static String TARGET_PKG_FLAG = "--pkg";
 
     final static String DEPTH_LIMIT_FLAG = "--depth";
@@ -119,6 +121,9 @@ public class Properties {
             case INSTRUMENT_ONLY_FLAG:
                 setTargetDir(Path.of(arg));
                 shouldInstrument = true;
+                break;
+            case SKIP_INSTRUMENT_FLAG:
+                shouldInstrument = !parseBool(arg);
                 break;
             case ANALYZE_ONLY_FLAG:
                 setTargetDir(Path.of(arg));
@@ -292,18 +297,21 @@ public class Properties {
         return debug;
     }
 
-    public void setDebug(String debug) {
+    public void setDebug(String val) {
+        this.debug = parseBool(val);
+    }
+
+    public boolean parseBool(String val) {
         // Boolean.parse returns false if null or not 'true' or 'TRUE'
         // To avoid typos etc going unnoticed it's better to be picky.
-        switch (debug.toLowerCase()) {
+        switch (val.toLowerCase()) {
             case "true":
-                this.debug = true;
-                break;
+               return true;
             case "false":
-                this.debug = false;
-                break;
+               return false;
             default:
-                setError("Debug must be true or false");
+                setError("Must be true or false: " + val);
+                return false;
         }
     }
 
