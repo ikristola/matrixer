@@ -36,7 +36,7 @@ class GradleProject extends Project {
     }
 
     @Override
-    public Path outputDirectory() {
+    protected Path _outputDirectory() {
         return outputDir;
     }
 
