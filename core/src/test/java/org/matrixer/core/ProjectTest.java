@@ -42,7 +42,7 @@ class ProjectTest {
         @Test
         void testSetsCorrectOutputPath() throws IOException {
             Project project = ProjectFactory.scan(TARGET_DIR);
-            Path outputDir = Path.of("build", "matrixer-cov");
+            Path outputDir = Path.of("build", "matrixer-cov", "depth-0");
             assertEquals(TARGET_DIR.resolve(outputDir), project.outputDirectory());
         }
 
@@ -60,7 +60,7 @@ class ProjectTest {
             Path outputDir = TARGET_DIR.resolve("build/matrixer-cov");
 
             assertEquals(TARGET_DIR, project.directory());
-            assertEquals(outputDir, project.outputDirectory());
+            assertEquals(outputDir.resolve("depth-0"), project.outputDirectory());
             assertEquals(buildScript, project.buildScript());
             assertEquals(remoteURL, project.remoteURL());
         }
@@ -76,7 +76,7 @@ class ProjectTest {
             Project project = ProjectFactory.from(prop);
 
             assertEquals(TARGET_DIR, project.directory());
-            assertEquals(outputDir, project.outputDirectory());
+            assertEquals(outputDir.resolve("depth-0"), project.outputDirectory());
         }
 
         @Test
@@ -143,7 +143,7 @@ class ProjectTest {
         @Test
         void testSetsCorrectOutputPath() throws IOException {
             Project project = ProjectFactory.scan(TARGET_DIR);
-            Path outputDir = Path.of("target", "matrixer-cov");
+            Path outputDir = Path.of("target", "matrixer-cov", "depth-0");
             assertEquals(TARGET_DIR.resolve(outputDir), project.outputDirectory());
         }
 
@@ -161,7 +161,7 @@ class ProjectTest {
             Path outputDir = TARGET_DIR.resolve("target/matrixer-cov");
 
             assertEquals(TARGET_DIR, project.directory());
-            assertEquals(outputDir, project.outputDirectory());
+            assertEquals(outputDir.resolve("depth-0"), project.outputDirectory());
             assertEquals(buildScript, project.buildScript());
             assertEquals(remoteURL, project.remoteURL());
         }
@@ -177,7 +177,7 @@ class ProjectTest {
             Project project = ProjectFactory.from(prop);
 
             assertEquals(TARGET_DIR, project.directory());
-            assertEquals(outputDir, project.outputDirectory());
+            assertEquals(outputDir.resolve("depth-0"), project.outputDirectory());
         }
 
         @Test

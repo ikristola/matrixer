@@ -72,10 +72,9 @@ public class MatrixerAgent {
         Files.createDirectories(destDir);
         setupLog();
         log("started " + type + ":\n\tArgs: " + agentArgs);
-        log(
-                String.format("OutputPath: %s\ntarget: %s\ntest: %s",
-                        options.getDestFilename(), options.getTargetPackage(),
-                        options.getTestPackage()));
+        log(String.format("Output directory: %s\ntarget: %s\ntest: %s",
+                options.getDestFilename(), options.getTargetPackage(),
+                options.getTestPackage()));
     }
 
     private void setupLog() throws IOException {

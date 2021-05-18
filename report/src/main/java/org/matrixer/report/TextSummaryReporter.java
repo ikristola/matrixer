@@ -39,7 +39,6 @@ public class TextSummaryReporter {
                 + "\n\t" + "Executed tests: " + testCount
                 + "\n\t" + "Max stack depth: " + depthSummary.getMax()
                 + "\n\t" + "Min stack depth: " + depthSummary.getMin()
-                + "\n\t" + "Average stack depth: " + depthSummary.getMin()
                 + "\n\t" + "Average stack depth: "
                 + String.format(Locale.US, "%.1f", depthSummary.getAverage())
                 + "\n\t" + "Median stack depth: " + calcMedian(depths)
