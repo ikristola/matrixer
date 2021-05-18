@@ -59,7 +59,8 @@ public class App {
                         + ") see logfile for details");
             }
             System.out.println("Target project tests was run successfully!"
-                    + "\nTime: " + formatTime(info.duration));
+                    + "\nTime: " + formatTime(info.duration)
+                    + " (" + info.duration.toMillis() + "ms)");
         }
 
         if (properties.shouldAnalyze()) {
