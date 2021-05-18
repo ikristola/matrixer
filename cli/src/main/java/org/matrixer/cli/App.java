@@ -128,8 +128,8 @@ public class App {
     }
 
     private void printSummary(ExecutionData data, PrintStream out) {
-        var reporter = new TextSummaryReporter();
-        reporter.reportTo(data, out);
+        var reporter = new TextSummaryReporter(data);
+        reporter.reportTo(out);
     }
 
     Project getProject() {
