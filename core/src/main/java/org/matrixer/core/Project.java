@@ -51,7 +51,8 @@ public abstract class Project {
     }
 
     public Path resultsFile() {
-        return outputDirectory().resolve(RESULTS_FILE_NAME);
+        return outputDirectory()
+            .resolve(RESULTS_FILE_NAME);
     }
 
     public Path directory() {
@@ -70,11 +71,16 @@ public abstract class Project {
         return properties.testPackage();
     }
 
+    public Path outputDirectory() {
+        return _outputDirectory().resolve("depth-" + properties.getDepthLimit());
+    }
+
+    protected abstract Path _outputDirectory();
+
     abstract void injectBuildScript(String agentString);
 
     public abstract Path buildScript();
 
-    public abstract Path outputDirectory();
 
     abstract List<String> getTestCommand();
 }
