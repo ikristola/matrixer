@@ -27,6 +27,7 @@ public class AgentOptions {
         if (args == null || args.length() <= 0) {
             return;
         }
+        boolean setDepth = false;
         for (var entry : args.split(",")) {
             final int pos = entry.indexOf('=');
             if (pos == -1) {
@@ -38,6 +39,17 @@ public class AgentOptions {
             }
             String value = entry.substring(pos + 1);
             setOption(key, value);
+            if (key.equals(DEPTH_LIMIT)) {
+                setDepth = true;
+            }
+        }
+
+        if (!setDepth) {
+            String depthString = System.getenv("MATRIXER_DEPTH");
+            int depth = Integer.valueOf(depthString);
+            if (depth > 0) {
+                setOption(DEPTH_LIMIT, depth);
+            }
         }
     }
 

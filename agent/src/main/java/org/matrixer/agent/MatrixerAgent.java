@@ -75,6 +75,7 @@ public class MatrixerAgent {
         log(String.format("Output directory: %s\ntarget: %s\ntest: %s",
                 options.getDestFilename(), options.getTargetPackage(),
                 options.getTestPackage()));
+        log("MATRIXER_DEPTH: " + System.getenv("MATRIXER_DEPTH"));
     }
 
     private void setupLog() throws IOException {

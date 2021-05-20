@@ -37,14 +37,21 @@ public class ProjectPreparer {
         Path destfile = project.resultsFile();
         AgentOptions options = new AgentOptions();
         options.setDestFilename(destfile.toString());
-        options.setDepthLimit(project.properties.getDepthLimit());
         options.setTargetPackage(project.targetPackage());
         options.setTestPackage(project.testPackage());
+        setDepthLimit(options);
         if (project.properties.getDebug()) {
             options.setDebug(true);
         }
 
         return options.getJVMArgument(pathToAgent());
+    }
+
+    void setDepthLimit(AgentOptions options) {
+        int depth = project.properties.getDepthLimit();
+        if (depth > 0){
+            options.setDepthLimit(depth);
+        }
     }
 
     Path pathToAgent() {
