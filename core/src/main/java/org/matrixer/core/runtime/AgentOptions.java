@@ -46,9 +46,12 @@ public class AgentOptions {
 
         if (!setDepth) {
             String depthString = System.getenv("MATRIXER_DEPTH");
-            int depth = Integer.valueOf(depthString);
-            if (depth > 0) {
-                setOption(DEPTH_LIMIT, depth);
+            try {
+                int depth = Integer.valueOf(depthString);
+                if (depth > 0) {
+                    setOption(DEPTH_LIMIT, depth);
+                }
+            } catch (NumberFormatException e) {
             }
         }
     }
