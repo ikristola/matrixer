@@ -52,7 +52,7 @@ public abstract class Project {
 
     public Path resultsFile() {
         return outputDirectory()
-            .resolve(RESULTS_FILE_NAME);
+                .resolve(RESULTS_FILE_NAME);
     }
 
     public Path directory() {
@@ -72,7 +72,16 @@ public abstract class Project {
     }
 
     public Path outputDirectory() {
-        return _outputDirectory().resolve("depth-" + properties.getDepthLimit());
+        int depth = properties.getDepthLimit();
+        String depthString =System.getenv("MATRIXER_DEPTH");
+        if (depth == 0 && depthString != null && !depthString.isBlank()) {
+            try {
+                int val = Integer.valueOf(depthString);
+                depth = val;
+            } catch (NumberFormatException e) {
+            }
+        }
+        return _outputDirectory().resolve("depth-" + depth);
     }
 
     protected abstract Path _outputDirectory();
