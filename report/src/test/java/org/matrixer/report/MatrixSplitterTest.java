@@ -118,7 +118,10 @@ public class MatrixSplitterTest {
             }
         }
 
-        assertTrue(sizes.isEmpty() && count == results.size(), "Wrong sizes in one of \n" + results.get(0) + "or \n"
-                + results.get(1) + "or \n" + results.get(2));
+        assertTrue(sizes.isEmpty() && count == results.size(),
+                "Wrong sizes in one of \n"
+                        + results.get(0) + "or \n"
+                        + results.get(1) + "or \n"
+                        + results.get(2));
     }
 }
