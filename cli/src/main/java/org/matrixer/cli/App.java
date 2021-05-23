@@ -8,8 +8,7 @@ import java.time.Duration;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.matrixer.core.*;
 import org.matrixer.core.util.GitRepository;
-import org.matrixer.report.HTMLReporter;
-import org.matrixer.report.TextSummaryReporter;
+import org.matrixer.report.*;
 
 public class App {
 
@@ -17,6 +16,7 @@ public class App {
      * The name of the file containing the html report
      */
     public static String HTML_REPORT_FILENAME = "matrixer-report.html";
+    public static String TXT_REPORT_FILENAME = "matrixer-report.txt";
 
     Properties properties;
     GitRepository repo;
@@ -70,6 +70,7 @@ public class App {
 
         if (properties.shouldReport()) {
             generateHTMLReport(data);
+            generateTextReport(data);
         }
     }
 
@@ -123,6 +124,19 @@ public class App {
             reporter.reportTo(out);
         } catch (IOException e) {
             var ex = new IOException("Analyzing " + htmlFile + ": " + e.getMessage());
+            ex.initCause(e);
+            throw ex;
+        }
+    }
+
+    private void generateTextReport(ExecutionData data) throws IOException {
+        System.out.println("Generating text report");
+        Path txtFile = project.outputDirectory().resolve(TXT_REPORT_FILENAME);
+        try (var out = Files.newOutputStream(txtFile)) {
+            var reporter = new TextReporter(data);
+            reporter.reportTo(new PrintStream(out));
+        } catch (IOException e) {
+            var ex = new IOException("Analyzing " + txtFile + ": " + e.getMessage());
             ex.initCause(e);
             throw ex;
         }
