@@ -39,7 +39,7 @@ public class MatrixSplitter {
             while (it.hasNext()) {
                 var test = it.next();
                 if (method.wasCalledBy(test)) {
-                    // System.err.println("    it was called by " + test);
+                    // System.err.println("\tit was called by " + test);
                     it.remove();
                     exploredTests.add(test);
                     moveCalledMethodsToFrontier(methodFrontier, test);
@@ -50,11 +50,11 @@ public class MatrixSplitter {
     }
 
     void moveCalledMethodsToFrontier(Queue<ExecutedMethod> frontier, String testCase) {
-        // System.err.println("    Found methods of " + testCase + ":");
+        // System.err.println("\tFound methods of " + testCase + ":");
         for (var it = recordedMethods.iterator(); it.hasNext(); ) {
             var method = it.next();
             if (method.wasCalledBy(testCase)) {
-                // System.err.println("        " + method.name());
+                // System.err.println("\t\t" + method.name());
                 frontier.add(method);
                 it.remove();
             }
