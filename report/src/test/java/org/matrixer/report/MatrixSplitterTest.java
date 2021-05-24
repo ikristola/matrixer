@@ -13,8 +13,29 @@ import org.matrixer.core.runtime.MethodCall;
 public class MatrixSplitterTest {
 
     @Test
+    void multipleCallsToMethod() {
+        // - A 
+        // 1 x 
+        MethodCall[] calls = {
+                new MethodCall(1, "Method1", "TestCaseA"),
+                new MethodCall(2, "Method1", "TestCaseA"),
+        };
+        ExecutionData data = new ExecutionData();
+        for (var c : calls) {
+            data.addCall(c);
+        }
+
+        var splitter = new MatrixSplitter(data);
+        var results = splitter.partition();
+
+        assertEquals(1, results.size());
+        var result = results.get(0);
+        assertEquals(1, result.matrixSize(), "Matrix:\n" + result);
+    }
+
+    @Test
     void diagonalMatrix() {
-        // A B C D E
+        // - A B C D E
         // 1 x - - - -
         // 2 - x - - -
         // 3 - - x - -
@@ -43,7 +64,7 @@ public class MatrixSplitterTest {
 
     @Test
     void matrixWithTwoChunks() {
-        // A B C D
+        // - A B C D
         // 1 x x - -
         // 2 x x - -
         // 3 - - x x
@@ -74,7 +95,7 @@ public class MatrixSplitterTest {
 
     @Test
     void crossPatternMatrix() {
-        // A B C D E
+        // - A B C D E
         // 1 x - - - x
         // 2 - x - x -
         // 3 - - x - -
