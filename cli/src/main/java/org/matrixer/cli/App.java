@@ -66,11 +66,11 @@ public class App {
         if (properties.shouldAnalyze()) {
             data = analyzeProject();
             printSummary(data, System.out);
-        }
 
-        if (properties.shouldReport()) {
-            generateHTMLReport(data);
-            generateTextReport(data);
+            if (properties.shouldReport()) {
+                generateHTMLReport(data);
+                generateTextReport(data);
+            }
         }
     }
 
@@ -145,6 +145,7 @@ public class App {
     private void printSummary(ExecutionData data, PrintStream out) {
         var reporter = new TextSummaryReporter(data);
         reporter.reportTo(out);
+
     }
 
     Project getProject() {
