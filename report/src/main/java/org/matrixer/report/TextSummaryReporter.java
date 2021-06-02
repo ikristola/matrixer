@@ -28,7 +28,7 @@ public class TextSummaryReporter {
         }
         int testCount = data.getAllTestCases().size();
 
-        Collection<Integer> callsPerMethod = countCallers(methods);
+        Collection<Integer> callsPerMethod = countUniqueCallers(methods);
         IntSummaryStatistics callCountSummary = summarize(callsPerMethod);
 
         Collection<Integer> depths = data.getCallStackDepths();
@@ -90,10 +90,10 @@ public class TextSummaryReporter {
                 .getAsDouble();
     }
 
-    Collection<Integer> countCallers(Collection<ExecutedMethod> methods) {
+    Collection<Integer> countUniqueCallers(Collection<ExecutedMethod> methods) {
         return methods
                 .stream()
-                .map(m -> m.callers().size())
+                .map(m -> m.uniqueCallers().size())
                 .collect(Collectors.toList());
     }
 

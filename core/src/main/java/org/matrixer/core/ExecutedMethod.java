@@ -108,7 +108,7 @@ public class ExecutedMethod implements Comparable<ExecutedMethod> {
     /**
      * Returns a collection of every call to this method
      */
-    public Collection<Call> callers() {
+    public Collection<Call> uniqueCallers() {
         return calls.values();
     }
 

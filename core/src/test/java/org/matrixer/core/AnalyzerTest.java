@@ -135,7 +135,7 @@ class AnalyzerTest {
         ExecutionData result = analyzer.analyze(source);
 
         ExecutedMethod targetMethod = result.getTargetMethod("ClassA");
-        Collection<ExecutedMethod.Call> callers = targetMethod.callers();
+        Collection<ExecutedMethod.Call> callers = targetMethod.uniqueCallers();
         String[] includes = {"TestCase1", "TestCase2"};
         String[] excludes = {"TestCase3"};
         assertCollectionValues(callers, includes, excludes, ExecutedMethod.Call::caller);

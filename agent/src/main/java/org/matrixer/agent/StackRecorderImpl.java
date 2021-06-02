@@ -101,8 +101,16 @@ public class StackRecorderImpl implements StackRecorder {
         if (tc == null) {
             throw new IllegalStateException("endTestCase: Could not find test case ");
         }
-        removeTestCase(tc);
+        unmapThreads(tc);
         writeCalls(tc);
+    }
+
+    private void unmapThreads(TestCase tc) {
+        log("Test case " + tc.name());
+        for (var threadStack : tc.threads()) {
+            log("Removing thread " + threadStack.id());
+            threads.remove(threadStack.id(), threadStack);
+        }
     }
 
     private void writeCalls(TestCase tc) {
@@ -119,19 +127,6 @@ public class StackRecorderImpl implements StackRecorder {
             log("TestCase: " + tc.name() + "\n\tWrote " + size + " calls\n");
         } catch (IOException e) {
             logger.logException(e);
-        }
-    }
-
-
-    private void removeTestCase(TestCase tc) {
-        unmapThreads(tc);
-    }
-
-    private void unmapThreads(TestCase tc) {
-        log("Test case " + tc.name());
-        for (var threadStack : tc.threads()) {
-            log("Removing thread " + threadStack.id());
-            threads.remove(threadStack.id(), threadStack);
         }
     }
 
