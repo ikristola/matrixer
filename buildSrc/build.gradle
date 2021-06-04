@@ -1,0 +1,11 @@
+/*
+ * This file makes sure the matrixer plugins can depend on
+ * external gradle plugins
+ */
+plugins {
+    id 'groovy-gradle-plugin'
+}
+
+repositories {
+    gradlePluginPortal() // so that external plugins can be resolved in dependencies section
+}

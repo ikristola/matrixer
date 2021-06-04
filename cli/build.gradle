@@ -1,0 +1,13 @@
+plugins {
+    id 'application'
+    id 'matrixer-jacoco'
+}
+
+dependencies {
+    implementation project(':core')
+    implementation project(':report')
+}
+
+application {
+    mainClass = 'org.matrixer.cli.App'
+}

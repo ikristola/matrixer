@@ -8,4 +8,10 @@
  */
 
 rootProject.name = 'matrixer'
-include('app')
+include(':cli', ':agent', ':core', ':report')
+
+project(':cli').projectDir = new File(settingsDir, './cli')
+project(':core').projectDir = new File(settingsDir, './core')
+project(':agent').projectDir = new File(settingsDir, './agent')
+project(':report').projectDir = new File(settingsDir, './report')
+

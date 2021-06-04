@@ -3,6 +3,23 @@
 # Learn more about .gitignore:
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
+# eclipse specific
+*.pydevproject
+.project
+.metadata
+bin/**
+*/bin/**
+tmp/**
+tmp/**/*
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.classpath
+.settings/
+.loadpath
+
 # Node artifact files
 node_modules/
 dist/
@@ -54,3 +71,7 @@ Thumbs.db
 
 # Ignore Gradle build output directory
 build
+
+# Miscellaneous
+.projections.json
+

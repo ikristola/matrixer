@@ -1,0 +1,40 @@
+/*
+ * A common entry point for all matrixer projects
+ */
+plugins {
+    id 'java'
+}
+
+group = 'org.matrixer'
+version = 'alpha'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    implementation "io.reactivex.rxjava3:rxjava:3.0.7"
+    compile group: 'org.javassist', name: 'javassist', version: '3.27.0-GA'
+    implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '5.10.0.202012080955-r'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    implementation 'com.google.guava:guava:29.0-jre'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+test {
+    testLogging {
+        events 'passed', /*'skipped',*/ 'failed'  // Events to print out
+
+        showStackTraces true
+        showExceptions true
+        showCauses true
+        exceptionFormat 'full'
+
+        showStandardStreams true
+    }
+}

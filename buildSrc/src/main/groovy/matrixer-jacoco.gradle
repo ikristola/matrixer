@@ -1,0 +1,46 @@
+plugins {
+    id 'matrixer'
+    id 'jacoco'
+}
+
+test {
+    // Update the jacoco report after tests, this might be removed can
+    // be removed if it takes too long to run. But it is handy to have
+    // it automatic at the moment
+    finalizedBy jacocoTestReport
+}
+
+/*
+ * When the build task is executed jacoco generates a binary report.
+ * This task generates a human readable report (currently HTML)
+ * Run with 'gradlew jacocoTestReport' it will automatically run the tests
+ * if they need to be run.
+ */
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination file("${buildDir}/jacocoHTML")
+    }
+}
+
+/*
+ * This task verifies that the project adheres to the specified coverage
+ * rules. Will be run after the check task that is executed with build or test
+ */
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            excludes = [
+            ]
+            element = 'CLASS'
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.8  // 100% test coverage requiered globally
+            }
+        }
+    }
+}
+

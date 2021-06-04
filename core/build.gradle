@@ -1,0 +1,11 @@
+plugins {
+    id 'java-library'
+    id 'matrixer-jacoco'
+}
+
+dependencies {
+    compile group: 'com.github.djeang', name: 'vincer-dom', version: '1.0.0'
+    implementation files("${project.rootDir}/libs/slf4j-simple-1.7.9.jar")
+}
+
+// println "Root project: ${project.rootDir}/libs/slf4j-simple-1.7.9.jar"
